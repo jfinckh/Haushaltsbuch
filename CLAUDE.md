@@ -29,7 +29,7 @@ src/app/            routing only (pages, API routes); thin, calls part entry poi
 src/shared/         helpers, money (cents, German number format), UI basics
 src/db/             Postgres connection (server only)        → nothing
 src/auth/           login, sessions, invite links, auth UI   → nothing (db is injected via createAuth)
-src/households/     households, members, account visibility  → shared, auth
+src/households/     households, members, account visibility  → nothing (db is injected via createHouseholds)
 src/accounts/       accounts, role (everyday/savings)        → shared, households
 src/transactions/   bookings, categories, rules              → shared, accounts
 src/transfers/      transfer matching, manual linking        → transactions

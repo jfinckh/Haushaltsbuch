@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "base": "333aa73514936930726e072494a76fc81d1467e7",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/example/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0001_households.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0002_households_rls.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0001_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0002_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/scoped.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/create-household-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/validation.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/household/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/households-route.ts",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "unit",
+      "id": "households",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->households",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "household",
+      "status": "convergence"
+    },
+    {
+      "kind": "resource",
+      "id": "householdMember",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:server:createHouseholds",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:server:householdTables",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:server:NoHouseholdError",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:client:CreateHouseholdForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:client:createHouseholdSchema",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "households",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:households",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->households",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-remove:app->example",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:household",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:householdMember",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:server:createHouseholds",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:server:householdTables",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:server:NoHouseholdError",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:client:CreateHouseholdForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:client:createHouseholdSchema",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:database:row-level-security",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

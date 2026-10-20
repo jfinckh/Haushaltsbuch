@@ -1,6 +1,8 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { InviteShareButton, SignOutButton } from "@/auth";
 import { auth } from "@/app/_lib/auth";
+import { households } from "@/app/_lib/households";
 
 export default function Home() {
   return (
@@ -15,6 +17,9 @@ export default function Home() {
 async function Welcome() {
   const { user } = await auth.requireSession("/sign-in");
   const inviter = await auth.getInviter(user.id);
+  await households.joinInvitersHousehold(user.id, inviter?.id ?? null);
+  const household = await households.getHousehold(user.id);
+  if (!household) redirect("/household/new");
 
   return (
     <div className="card bg-base-100 w-full max-w-md shadow-md">
@@ -23,7 +28,13 @@ async function Welcome() {
           <h1 className="card-title text-2xl">Hello, {user.name}</h1>
           <SignOutButton redirectTo="/sign-in" />
         </div>
-        {inviter && <p className="opacity-70">Invited by {inviter.name}</p>}
+        <div>
+          <p className="text-lg font-semibold">{household.name}</p>
+          <p className="opacity-70">
+            {household.memberCount === 1 ? "Only you so far" : `${household.memberCount} members`}
+            {inviter && ` · invited by ${inviter.name}`}
+          </p>
+        </div>
         <div className="divider my-0" />
         <h2 className="font-semibold">Invite your partner</h2>
         <InviteShareButton shareText="Join our Haushaltsbuch:" />

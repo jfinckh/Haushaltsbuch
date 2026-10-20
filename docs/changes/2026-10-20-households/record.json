@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "slug": "households",
+  "description": "Households",
+  "plan": {
+    "path": "docs/plans/2026-10-20-households.md",
+    "sha256": "3617853df197754540da7104ea79bdc20666900a12e12550d75b6efb568230af"
+  },
+  "status": "final",
+  "base": "333aa73514936930726e072494a76fc81d1467e7"
+}

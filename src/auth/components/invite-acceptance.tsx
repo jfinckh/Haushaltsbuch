@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authClient } from "../client";
 
 type Props = {
@@ -17,13 +17,19 @@ type State =
   | { status: "invalid" }
   | { status: "valid"; inviterName: string; applied: boolean; signedIn: boolean };
 
+const openInvite = (token: string) => authClient.invite.open({ token });
+
 /** Landing view for an invite link: checks it and remembers it for the next sign-up or sign-in. */
 export function InviteAcceptance({ token, signInHref, signUpHref, continueHref = "/" }: Props) {
   const [state, setState] = useState<State>({ status: "loading" });
+  // Opening an invite applies it, so it must run once per token. Effects can run twice
+  // (React Strict Mode); both runs share the same request.
+  const request = useRef<{ token: string; promise: ReturnType<typeof openInvite> } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    authClient.invite.open({ token }).then(({ data }) => {
+    if (request.current?.token !== token) request.current = { token, promise: openInvite(token) };
+    request.current.promise.then(({ data }) => {
       if (cancelled) return;
       if (!data?.valid) setState({ status: "invalid" });
       else setState({ status: "valid", inviterName: data.inviterName, applied: data.applied, signedIn: data.signedIn });

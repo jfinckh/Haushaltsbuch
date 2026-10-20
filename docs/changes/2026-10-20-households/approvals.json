@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:households",
+      "itemHash": "sha256:1772e0361ae477e31113335cfa852c35ab7e751aa19578a7efd2f12d9ce71d27",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->households",
+      "itemHash": "sha256:09f712c06f5cff50903b566c6c36326020a1b977d58f5d577b6f97b478d1f362",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-remove:app->example",
+      "itemHash": "sha256:6cc2196aaa2db7b20d6439b36b420ca9bb10f87ee7898e1421bea23f998c3506",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:household",
+      "itemHash": "sha256:c387bf265a2bffb922ce38be8a57287fb45d15b054805a87e693647285249e03",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:householdMember",
+      "itemHash": "sha256:ad5c3cd64030fe308ad8ec0f8f0720274f9c11d15bb1dfd5793ba2c925f14db5",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:server:createHouseholds",
+      "itemHash": "sha256:02cb37b3908246422d6756f735b80f4854ade906ad7f5b21297a7e0245c7aaca",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:server:householdTables",
+      "itemHash": "sha256:dc8b90011424566d2820862596711a6e7b22b538bafe2c2bc1c745f90af21991",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:server:NoHouseholdError",
+      "itemHash": "sha256:23703028a621b9f5cdeacbc93a9fc7d65bb20146950fdcc855bd639cb33db118",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:client:CreateHouseholdForm",
+      "itemHash": "sha256:7bcf8026b70d54a8e281bebbd1a3dad0be2037eea6768ac9c73af0dfdbcc594d",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:58Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:client:createHouseholdSchema",
+      "itemHash": "sha256:343ece0496f6c5227176e1202383238cbd3ec3d4185790fb2262711889d60d15",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:58Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:row-level-security",
+      "itemHash": "sha256:59d36eedfac6683bb8aaa75fa11d418dcc91a231d0ad443cb064706c91d4ac85",
+      "decision": "approve",
+      "at": "2026-10-20T14:41:58Z",
+      "source": "hook"
+    }
+  ]
+}
