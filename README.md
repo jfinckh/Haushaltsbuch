@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Haushaltsbuch
 
-## Getting Started
+Household budget app for two (Next.js, Postgres, Better Auth, daisyUI). The product
+concept is in the project files (`konzept.md`).
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local       # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+docker compose up -d             # Postgres on localhost:5432
+npm install
+npm run auth:migrate             # creates the auth tables
+npm run dev                      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The first account you register becomes admin. Without a mail server, verification and
+password-reset links are printed in the dev server's terminal.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint, including the module boundary rules |
+| `npm run typecheck` | TypeScript |
+| `npm test` | Vitest |
+| `npm run auth:migrate` | Create/update auth tables |
 
-## Learn More
+## Structure
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/app/      routing only (pages, API routes)
+src/auth/     reusable auth module, see src/auth/README.md
+src/config/   this app's settings for the modules (database, email, sign-up rules)
+```
