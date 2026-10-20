@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "root": "src",
+  "libraries": ["shared"],
+  "modules": {
+    "app": ["example", "shared"],
+    "example": ["shared"],
+    "shared": []
+  },
+  "features": {}
+}

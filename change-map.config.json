@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "adapter": "nextjs-eslint",
+  "units": [
+    {
+      "root": "src",
+      "match": [
+        "*"
+      ]
+    }
+  ],
+  "entryPoints": {
+    "optional": [
+      "shared"
+    ]
+  }
+}
