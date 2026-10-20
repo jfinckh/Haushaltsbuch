@@ -17,6 +17,7 @@ export default function NewHouseholdPage() {
 async function NewHousehold() {
   const { user } = await auth.requireSession("/sign-in");
   const inviter = await auth.getInviter(user.id);
-  if (await households.joinInvitersHousehold(user.id, inviter?.id ?? null)) redirect("/");
+  const { membership } = await households.joinInvitersHousehold(user.id, inviter?.id ?? null);
+  if (membership) redirect("/");
   return <CreateHouseholdForm redirectTo="/" />;
 }

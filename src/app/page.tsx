@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { InviteShareButton, SignOutButton } from "@/auth";
+import { HouseholdNameEditor, LeaveHouseholdButton } from "@/households";
 import { auth } from "@/app/_lib/auth";
 import { households } from "@/app/_lib/households";
+import { describeMembers } from "@/app/_lib/member-names";
 
 export default function Home() {
   return (
@@ -17,9 +19,14 @@ export default function Home() {
 async function Welcome() {
   const { user } = await auth.requireSession("/sign-in");
   const inviter = await auth.getInviter(user.id);
-  await households.joinInvitersHousehold(user.id, inviter?.id ?? null);
+  const { keptOwnHousehold } = await households.joinInvitersHousehold(user.id, inviter?.id ?? null);
   const household = await households.getHousehold(user.id);
   if (!household) redirect("/household/new");
+  // Only ids of the caller's own household go to auth, so only their names are shown.
+  const members = await households.listMembers(user.id);
+  const memberIds = members.map((m) => m.userId);
+  const names = await auth.getUserNames(memberIds);
+  const invitedHere = inviter && memberIds.includes(inviter.id);
 
   return (
     <div className="card bg-base-100 w-full max-w-md shadow-md">
@@ -29,15 +36,27 @@ async function Welcome() {
           <SignOutButton redirectTo="/sign-in" />
         </div>
         <div>
-          <p className="text-lg font-semibold">{household.name}</p>
+          <HouseholdNameEditor name={household.name} />
           <p className="opacity-70">
-            {household.memberCount === 1 ? "Only you so far" : `${household.memberCount} members`}
-            {inviter && ` · invited by ${inviter.name}`}
+            {describeMembers(user.id, memberIds, names)}
+            {invitedHere && ` · invited by ${inviter.name}`}
           </p>
         </div>
+        {keptOwnHousehold && inviter && (
+          <div role="status" className="alert alert-info alert-soft">
+            <span>
+              {inviter.name} invited you to their household. You stay in yours because it has other members. Leave it
+              to join theirs.
+            </span>
+          </div>
+        )}
         <div className="divider my-0" />
         <h2 className="font-semibold">Invite your partner</h2>
         <InviteShareButton shareText="Join our Haushaltsbuch:" />
+        <div className="divider my-0" />
+        <div className="flex justify-end">
+          <LeaveHouseholdButton lastMember={household.memberCount === 1} />
+        </div>
       </div>
     </div>
   );

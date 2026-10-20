@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "table-new:householdInviteUse",
+      "itemHash": "sha256:5b4e240346a6020aec29ddc67ea8c4801e7db3a83051831730271d1387573a7c",
+      "decision": "approve",
+      "at": "2026-10-20T15:02:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:client:HouseholdNameEditor",
+      "itemHash": "sha256:2adde7b243752dc106d960fff53e509f3f91bbbfac601ceb93ad3f415fe8a3c4",
+      "decision": "approve",
+      "at": "2026-10-20T15:02:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:client:LeaveHouseholdButton",
+      "itemHash": "sha256:4754021a3d3e2b762ae2320088b29c429ceee8526c2c642dcec4bacf0f47a27b",
+      "decision": "approve",
+      "at": "2026-10-20T15:02:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:household:rename-leave",
+      "itemHash": "sha256:392bf76c88b131159b5ee4927318a7f6e4e4a63b85cd2fa999632d5614db6a82",
+      "decision": "approve",
+      "at": "2026-10-20T15:02:59Z",
+      "source": "hook"
+    }
+  ]
+}

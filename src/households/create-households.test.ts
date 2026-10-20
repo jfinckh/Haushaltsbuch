@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { NoHouseholdError } from "./create-households";
-import { householdMember } from "./schema";
+import { household, householdMember } from "./schema";
 import { createTestHouseholds } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestHouseholds>>;
@@ -41,8 +41,8 @@ describe("joining through an invite", () => {
     const created = await setup.households.createHousehold("max", { name: "Mustermann" });
     if (!created.ok) throw new Error("setup failed");
 
-    const membership = await setup.households.joinInvitersHousehold("erika", "max");
-    expect(membership).toEqual({ householdId: created.household.id });
+    const result = await setup.households.joinInvitersHousehold("erika", "max");
+    expect(result).toEqual({ membership: { householdId: created.household.id }, keptOwnHousehold: false });
     expect((await setup.households.getHousehold("erika"))?.memberCount).toBe(2);
 
     const [row] = await setup.db.select().from(householdMember).where(eqUser("erika"));
@@ -58,16 +58,125 @@ describe("joining through an invite", () => {
   });
 
   it("does nothing without an inviter or when the inviter has no household", async () => {
-    expect(await setup.households.joinInvitersHousehold("erika", null)).toBeNull();
-    expect(await setup.households.joinInvitersHousehold("erika", "max")).toBeNull();
+    const none = { membership: null, keptOwnHousehold: false };
+    expect(await setup.households.joinInvitersHousehold("erika", null)).toEqual(none);
+    expect(await setup.households.joinInvitersHousehold("erika", "max")).toEqual(none);
     expect(await setup.households.getMembership("erika")).toBeNull();
   });
 
-  it("keeps an existing household", async () => {
-    await setup.households.createHousehold("max", { name: "Mustermann" });
+  it("moves a user out of their own household when nobody else is in it, and deletes it", async () => {
+    const maxs = await setup.households.createHousehold("max", { name: "Mustermann" });
     const own = await setup.households.createHousehold("erika", { name: "Erikas" });
-    if (!own.ok) throw new Error("setup failed");
-    expect(await setup.households.joinInvitersHousehold("erika", "max")).toEqual({ householdId: own.household.id });
+    if (!maxs.ok || !own.ok) throw new Error("setup failed");
+
+    const result = await setup.households.joinInvitersHousehold("erika", "max");
+    expect(result).toEqual({ membership: { householdId: maxs.household.id }, keptOwnHousehold: false });
+    expect(await setup.db.select().from(household).where(eq(household.id, own.household.id))).toEqual([]);
+    expect((await setup.households.getHousehold("max"))?.memberCount).toBe(2);
+  });
+
+  it("keeps the own household when it has other members, until the user leaves it", async () => {
+    const maxs = await setup.households.createHousehold("max", { name: "Mustermann" });
+    const own = await setup.households.createHousehold("erika", { name: "Erikas" });
+    if (!maxs.ok || !own.ok) throw new Error("setup failed");
+    await setup.households.joinInvitersHousehold("lena", "erika");
+
+    expect(await setup.households.joinInvitersHousehold("erika", "max")).toEqual({
+      membership: { householdId: own.household.id },
+      keptOwnHousehold: true,
+    });
+    expect((await setup.households.getHousehold("max"))?.memberCount).toBe(1);
+
+    await setup.households.leaveHousehold("erika");
+    expect(await setup.households.joinInvitersHousehold("erika", "max")).toEqual({
+      membership: { householdId: maxs.household.id },
+      keptOwnHousehold: false,
+    });
+    expect(await setup.households.listMembers("lena")).toEqual([{ userId: "lena", joinedAt: expect.any(Date) }]);
+  });
+
+  it("does not put a user back after they left", async () => {
+    await setup.households.createHousehold("max", { name: "Mustermann" });
+    await setup.households.joinInvitersHousehold("erika", "max");
+    await setup.households.leaveHousehold("erika");
+
+    expect(await setup.households.joinInvitersHousehold("erika", "max")).toEqual({
+      membership: null,
+      keptOwnHousehold: false,
+    });
+    expect((await setup.households.getHousehold("max"))?.memberCount).toBe(1);
+  });
+});
+
+describe("listing members", () => {
+  it("returns the own household's members, oldest first", async () => {
+    await setup.households.createHousehold("max", { name: "A" });
+    await setup.households.joinInvitersHousehold("erika", "max");
+    await setup.households.createHousehold("dora", { name: "B" });
+
+    const members = await setup.households.listMembers("erika");
+    expect(members.map((m) => m.userId)).toEqual(["max", "erika"]);
+    expect((await setup.households.listMembers("dora")).map((m) => m.userId)).toEqual(["dora"]);
+    expect(await setup.households.listMembers("stranger")).toEqual([]);
+  });
+});
+
+describe("renaming", () => {
+  it("lets any member rename the own household", async () => {
+    await setup.households.createHousehold("max", { name: "A" });
+    await setup.households.joinInvitersHousehold("erika", "max");
+
+    const result = await setup.households.renameHousehold("erika", { name: " Musterhaus " });
+    expect(result).toMatchObject({ ok: true, household: { name: "Musterhaus", memberCount: 2 } });
+    expect((await setup.households.getHousehold("max"))?.name).toBe("Musterhaus");
+  });
+
+  it("rejects invalid names and users without a household", async () => {
+    await setup.households.createHousehold("max", { name: "A" });
+    expect(await setup.households.renameHousehold("max", { name: "" })).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await setup.households.renameHousehold("stranger", { name: "X" })).toEqual({
+      ok: false,
+      reason: "no-household",
+    });
+  });
+
+  it("never renames another household", async () => {
+    await setup.households.createHousehold("max", { name: "A" });
+    await setup.households.createHousehold("dora", { name: "B" });
+    await setup.households.renameHousehold("dora", { name: "Dora's" });
+    expect((await setup.households.getHousehold("max"))?.name).toBe("A");
+  });
+});
+
+describe("leaving", () => {
+  it("keeps the household for the remaining members", async () => {
+    await setup.households.createHousehold("max", { name: "A" });
+    await setup.households.joinInvitersHousehold("erika", "max");
+
+    expect(await setup.households.leaveHousehold("erika")).toEqual({ left: true, householdDeleted: false });
+    expect(await setup.households.getMembership("erika")).toBeNull();
+    expect((await setup.households.getHousehold("max"))?.memberCount).toBe(1);
+  });
+
+  it("deletes the household when the last member leaves", async () => {
+    const a = await setup.households.createHousehold("max", { name: "A" });
+    if (!a.ok) throw new Error("setup failed");
+    expect(await setup.households.leaveHousehold("max")).toEqual({ left: true, householdDeleted: true });
+    expect(await setup.db.select().from(household)).toEqual([]);
+    expect(await setup.db.select().from(householdMember)).toEqual([]);
+  });
+
+  it("deletes the household when its last two members leave at the same time", async () => {
+    await setup.households.createHousehold("max", { name: "A" });
+    await setup.households.joinInvitersHousehold("erika", "max");
+    await Promise.all([setup.households.leaveHousehold("max"), setup.households.leaveHousehold("erika")]);
+    expect(await setup.db.select().from(household)).toEqual([]);
+  });
+
+  it("does nothing without a household and never touches another one", async () => {
+    await setup.households.createHousehold("dora", { name: "B" });
+    expect(await setup.households.leaveHousehold("stranger")).toEqual({ left: false, householdDeleted: false });
+    expect((await setup.households.getHousehold("dora"))?.memberCount).toBe(1);
   });
 });
 

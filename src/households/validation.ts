@@ -7,3 +7,6 @@ export const createHouseholdSchema = z.object({
 });
 
 export type CreateHouseholdInput = z.infer<typeof createHouseholdSchema>;
+
+// Renaming follows the same rules as creating.
+export const renameHouseholdSchema = createHouseholdSchema;

@@ -22,6 +22,20 @@
       "when": 1792507360957,
       "tag": "0002_households_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792508586908,
+      "tag": "0003_household_invite_use",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792508588458,
+      "tag": "0004_household_invite_use_rls",
+      "breakpoints": true
     }
   ]
 }

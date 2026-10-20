@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "base": "7f3428432abf0462f95c07f6c79ab2cc668bb617",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/households/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/household-name-editor.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/leave-household-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0003_household_invite_use.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0004_household_invite_use_rls.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0003_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0004_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/households-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/membership/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/member-names.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/member-names.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/household/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->households",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "householdInviteUse",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:client:HouseholdNameEditor",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "households:client:LeaveHouseholdButton",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "table-new:householdInviteUse",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:client:HouseholdNameEditor",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:households:client:LeaveHouseholdButton",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:household:rename-leave",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

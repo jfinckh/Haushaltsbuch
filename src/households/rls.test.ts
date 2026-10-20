@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { household, householdMember } from "./schema";
+import { household, householdInviteUse, householdMember } from "./schema";
 import { asUser } from "./scoped";
 import { createTestHouseholds } from "./test-utils";
 
@@ -48,5 +48,9 @@ describe("row-level security", () => {
     ).resolves.toHaveLength(1); // only dora's own household is visible, so only it is updated
     const [a] = await setup.db.select().from(household).where(sql`${household.id} = ${householdA}`);
     expect(a.name).toBe("A");
+  });
+
+  it("keeps the restricted role away from used invites", async () => {
+    await expect(asUser(setup.db, "erika", (tx) => tx.select().from(householdInviteUse))).rejects.toThrow();
   });
 });

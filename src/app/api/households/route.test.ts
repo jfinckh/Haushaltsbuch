@@ -2,7 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
-import { householdsRoute } from "@/app/_lib/households-route";
+import { householdMembershipRoute, householdsRoute } from "@/app/_lib/households-route";
 import { createHouseholds } from "@/households/server";
 
 let households: ReturnType<typeof createHouseholds>;
@@ -17,8 +17,16 @@ function routeAs(userId: string | null) {
   return householdsRoute({ households, getUserId: async () => userId });
 }
 
+function membershipAs(userId: string | null) {
+  return householdMembershipRoute({ households, getUserId: async () => userId });
+}
+
 function post(body: unknown) {
   return new Request("http://localhost/api/households", { method: "POST", body: JSON.stringify(body) });
+}
+
+function patch(body: unknown, query = "") {
+  return new Request(`http://localhost/api/households${query}`, { method: "PATCH", body: JSON.stringify(body) });
 }
 
 describe("/api/households", () => {
@@ -26,6 +34,8 @@ describe("/api/households", () => {
     const route = routeAs(null);
     expect((await route.GET()).status).toBe(401);
     expect((await route.POST(post({ name: "A" }))).status).toBe(401);
+    expect((await route.PATCH(patch({ name: "A" }))).status).toBe(401);
+    expect((await membershipAs(null).DELETE()).status).toBe(401);
   });
 
   it("creates the caller's household once", async () => {
@@ -49,5 +59,46 @@ describe("/api/households", () => {
     expect((await (await routeAs("max").GET()).json()).household.name).toBe("A");
     expect((await (await routeAs("dora").GET()).json()).household.name).toBe("B");
     expect((await routeAs("stranger").GET()).status).toBe(404);
+  });
+
+  it("renames only the caller's own household", async () => {
+    await routeAs("max").POST(post({ name: "A" }));
+    const b = await (await routeAs("dora").POST(post({ name: "B" }))).json();
+
+    // An id for dora's household in body or query is ignored.
+    const res = await routeAs("max").PATCH(patch({ name: "Renamed", id: b.household.id }, `?id=${b.household.id}`));
+    expect(res.status).toBe(200);
+    expect((await res.json()).household).toMatchObject({ name: "Renamed", memberCount: 1 });
+    expect((await households.getHousehold("dora"))?.name).toBe("B");
+  });
+
+  it("rejects invalid renames and callers without a household", async () => {
+    await routeAs("max").POST(post({ name: "A" }));
+    expect((await routeAs("max").PATCH(patch({ name: "" }))).status).toBe(400);
+    expect((await routeAs("stranger").PATCH(patch({ name: "X" }))).status).toBe(404);
+  });
+});
+
+describe("/api/households/membership", () => {
+  it("lets a member leave; the last one deletes the household", async () => {
+    await routeAs("max").POST(post({ name: "A" }));
+    await households.joinInvitersHousehold("erika", "max");
+
+    const first = await membershipAs("erika").DELETE();
+    expect(first.status).toBe(200);
+    expect(await first.json()).toEqual({ householdDeleted: false });
+    expect((await routeAs("erika").GET()).status).toBe(404);
+
+    expect(await (await membershipAs("max").DELETE()).json()).toEqual({ householdDeleted: true });
+    expect((await routeAs("max").GET()).status).toBe(404);
+  });
+
+  it("never removes anyone from another household", async () => {
+    await routeAs("max").POST(post({ name: "A" }));
+    await routeAs("dora").POST(post({ name: "B" }));
+
+    expect((await membershipAs("stranger").DELETE()).status).toBe(404);
+    await membershipAs("max").DELETE();
+    expect((await (await routeAs("dora").GET()).json()).household).toMatchObject({ name: "B", memberCount: 1 });
   });
 });

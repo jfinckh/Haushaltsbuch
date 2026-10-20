@@ -60,6 +60,18 @@ export function buildBetterAuth(options: AuthOptions) {
 
 export type BetterAuthInstance = ReturnType<typeof buildBetterAuth>;
 
+/** Display names of the given users (id → name). Unknown ids are left out. */
+export async function findUserNames(auth: BetterAuthInstance, ids: readonly string[]): Promise<Map<string, string>> {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return new Map();
+  const { adapter } = await auth.$context;
+  const users = await adapter.findMany<{ id: string; name: string }>({
+    model: "user",
+    where: [{ field: "id", operator: "in", value: unique }],
+  });
+  return new Map(users.map((user) => [user.id, user.name]));
+}
+
 /** The auth instance for a Next.js app: route handler plus session helpers for server code. */
 export function createAuth(options: AuthOptions) {
   const auth = buildBetterAuth(options);
@@ -95,6 +107,11 @@ export function createAuth(options: AuthOptions) {
       });
       return inviter ? { id: inviter.id, name: inviter.name } : null;
     },
+    /**
+     * Display names of the given users (id → name). Server only: callers decide whose names
+     * a user may see and pass only those ids.
+     */
+    getUserNames: (ids: readonly string[]) => findUserNames(auth, ids),
   };
 }
 

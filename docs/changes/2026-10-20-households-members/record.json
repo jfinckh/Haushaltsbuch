@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "slug": "households-members",
+  "description": "Households - members, rename, leave, switch",
+  "plan": {
+    "path": "docs/plans/2026-10-20-households-members.md",
+    "sha256": "a96a7bb0cbfc44e9182d666392e7ec328fd23ddf4187bec2f0e1283570a0f6c5"
+  },
+  "status": "final",
+  "base": "7f3428432abf0462f95c07f6c79ab2cc668bb617"
+}
