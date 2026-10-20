@@ -77,7 +77,7 @@ describe("invite links", () => {
     expect((await ben.getInviter()).json).toEqual({ inviter: null });
   });
 
-  it("an existing user signing in through a link gets the inviter if none is set", async () => {
+  it("an existing user signing in through a link gets the inviter", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
     const benId = (await ben.signUp("Ben", "ben@example.com")).json.user.id;
@@ -97,19 +97,47 @@ describe("invite links", () => {
     expect((await ben.getInviter()).json.inviter.name).toBe("Anna");
   });
 
-  it("never overwrites an existing inviter and leaves the second link unused", async () => {
+  it("a new invite from someone else replaces the recorded inviter", async () => {
+    const anna = await inviteFrom("Anna", "anna@example.com");
+    const ben = createBrowser(setup.auth);
+    await ben.openInvite(tokenFromUrl(anna.url));
+    const benId = (await ben.signUp("Ben", "ben@example.com")).json.user.id;
+    const first = await userRow(benId);
+
+    const carla = await inviteFrom("Carla", "carla@example.com");
+    const opened = await ben.openInvite(tokenFromUrl(carla.url));
+    expect(opened.json).toEqual({ valid: true, inviterName: "Carla", applied: true, signedIn: true });
+    expect((await ben.getInviter()).json.inviter).toEqual({ id: carla.userId, name: "Carla" });
+    const second = await userRow(benId);
+    expect(second.invitedAt!.getTime()).toBeGreaterThan(first.invitedAt!.getTime());
+
+    const [carlaInvite] = await setup.db.select().from(authInvite).where(eq(authInvite.inviterId, carla.userId));
+    expect(carlaInvite.usedById).toBe(benId);
+  });
+
+  it("an already used invite can't be accepted again, also not by the person who used it", async () => {
+    const anna = await inviteFrom("Anna", "anna@example.com");
+    const ben = createBrowser(setup.auth);
+    await ben.signUp("Ben", "ben@example.com");
+    expect((await ben.openInvite(tokenFromUrl(anna.url))).json.applied).toBe(true);
+
+    expect((await ben.openInvite(tokenFromUrl(anna.url))).json).toEqual({ valid: false });
+    const dora = createBrowser(setup.auth);
+    await dora.signUp("Dora", "dora@example.com");
+    expect((await dora.openInvite(tokenFromUrl(anna.url))).json).toEqual({ valid: false });
+    expect((await dora.getInviter()).json).toEqual({ inviter: null });
+  });
+
+  it("an own invite is never accepted, also with another inviter on record", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
     await ben.openInvite(tokenFromUrl(anna.url));
     await ben.signUp("Ben", "ben@example.com");
 
-    const carla = await inviteFrom("Carla", "carla@example.com");
-    const opened = await ben.openInvite(tokenFromUrl(carla.url));
-    expect(opened.json.applied).toBe(false);
+    const own = await ben.createInvite();
+    const opened = await ben.openInvite(tokenFromUrl(own.json.url));
+    expect(opened.json).toEqual({ valid: true, inviterName: "Ben", applied: false, signedIn: true });
     expect((await ben.getInviter()).json.inviter.name).toBe("Anna");
-
-    const [carlaInvite] = await setup.db.select().from(authInvite).where(eq(authInvite.inviterId, carla.userId));
-    expect(carlaInvite.usedAt).toBeNull();
   });
 
   it("ignores self-invites", async () => {

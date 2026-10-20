@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "slug": "reinvite",
+  "description": "Accept a new invite after the first one",
+  "plan": {
+    "path": "docs/plans/2026-10-20-reinvite.md",
+    "sha256": "63c9c145a0c46d99d03939132e0a242693927f5d8f641491dddb72e9f435c76a"
+  },
+  "status": "final",
+  "base": "2560bc8950684cfc47e19104543d19f7a51bcca6"
+}

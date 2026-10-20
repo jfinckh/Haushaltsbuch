@@ -44,8 +44,8 @@ export function LeaveHouseholdButton({
           <h3 className="text-lg font-bold">Leave this household?</h3>
           <p className="py-4">
             {lastMember
-              ? "You are the only member. Leaving deletes the household."
-              : "The other members keep the household. You can create a new one afterwards."}
+              ? "You are the only member. Leaving deletes the household. Afterwards you can create a new one or join another one through a new invite link."
+              : "The other members keep the household. Afterwards you can create a new one or join another one through a new invite link."}
           </p>
           {error && <p className="text-error">{error}</p>}
           <div className="modal-action">

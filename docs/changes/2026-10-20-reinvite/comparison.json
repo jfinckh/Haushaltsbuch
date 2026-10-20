@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "base": "2560bc8950684cfc47e19104543d19f7a51bcca6",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/auth/invite/plugin.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/plugin.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/invite-acceptance.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/leave-household-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0005_household_invite_use_invited_at.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0005_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/household/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/test-utils.ts",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "edge",
+      "id": "app->households",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "permission-change:invite:accept-again",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:src/households/schema.ts",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0005_household_invite_use_invited_at.sql",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0005_snapshot.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

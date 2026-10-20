@@ -9,3 +9,8 @@ export async function createTestHouseholds() {
   await migrate(db, { migrationsFolder: new URL("../../drizzle", import.meta.url).pathname });
   return { households: createHouseholds({ db }), db };
 }
+
+/** An invite from `inviterId`, accepted at second `second` after the epoch: higher is newer. */
+export function invite(inviterId: string, second = 1) {
+  return { inviterId, invitedAt: new Date(second * 1000) };
+}

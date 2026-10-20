@@ -82,7 +82,7 @@ describe("/api/households", () => {
 describe("/api/households/membership", () => {
   it("lets a member leave; the last one deletes the household", async () => {
     await routeAs("max").POST(post({ name: "A" }));
-    await households.joinInvitersHousehold("erika", "max");
+    await households.joinInvitersHousehold("erika", { inviterId: "max", invitedAt: new Date() });
 
     const first = await membershipAs("erika").DELETE();
     expect(first.status).toBe(200);

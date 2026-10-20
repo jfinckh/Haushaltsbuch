@@ -19,7 +19,10 @@ export default function Home() {
 async function Welcome() {
   const { user } = await auth.requireSession("/sign-in");
   const inviter = await auth.getInviter(user.id);
-  const { keptOwnHousehold } = await households.joinInvitersHousehold(user.id, inviter?.id ?? null);
+  const { keptOwnHousehold } = await households.joinInvitersHousehold(
+    user.id,
+    inviter && { inviterId: inviter.id, invitedAt: inviter.invitedAt },
+  );
   const household = await households.getHousehold(user.id);
   if (!household) redirect("/household/new");
   // Only ids of the caller's own household go to auth, so only their names are shown.

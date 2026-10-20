@@ -36,8 +36,8 @@ async function findOpenInvite(ctx: InviteContext, token: string): Promise<Invite
 }
 
 /**
- * Records the inviter for `userId` and marks the invite used, both or neither.
- * Does nothing if the user already has an inviter or invited themselves.
+ * Records the inviter for `userId` and marks the invite used, both or neither. A new invite
+ * replaces an earlier inviter. Does nothing for the user's own invite or one used meanwhile.
  */
 async function applyInvite(ctx: InviteContext, invite: InviteRow, userId: string): Promise<boolean> {
   if (invite.inviterId === userId) return false;
@@ -55,10 +55,7 @@ async function applyInvite(ctx: InviteContext, invite: InviteRow, userId: string
       if (claimed !== 1) throw new InviteNotApplied();
       const updated = await trx.updateMany({
         model: "user",
-        where: [
-          { field: "id", value: userId },
-          { field: "invitedById", value: null },
-        ],
+        where: [{ field: "id", value: userId }],
         update: { invitedById: invite.inviterId, invitedAt: now },
       });
       if (updated !== 1) throw new InviteNotApplied();

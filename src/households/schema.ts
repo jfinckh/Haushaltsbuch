@@ -26,12 +26,14 @@ export const householdMember = pgTable(
   (table) => [primaryKey({ columns: [table.householdId, table.userId] })],
 );
 
-// Invites that households already acted on (joined or switched), one per user. Keeps a person
-// who left from being put straight back into the inviter's household. Only the owner
-// connection uses this table: row-level security is on and app_user has no grants.
+// The last invite households acted on (joined or switched), one row per user. Keeps a person
+// who left from being put straight back by the same invite; a newer invite is acted on again.
+// Only the owner connection uses this table: row-level security is on and app_user has no grants.
 export const householdInviteUse = pgTable("household_invite_use", {
   userId: text("user_id").primaryKey(),
   inviterUserId: text("inviter_user_id").notNull(),
+  // When the user accepted that invite, as auth reports it. Identifies the invite.
+  invitedAt: timestamp("invited_at").notNull(),
   usedAt: timestamp("used_at").notNull().defaultNow(),
 });
 

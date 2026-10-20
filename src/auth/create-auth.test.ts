@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { findUserNames } from "./create-auth";
-import { createBrowser, createTestAuth } from "./test-utils";
+import { findInviter, findUserNames } from "./create-auth";
+import { createBrowser, createTestAuth, tokenFromUrl } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestAuth>>;
 
@@ -28,5 +28,24 @@ describe("findUserNames", () => {
   it("returns nothing for no ids", async () => {
     await signUp("Max Muster", "max@example.com");
     expect((await findUserNames(setup.auth, [])).size).toBe(0);
+  });
+});
+
+describe("findInviter", () => {
+  it("returns null for a user without an inviter", async () => {
+    const max = await signUp("Max Muster", "max@example.com");
+    expect(await findInviter(setup.auth, max)).toBeNull();
+  });
+
+  it("returns the current inviter and when their invite was accepted", async () => {
+    const max = createBrowser(setup.auth);
+    const maxId = (await max.signUp("Max Muster", "max@example.com")).json.user.id;
+    const invite = await max.createInvite();
+    const erika = createBrowser(setup.auth);
+    const erikaId = (await erika.signUp("Erika Test", "erika@example.com")).json.user.id;
+    await erika.openInvite(tokenFromUrl(invite.json.url));
+
+    const inviter = await findInviter(setup.auth, erikaId);
+    expect(inviter).toEqual({ id: maxId, name: "Max Muster", invitedAt: expect.any(Date) });
   });
 });

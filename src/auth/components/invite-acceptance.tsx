@@ -64,8 +64,8 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
         )}
         {state.status === "valid" && !state.applied && state.signedIn && (
           <>
-            <h1 className="card-title text-2xl">Already set up</h1>
-            <p>You are signed in and already have an invite on record, so this link was not used.</p>
+            <h1 className="card-title text-2xl">This is your own invite</h1>
+            <p>You can&apos;t accept your own invite link. Share it with the person you want to invite.</p>
             <div className="card-actions">
               <Link href={continueHref} className="btn btn-primary">Continue</Link>
             </div>

@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { household, householdInviteUse, householdMember } from "./schema";
 import { asUser } from "./scoped";
-import { createTestHouseholds } from "./test-utils";
+import { createTestHouseholds, invite } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestHouseholds>>;
 
@@ -12,7 +12,7 @@ let householdA: string;
 beforeEach(async () => {
   setup = await createTestHouseholds();
   const a = await setup.households.createHousehold("max", { name: "A" });
-  await setup.households.joinInvitersHousehold("erika", "max");
+  await setup.households.joinInvitersHousehold("erika", invite("max"));
   await setup.households.createHousehold("dora", { name: "B" });
   if (!a.ok) throw new Error("setup failed");
   householdA = a.household.id;

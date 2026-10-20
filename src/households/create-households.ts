@@ -1,4 +1,4 @@
-import { and, asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, gte, lt, sql } from "drizzle-orm";
 import { household, householdInviteUse, householdMember } from "./schema";
 import { asUser, type HouseholdsDatabase } from "./scoped";
 import { createHouseholdSchema, renameHouseholdSchema } from "./validation";
@@ -27,6 +27,13 @@ export type RenameHouseholdResult =
   | { ok: false; reason: "invalid-input" | "no-household" };
 
 export type LeaveHouseholdResult = { left: boolean; householdDeleted: boolean };
+
+/** The invite a user accepted most recently, as auth records it. */
+export type AcceptedInvite = {
+  inviterId: string;
+  /** When the user accepted it. A later time means a newer invite. */
+  invitedAt: Date;
+};
 
 export type JoinResult = {
   membership: Membership | null;
@@ -92,14 +99,28 @@ export function createHouseholds({ db }: HouseholdsOptions) {
     });
   }
 
-  // Owner connection. Records that households acted on the user's invite; false if it already did.
-  async function claimInvite(tx: Pick<HouseholdsDatabase, "insert">, userId: string, inviterId: string) {
+  // Owner connection. Records that households acted on the user's invite; false if it already
+  // acted on this or a newer one.
+  async function claimInvite(tx: Pick<HouseholdsDatabase, "insert">, userId: string, invite: AcceptedInvite) {
     const claimed = await tx
       .insert(householdInviteUse)
-      .values({ userId, inviterUserId: inviterId })
-      .onConflictDoNothing()
+      .values({ userId, inviterUserId: invite.inviterId, invitedAt: invite.invitedAt })
+      .onConflictDoUpdate({
+        target: householdInviteUse.userId,
+        set: { inviterUserId: invite.inviterId, invitedAt: invite.invitedAt, usedAt: sql`now()` },
+        setWhere: lt(householdInviteUse.invitedAt, invite.invitedAt),
+      })
       .returning({ userId: householdInviteUse.userId });
     return claimed.length === 1;
+  }
+
+  // Owner connection. Whether households already acted on this invite or a newer one.
+  async function inviteUsed(userId: string, invite: AcceptedInvite) {
+    const [used] = await db
+      .select({ userId: householdInviteUse.userId })
+      .from(householdInviteUse)
+      .where(and(eq(householdInviteUse.userId, userId), gte(householdInviteUse.invitedAt, invite.invitedAt)));
+    return Boolean(used);
   }
 
   return {
@@ -198,28 +219,25 @@ export function createHouseholds({ db }: HouseholdsOptions) {
     },
 
     /**
-     * Moves the user into the household of the person who invited them. `inviterId` must come
-     * from auth's invite record, never from request input. Acts on an invite only once, so a
-     * user who later leaves is not put back. A user whose own household has no other members
-     * switches (their empty household is deleted); one whose household has other members keeps
-     * it, and the invite stays open until they leave. Does nothing if the inviter has no
-     * household yet. Returns the user's membership afterwards.
+     * Moves the user into the household of the person who invited them most recently. `invite`
+     * must come from auth's invite record, never from request input. Acts on each invite only
+     * once, so a user who later leaves is not put back by the same invite; a newer invite is
+     * acted on again. A user whose own household has no other members switches (their empty
+     * household is deleted); one whose household has other members keeps it, and the invite
+     * stays open until they leave. Does nothing if the inviter has no household yet. Returns
+     * the user's membership afterwards.
      */
-    async joinInvitersHousehold(userId: string, inviterId: string | null): Promise<JoinResult> {
+    async joinInvitersHousehold(userId: string, invite: AcceptedInvite | null): Promise<JoinResult> {
       const own = await findMembership(userId);
       const unchanged = { membership: own, keptOwnHousehold: false };
-      if (!inviterId || inviterId === userId) return unchanged;
-      const inviters = await findMembership(inviterId);
+      if (!invite || invite.inviterId === userId) return unchanged;
+      const inviters = await findMembership(invite.inviterId);
       if (!inviters) return unchanged;
       if (own?.householdId === inviters.householdId) {
-        await claimInvite(db, userId, inviterId);
+        await claimInvite(db, userId, invite);
         return unchanged;
       }
-      const [used] = await db
-        .select({ userId: householdInviteUse.userId })
-        .from(householdInviteUse)
-        .where(eq(householdInviteUse.userId, userId));
-      if (used) return unchanged;
+      if (await inviteUsed(userId, invite)) return unchanged;
 
       // Owner connection: crosses households, checked above and again under the lock below.
       const kept = await db.transaction(async (tx) => {
@@ -233,11 +251,11 @@ export function createHouseholds({ db }: HouseholdsOptions) {
           // no accounts or bookings.
           if (members.value > 1) return true;
         }
-        if (!(await claimInvite(tx, userId, inviterId))) return false;
+        if (!(await claimInvite(tx, userId, invite))) return false;
         if (own) await tx.delete(household).where(eq(household.id, own.householdId));
         await tx
           .insert(householdMember)
-          .values({ householdId: inviters.householdId, userId, invitedByUserId: inviterId })
+          .values({ householdId: inviters.householdId, userId, invitedByUserId: invite.inviterId })
           .onConflictDoNothing();
         return false;
       });

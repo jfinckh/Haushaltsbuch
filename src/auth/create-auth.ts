@@ -72,6 +72,29 @@ export async function findUserNames(auth: BetterAuthInstance, ids: readonly stri
   return new Map(users.map((user) => [user.id, user.name]));
 }
 
+export type Inviter = {
+  id: string;
+  name: string;
+  /** When the user accepted this inviter's invite. Tells a newer invite from an older one. */
+  invitedAt: Date;
+};
+
+/** Who invited `userId` most recently, or null. */
+export async function findInviter(auth: BetterAuthInstance, userId: string): Promise<Inviter | null> {
+  const { adapter } = await auth.$context;
+  const user = await adapter.findOne<{ invitedById: string | null; invitedAt: Date | null }>({
+    model: "user",
+    where: [{ field: "id", value: userId }],
+  });
+  if (!user?.invitedById) return null;
+  const inviter = await adapter.findOne<{ id: string; name: string }>({
+    model: "user",
+    where: [{ field: "id", value: user.invitedById }],
+  });
+  if (!inviter) return null;
+  return { id: inviter.id, name: inviter.name, invitedAt: new Date(user.invitedAt ?? 0) };
+}
+
 /** The auth instance for a Next.js app: route handler plus session helpers for server code. */
 export function createAuth(options: AuthOptions) {
   const auth = buildBetterAuth(options);
@@ -93,20 +116,8 @@ export function createAuth(options: AuthOptions) {
       if (!session) redirect(redirectTo);
       return session;
     },
-    /** Who invited `userId`, or null. */
-    async getInviter(userId: string): Promise<{ id: string; name: string } | null> {
-      const { adapter } = await auth.$context;
-      const user = await adapter.findOne<{ invitedById: string | null }>({
-        model: "user",
-        where: [{ field: "id", value: userId }],
-      });
-      if (!user?.invitedById) return null;
-      const inviter = await adapter.findOne<{ id: string; name: string }>({
-        model: "user",
-        where: [{ field: "id", value: user.invitedById }],
-      });
-      return inviter ? { id: inviter.id, name: inviter.name } : null;
-    },
+    /** Who invited `userId` most recently and when they accepted, or null. */
+    getInviter: (userId: string) => findInviter(auth, userId),
     /**
      * Display names of the given users (id → name). Server only: callers decide whose names
      * a user may see and pass only those ids.

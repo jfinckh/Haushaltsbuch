@@ -36,6 +36,13 @@
       "when": 1792508588458,
       "tag": "0004_household_invite_use_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792510171112,
+      "tag": "0005_household_invite_use_invited_at",
+      "breakpoints": true
     }
   ]
 }
