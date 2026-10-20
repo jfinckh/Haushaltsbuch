@@ -1,0 +1,345 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:auth",
+      "itemHash": "sha256:a0a827fd8709c0b2e0492232a23505e14846f8c0bddcc01c477f920df64ed3d5",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T13:50:50Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "unit-new:db",
+      "itemHash": "sha256:2f8fb6661b2895c588778a067fc71df52ff5953545f9946bb0d6f2f9281e3706",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T13:50:50Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->auth",
+      "itemHash": "sha256:2cbd4ad87a0e077df74fed6242b7096558bfb2ced56f010ee9acddaf1c580697",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T13:50:50Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->db",
+      "itemHash": "sha256:b01dd29f17f8b004b3a5961c509591f35094583e293913d9dd0404895bd40ff2",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T13:50:50Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "unit-new:auth",
+      "itemHash": "sha256:a0a827fd8709c0b2e0492232a23505e14846f8c0bddcc01c477f920df64ed3d5",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "unit-new:db",
+      "itemHash": "sha256:2f8fb6661b2895c588778a067fc71df52ff5953545f9946bb0d6f2f9281e3706",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->auth",
+      "itemHash": "sha256:2cbd4ad87a0e077df74fed6242b7096558bfb2ced56f010ee9acddaf1c580697",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->db",
+      "itemHash": "sha256:b01dd29f17f8b004b3a5961c509591f35094583e293913d9dd0404895bd40ff2",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:auth_user",
+      "itemHash": "sha256:2d6723537a760a5911fb21b6ec307d865a9540f78cc11052467751feed8a0726",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:auth_session",
+      "itemHash": "sha256:47fe5c889a9eb6a3f1babec4265437c79b1ec83371a659ae89f7ab4964513612",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:auth_account",
+      "itemHash": "sha256:034bd7db6aaff57e2b3a6300cbfedcceda7e7e404d74a9454df3c82693e0f02b",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:auth_verification",
+      "itemHash": "sha256:4140c6b589deb33ba014819cf6ff88a1295a21d82302c4e802419045ecd0e79e",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:46Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:auth_invite",
+      "itemHash": "sha256:54601846dcd1b4f519f6e66970e64cd8a23c290944bed43b69260426869310d2",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:SignInForm",
+      "itemHash": "sha256:e53082b44f4745cd1980b3db325a38593f56210613e27c78634016d430c381ca",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:SignUpForm",
+      "itemHash": "sha256:7cecfcd68f0df184144847d86eb9b26ad6b00c215f60b4d3ce7dda02ffd4dd4e",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:SignOutButton",
+      "itemHash": "sha256:0c58445e273a0833cbbfbc18eb46bedc72b8e3b9ff7e2214a72c353d3566481b",
+      "decision": "approve",
+      "at": "2026-10-20T13:59:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:InviteShareButton",
+      "itemHash": "sha256:d492d609cd5373720542ddb1bebcb132137a96ae5321056dc6cbf8165681f591",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:06Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:InviteAcceptance",
+      "itemHash": "sha256:643345a8f2316c7d055fa196054a2ce7e268f240c6364dccd1923295cacf4d03",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:06Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:useSession",
+      "itemHash": "sha256:cf2be12be72a5a78ad2ca0789eb7fa709f6e6442efe1bb530d407710390489c1",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:06Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:signInSchema",
+      "itemHash": "sha256:24da13f08773a31dbef498508213543960f4210577feb9883d5c1bd475c0eba6",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:06Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:signUpSchema",
+      "itemHash": "sha256:434221728b4198d0951947410d0452629786ea3f1a5f169a90d1f5c8a9ab6d20",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:SessionUser",
+      "itemHash": "sha256:49968120be3a1251ceb1196ca562b54ee4d09352da6c4d23685191695f514abc",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:server:createAuth",
+      "itemHash": "sha256:a95c23c7aa1144f547af4cb95394d76ded661f48115281898e0e80ecddbffa39",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:server:authTables",
+      "itemHash": "sha256:4156e8316abe1cb729926fd8dd1a87b75d390f462ddce2c03156c13d0b000eb0",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:server:Auth",
+      "itemHash": "sha256:249f1eda458ec7b3f2411b52bd3344edec6329fea16954a4a43271e9a0cb586e",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:23Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:server:AuthOptions",
+      "itemHash": "sha256:6620ae49b30b7f4b28d0ff9593caadb660b1935f1a30aebe30900aea99a76017",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:23Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db:server:db",
+      "itemHash": "sha256:42055052464cb661491a40b49ab3509aae6c1f1b15f20d48ccc3a91aa2273f89",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:23Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db:server:Database",
+      "itemHash": "sha256:e67481150b718be32c107a0cf6198eaab90ec000493d1c899c3e23e01517a452",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:23Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:better-auth",
+      "itemHash": "sha256:67d8b148e374864db79c9e926c8de7323f0e5755f7f2489c6b50a963a2688622",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:drizzle-orm",
+      "itemHash": "sha256:e25e9b0f85570661cd0c681e2febc897252f8c5262be6ca0e87d44b60d1856d9",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:pg",
+      "itemHash": "sha256:b60ccd027e172135705cee338f3ac77de79fb79dc46284659f56c7d930799e95",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:zod",
+      "itemHash": "sha256:2797da9ebe4b285450441a3575a5088893182f89ed9a87ebb10a65120b96ea89",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:server-only",
+      "itemHash": "sha256:4445f81b732d00139ee4cebe92f37fb3613c47937d065a8d3ebebd3d3b8182aa",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:daisyui",
+      "itemHash": "sha256:6ff09a0e35e47d9da909e83a7bfb2d68f29636a9b7e01b8c434a6ece9bb4385a",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:drizzle-kit",
+      "itemHash": "sha256:425b3ebf6cea3ab9c62e9dc8dcb6681e7cdc0b67821b877927cbc4f596787df7",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:@types/pg",
+      "itemHash": "sha256:279373dd8c719e6d7eb4d5506ad664ba81f6c8dce3b85db56341ae3050e9330f",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:vitest",
+      "itemHash": "sha256:f70949983900e0f4a643dc6f6cb511f5d2536aa13fae9f754e6edbd6a77be7a5",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:53Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "package-new:@electric-sql/pglite",
+      "itemHash": "sha256:c8a5e72e1a58a6c0886d16a74caf83742e6c58b57015488ab14154e0b44bc26b",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:53Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:DATABASE_URL",
+      "itemHash": "sha256:9615da4f1de3d9fa052e1644c927d70866a68ab10f8dda2bf0b3b504b0ead1d8",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:53Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:BETTER_AUTH_SECRET",
+      "itemHash": "sha256:2e2945f7fa6456bee9c361cc9a08b5dd2ffb47bad3d0b14dc0d5865bfaba8ab1",
+      "decision": "approve",
+      "at": "2026-10-20T14:00:53Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:BETTER_AUTH_URL",
+      "itemHash": "sha256:f80b87cf65dd960ead92989ed2b9ad9ec55cfa74fe201a4547d101fd7d02bcd2",
+      "decision": "approve",
+      "at": "2026-10-20T14:01:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth:sign-up",
+      "itemHash": "sha256:ce6e6b564ef7183a4c091a4017fd898ed66c225db58953b7cc6928fe3a6acaf2",
+      "decision": "approve",
+      "at": "2026-10-20T14:01:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth:invite-create",
+      "itemHash": "sha256:3503f681f62dcb9e54900a90ce7dbaf43ffb44baff18997d5917b479564ce7eb",
+      "decision": "approve",
+      "at": "2026-10-20T14:01:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:authUser",
+      "itemHash": "sha256:44c70794af5e5dbac96a03caf5f6b607280237baa8ab56935d9b8db8ce0bf229",
+      "decision": "approve",
+      "at": "2026-10-20T14:12:28Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:authSession",
+      "itemHash": "sha256:1950e5ea21a820f5a6c6c5e4461f2db8b17238455a410865b9e9446c078dbb51",
+      "decision": "approve",
+      "at": "2026-10-20T14:12:28Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:authAccount",
+      "itemHash": "sha256:f7306eff37ee6df97749363ba522d385597d084f34d7b1b2effe8c215d1f28c0",
+      "decision": "approve",
+      "at": "2026-10-20T14:12:28Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:authVerification",
+      "itemHash": "sha256:1cc8417d04fbbe9de2dd0666d3c3b82c791f14d9ccb981554ee894b3025e9dd8",
+      "decision": "approve",
+      "at": "2026-10-20T14:12:28Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:authInvite",
+      "itemHash": "sha256:16e3366720d932926fcbd64f06c838dbdbdf5d3f8e17293b1d7a4f37011296f2",
+      "decision": "approve",
+      "at": "2026-10-20T14:12:34Z",
+      "source": "hook"
+    }
+  ]
+}

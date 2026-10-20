@@ -3,9 +3,11 @@
   "root": "src",
   "libraries": ["shared"],
   "modules": {
-    "app": ["example", "shared"],
+    "app": ["auth", "db", "example", "shared"],
     "example": ["shared"],
-    "shared": []
+    "shared": [],
+    "db": [],
+    "auth": []
   },
   "features": {}
 }

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "slug": "auth-module",
+  "description": "Auth module",
+  "plan": {
+    "path": "docs/plans/2026-10-20-auth-module.md",
+    "sha256": "80042ec9e7c0f494032833259a8d0b48a06984a07a7c227963b67b8b9064554a"
+  },
+  "status": "final",
+  "base": "c5bdd91dbfbb58cbff04811935c06b81fa84a061"
+}

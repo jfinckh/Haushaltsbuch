@@ -1,0 +1,635 @@
+{
+  "version": 1,
+  "base": "c5bdd91dbfbb58cbff04811935c06b81fa84a061",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "package.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "package-lock.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docker-compose.yml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".env.example",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".gitignore",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0000_auth.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0000_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "test/server-only-stub.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "README.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/validation.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/client.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/plugin.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/plugin.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/client.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/token.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/token.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/sign-in-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/sign-up-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/sign-out-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/invite-share-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/invite-acceptance.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/auth/[...all]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/sign-in/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/sign-up/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/invite/[token]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/layout.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/globals.css",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "vitest.config.mts",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/field-errors.ts",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/client.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": ".claude/launch.json",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "unit",
+      "id": "auth",
+      "status": "convergence"
+    },
+    {
+      "kind": "unit",
+      "id": "db",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence"
+    },
+    {
+      "kind": "resource",
+      "id": "authUser",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "resource",
+      "id": "authSession",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "resource",
+      "id": "authAccount",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    },
+    {
+      "kind": "resource",
+      "id": "authVerification",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "resource",
+      "id": "authInvite",
+      "status": "convergence",
+      "viaAmendment": "A10"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:SignInForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:SignUpForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:SignOutButton",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:InviteShareButton",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:InviteAcceptance",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:useSession",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:signInSchema",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:signUpSchema",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:SessionUser",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:server:createAuth",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:server:authTables",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:server:Auth",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:server:AuthOptions",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "db:server:db",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "db:server:Database",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "better-auth",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "drizzle-orm",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "pg",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "zod",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "server-only",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "daisyui",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "drizzle-kit",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "@types/pg",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "vitest",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "@electric-sql/pglite",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "DATABASE_URL",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "BETTER_AUTH_SECRET",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "BETTER_AUTH_URL",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "auth",
+      "state": "new"
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:auth",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "unit-new:db",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->auth",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->db",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:authUser",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:authSession",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:authAccount",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:authVerification",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:authInvite",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:SignInForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:SignUpForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:SignOutButton",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:InviteShareButton",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:InviteAcceptance",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:useSession",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:signInSchema",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:signUpSchema",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:SessionUser",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:server:createAuth",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:server:authTables",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:server:Auth",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:server:AuthOptions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db:server:db",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db:server:Database",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:better-auth",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:drizzle-orm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:pg",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:zod",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:server-only",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:daisyui",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:drizzle-kit",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:@types/pg",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:vitest",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "package-new:@electric-sql/pglite",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:DATABASE_URL",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:BETTER_AUTH_SECRET",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:BETTER_AUTH_URL",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:auth:sign-up",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:auth:invite-create",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

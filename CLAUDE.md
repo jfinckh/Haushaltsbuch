@@ -15,7 +15,8 @@ Household budget app for two people (me and my partner), built so more household
 - Next.js (App Router, `src/` directory), TypeScript strict, API routes as the backend
 - Postgres via Docker Compose locally, Drizzle for schema and migrations
 - Zod for every input crossing an API boundary; shared schemas between forms and routes
-- Better Auth for authentication (sign-up by invite link only)
+- Better Auth for authentication: open sign-up with email and password; invite links record who invited whom
+- daisyUI (Tailwind 4) for UI components
 - Vitest for unit and integration tests
 - Mobile later as a PWA; deployment later (likely Hetzner)
 
@@ -26,7 +27,8 @@ Architecture boundaries are enforced by change-map and eslint-plugin-boundaries.
 ```
 src/app/            routing only (pages, API routes); thin, calls part entry points
 src/shared/         helpers, money (cents, German number format), UI basics
-src/auth/           login, sessions, invite links           → shared
+src/db/             Postgres connection (server only)        → nothing
+src/auth/           login, sessions, invite links, auth UI   → nothing (db is injected via createAuth)
 src/households/     households, members, account visibility  → shared, auth
 src/accounts/       accounts, role (everyday/savings)        → shared, households
 src/transactions/   bookings, categories, rules              → shared, accounts
@@ -55,4 +57,4 @@ src/insights/       dashboard figures, combined view         → transactions, b
 
 ## Language
 
-Code, identifiers and comments in English. UI text in German.
+Code, identifiers and comments in English. UI text and routes in English for now.
