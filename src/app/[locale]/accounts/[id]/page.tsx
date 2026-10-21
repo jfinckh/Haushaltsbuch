@@ -68,9 +68,16 @@ async function AccountBookings({ params, searchParams }: Props) {
           {t("edit")}
         </Link>
       </div>
-      <Link href={`/transactions/new?accountId=${account.id}`} className="btn btn-primary">
-        {t("addBooking")}
-      </Link>
+      <div className="flex gap-2">
+        <Link href={`/transactions/new?accountId=${account.id}`} className="btn btn-primary flex-1">
+          {t("addBooking")}
+        </Link>
+        {account.bank !== "cash" && (
+          <Link href={`/imports?accountId=${account.id}`} className="btn btn-outline flex-1">
+            {t("importCsv")}
+          </Link>
+        )}
+      </div>
       <div className="divider my-0" />
       <TransactionFilters values={filters} />
       {listed.ok ? (

@@ -33,7 +33,7 @@ src/households/     households, members, account visibility  → nothing (db is 
 src/accounts/       accounts, role (everyday/savings)        → shared, households
 src/transactions/   bookings, categories, rules              → shared (account access via accounts' SQL function accounts_visible_account_ids)
 src/transfers/      transfer matching, manual linking        → transactions
-src/import/         ING and Trade Republic parsers, dedup    → transactions, transfers, accounts
+src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank and sets the opening balance)
 src/budgets/        budgets per account                      → transactions
 src/insights/       dashboard figures, combined view         → transactions, budgets, accounts
 ```

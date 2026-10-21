@@ -12,7 +12,8 @@
     "invitePartner": "Invite your partner",
     "shareText": "Join our Haushaltsbuch:",
     "leaveNoteLastMember": "Its shared accounts are deleted with it. Your private accounts stay with you.",
-    "leaveNoteOthers": "Your private accounts stay with you. Shared accounts stay with the household."
+    "leaveNoteOthers": "Your private accounts stay with you. Shared accounts stay with the household.",
+    "importCsv": "Import CSV"
   },
   "members": {
     "you": "You",
@@ -27,12 +28,18 @@
     "edit": "Edit account",
     "balance": "Balance",
     "addBooking": "Add booking",
-    "invalidFilter": "These filters are not valid. Showing nothing."
+    "invalidFilter": "These filters are not valid. Showing nothing.",
+    "importCsv": "Import CSV"
   },
   "transactions": {
     "addTitle": "Add booking",
     "editTitle": "Edit booking",
     "back": "Back",
     "noAccounts": "Add an account first."
+  },
+  "imports": {
+    "title": "Import CSV",
+    "back": "Back",
+    "past": "Past imports"
   }
 }

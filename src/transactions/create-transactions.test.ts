@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Caller } from "@/shared/rls";
+import { withSession, type Caller } from "@/shared/rls";
 import { createTransactions, type TransactionView } from "./create-transactions";
+import type { TransactionValues } from "./validation";
 import { transaction } from "./schema";
 import { createTestDatabase } from "./test-utils";
 
@@ -225,5 +226,60 @@ describe("balances", () => {
     expect(await transactions.balances(max)).toEqual({ "max-private": 4650, "home-shared": -2000 });
     expect(await transactions.balances(erika)).toEqual({ "home-shared": -2000 });
     expect(await transactions.balances(dora)).toEqual({ "dora-shared": -100 });
+  });
+});
+
+describe("bookings written inside another part's database transaction", () => {
+  const values = (overrides: Partial<TransactionValues> = {}): TransactionValues => ({
+    accountId: "max-private",
+    bookingDate: "2026-10-08",
+    amountCents: -350,
+    kind: "expense",
+    category: null,
+    counterparty: "Bäckerei",
+    counterpartyIban: IBAN,
+    reference: "Brötchen",
+    ...overrides,
+  });
+
+  it("inserts bookings created by the session's user, encrypted", async () => {
+    const ids = await withSession(setup.db, max, (tx, userId) =>
+      transactions.insertBookings(tx, userId, [values(), values({ amountCents: 5000, kind: "income" })]),
+    );
+    expect(ids).toHaveLength(2);
+    const listed = await list(max, { accountId: "max-private", month: "2026-10" });
+    expect(listed.map((t) => [t.amountCents, t.counterparty, t.createdByMe]).sort()).toEqual([
+      [-350, "Bäckerei", true],
+      [5000, "Bäckerei", true],
+    ]);
+    const row = await storedRow(ids[0]);
+    expect(JSON.stringify(row)).not.toContain("Bäckerei");
+    expect(row.counterpartyIbanIndex).toBeTruthy();
+  });
+
+  it("refuses invalid values", async () => {
+    await expect(
+      withSession(setup.db, max, (tx, userId) => transactions.insertBookings(tx, userId, [values({ amountCents: 0 })])),
+    ).rejects.toThrow();
+  });
+
+  it("cannot insert into another member's private account", async () => {
+    await expect(
+      withSession(setup.db, erika, (tx, userId) => transactions.insertBookings(tx, userId, [values()])),
+    ).rejects.toThrow();
+    expect(await list(max, { accountId: "max-private", month: "2026-10" })).toEqual([]);
+  });
+
+  it("deletes only visible bookings among the ids", async () => {
+    const own = await create(max);
+    const shared = await create(max, { accountId: "home-shared" });
+    const deleted = await withSession(setup.db, erika, (tx) => transactions.deleteBookings(tx, [own.id, shared.id]));
+    expect(deleted).toBe(1);
+    expect(await storedRow(own.id)).toBeDefined();
+    expect(await storedRow(shared.id)).toBeUndefined();
+  });
+
+  it("deletes nothing for an empty list", async () => {
+    expect(await withSession(setup.db, max, (tx) => transactions.deleteBookings(tx, []))).toBe(0);
   });
 });

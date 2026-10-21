@@ -255,6 +255,7 @@ Zum Prüfen von Duplikaten: dieselbe Datei zweimal importieren (0 neu) oder eine
 ## Offene Fragen
 
 - [ ] Reichen gemeinsame Konten, oder brauchen wir „wer schuldet wem“ für privat ausgelegte Ausgaben?
-- [ ] Welche ING-Konten importieren wir: nur Giro oder auch Extra-Konto und Depot?
+- [x] Welche ING-Konten importieren wir: nur Giro oder auch Extra-Konto und Depot? → Nur Girokonto und Gemeinschaftskonto (gleicher Parser). Extra-Konto und Depot vorerst nicht.
 - [ ] Deployment auf Hetzner: Setup, Domain, Backups (später, zunächst lokal).
-- [ ] Von welchem eigenen Konto kommen die +500 €? In der App anlegen oder als extern markieren? Importiert Erika ihr Privatkonto auch (welche Bank)?
+- [x] Von welchem eigenen Konto kommen die +500 €? In der App anlegen oder als extern markieren? → Vom eigenen ING Extra-Konto. Es kommt vorerst nicht in die App; die Buchung zählt später als Umbuchung von „Externes eigenes Konto“.
+- [ ] Importiert Erika ihr Privatkonto auch (welche Bank)?

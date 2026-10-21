@@ -1,0 +1,423 @@
+{
+  "version": 1,
+  "base": "8905197aeaff0d94bc4012233077d4bc664c59e1",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0013_import.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0014_import_rls.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0013_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0014_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/decode.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/csv.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/detect.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/ing.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/trade-republic.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/types.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/decode.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/csv.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/ing.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/trade-republic.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/detect.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/fingerprint.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-upload.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/preview/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/imports/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/i18n/messages.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/parsing/fields.ts",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "unit",
+      "id": "import",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "import->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "import->transactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->import",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "importBatch",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "resource",
+      "id": "importRow",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "export",
+      "id": "import:client:ImportUpload",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "import:client:ImportList",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "import:client:importMessages",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "import:server:createImports",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "import:server:Imports",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:TransactionValues",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "import",
+      "state": "new"
+    },
+    {
+      "from": "import",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "import",
+      "to": "transactions",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:import",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:import->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:import->transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->import",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:importBatch",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:importRow",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:import:manage",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-add:import:client:ImportUpload",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:import:client:ImportList",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:import:client:importMessages",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:import:server:createImports",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:import:server:Imports",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:server:TransactionValues",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

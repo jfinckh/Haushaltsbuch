@@ -2,3 +2,4 @@
 import "server-only";
 
 export { createTransactions, type Transactions } from "./create-transactions";
+export type { TransactionValues } from "./validation";

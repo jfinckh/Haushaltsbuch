@@ -12,7 +12,8 @@
     "invitePartner": "Lade deine Partnerin oder deinen Partner ein",
     "shareText": "Komm in unser Haushaltsbuch:",
     "leaveNoteLastMember": "Seine gemeinsamen Konten werden mit gelöscht. Deine privaten Konten bleiben bei dir.",
-    "leaveNoteOthers": "Deine privaten Konten bleiben bei dir. Gemeinsame Konten bleiben im Haushalt."
+    "leaveNoteOthers": "Deine privaten Konten bleiben bei dir. Gemeinsame Konten bleiben im Haushalt.",
+    "importCsv": "CSV importieren"
   },
   "members": {
     "you": "Du",
@@ -27,12 +28,18 @@
     "edit": "Konto bearbeiten",
     "balance": "Kontostand",
     "addBooking": "Buchung hinzufügen",
-    "invalidFilter": "Diese Filter sind ungültig. Es wird nichts angezeigt."
+    "invalidFilter": "Diese Filter sind ungültig. Es wird nichts angezeigt.",
+    "importCsv": "CSV importieren"
   },
   "transactions": {
     "addTitle": "Buchung hinzufügen",
     "editTitle": "Buchung bearbeiten",
     "back": "Zurück",
     "noAccounts": "Lege zuerst ein Konto an."
+  },
+  "imports": {
+    "title": "CSV importieren",
+    "back": "Zurück",
+    "past": "Bisherige Importe"
   }
 }

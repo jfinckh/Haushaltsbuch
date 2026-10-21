@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:import",
+      "itemHash": "sha256:c66d94fc33d1e40afa120158a4b317a65157ba9493ef3410567588c31eeb6251",
+      "decision": "approve",
+      "at": "2026-10-21T11:20:43Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:import->shared",
+      "itemHash": "sha256:a40140d581150eee2743f13e160a6874958ab9e6dbc714bdbe81858cae7c4cd6",
+      "decision": "approve",
+      "at": "2026-10-21T11:20:43Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:import->transactions",
+      "itemHash": "sha256:bd8d0e8bf06be5b08a7853a1bcf2cb07a0066c95eac501b8dd01fbf03a11a2db",
+      "decision": "approve",
+      "at": "2026-10-21T11:20:43Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->import",
+      "itemHash": "sha256:83e30e4a1da14987f2365607f1f84902ce27f36ee5c220ef1f8419f91225696f",
+      "decision": "approve",
+      "at": "2026-10-21T11:20:43Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:import",
+      "itemHash": "sha256:5704a0f0f75245b8856404c20781f6727f8749543f04487d35b79bd0b27db5ed",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:02Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:import_row",
+      "itemHash": "sha256:3755efb9d0496c8ad9417787f514fbad1e2295d37289dd0e7d7a44f0714c6991",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:02Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:import:manage",
+      "itemHash": "sha256:2b82d412cf648cb84410b39ffa16ba901d55c1eeed007baac1e588e9171ffa38",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:02Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:import:client:ImportUpload",
+      "itemHash": "sha256:62efccab37e282f7477eaae28417d57f004110ae378d0caf9bf5a9bcadbb9338",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:02Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:import:client:ImportList",
+      "itemHash": "sha256:b376fda258a9a9c855234cefe0b3397d295c3b4756ea31d0f54a063e427021c8",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:import:client:importMessages",
+      "itemHash": "sha256:f56943d9ffecc72d226ddf3069df9910502c3c6ed80231155398037a95d2e011",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:import:server:createImports",
+      "itemHash": "sha256:bf6269b23b420c929458e8e1695fb9257f646b3ac55b6a5fe7f9cd31ba37cec1",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:import:server:Imports",
+      "itemHash": "sha256:bce75425c8e5efda053b7544cc18430d565541a05dfac2247f14fc54d93fa879",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:34Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:TransactionValues",
+      "itemHash": "sha256:beef300da4ed04860ec7c3cfb798d29a74f7e62ea1c140fa2612d3029fb18042",
+      "decision": "approve",
+      "at": "2026-10-21T11:30:40Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:importBatch",
+      "itemHash": "sha256:868307a391172d67b5c3e27de08b9a6ead66f954e79d772cc3942f2b76bb1109",
+      "decision": "approve",
+      "at": "2026-10-21T13:59:29Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:importRow",
+      "itemHash": "sha256:4e3e05e211004d357a0934d7e31876ff819347e58b5cf69b38aa4730974973a0",
+      "decision": "approve",
+      "at": "2026-10-21T13:59:29Z",
+      "source": "hook"
+    }
+  ]
+}

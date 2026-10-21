@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, like, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, like, lte, or, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
@@ -221,6 +221,32 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
           .returning({ id: transaction.id });
         return deleted.length > 0;
       });
+    },
+
+    /**
+     * Adds bookings inside a database transaction another part opened with withSession (the import
+     * writes bookings and its fingerprints together). Each booking is checked; invalid values throw.
+     * Row-level security applies: only visible accounts, created by `userId` (the session's user).
+     */
+    async insertBookings(tx: RlsTransaction, userId: string, values: TransactionValues[]): Promise<string[]> {
+      if (values.length === 0) return [];
+      const rows = values.map((value) => ({
+        ...toColumns(transactionValuesSchema.parse(value)),
+        id: crypto.randomUUID(),
+        createdByUserId: userId,
+      }));
+      const inserted = await tx.insert(transaction).values(rows).returning({ id: transaction.id });
+      return inserted.map((row) => row.id);
+    },
+
+    /** Deletes the visible bookings among `ids` inside a given database transaction; returns how many. */
+    async deleteBookings(tx: RlsTransaction, ids: string[]): Promise<number> {
+      if (ids.length === 0) return 0;
+      const deleted = await tx
+        .delete(transaction)
+        .where(and(inArray(transaction.id, ids), visible))
+        .returning({ id: transaction.id });
+      return deleted.length;
     },
 
     /** Sum of the bookings per visible account that has any (cents). The app adds the opening balance. */

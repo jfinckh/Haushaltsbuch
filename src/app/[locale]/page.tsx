@@ -76,9 +76,14 @@ async function Welcome() {
         <div className="divider my-0" />
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-semibold">{t("home.accounts")}</h2>
-          <Link href="/accounts/new" className="btn btn-primary btn-sm">
-            {t("home.addAccount")}
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/imports" className="btn btn-ghost btn-sm">
+              {t("home.importCsv")}
+            </Link>
+            <Link href="/accounts/new" className="btn btn-primary btn-sm">
+              {t("home.addAccount")}
+            </Link>
+          </div>
         </div>
         <AccountList accounts={visibleAccounts} balances={balances} />
         <div className="divider my-0" />

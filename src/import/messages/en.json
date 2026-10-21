@@ -1,0 +1,58 @@
+{
+  "banks": {
+    "ing": "ING",
+    "trade_republic": "Trade Republic"
+  },
+  "kinds": {
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer",
+    "saving": "Saving"
+  },
+  "upload": {
+    "account": "Target account",
+    "noAccounts": "Create an account first.",
+    "file": "CSV file",
+    "fileHint": "Export from ING online banking or the Trade Republic app. The bank is detected.",
+    "preview": "Show preview",
+    "confirm": "Import",
+    "cancel": "Cancel",
+    "summary": "{rows, plural, one {# row} other {# rows}}: {new} new, {duplicate} already there",
+    "skipped": "{count, plural, one {# row} other {# rows}} without an amount skipped",
+    "period": "{bank}, {from} to {to}",
+    "openingBalance": "The account has no bookings yet. Its opening balance will be set to {opening} € so that its balance matches the file's balance ({closing} €).",
+    "nothingNew": "All bookings in this file are already there.",
+    "date": "Date",
+    "text": "Counterparty / reference",
+    "kind": "Type",
+    "amount": "Amount",
+    "status": "Status",
+    "new": "New",
+    "duplicate": "Already there",
+    "done": "Import finished: {count, plural, one {# new booking} other {# new bookings}}."
+  },
+  "errors": {
+    "invalid-input": "Choose an account and a file.",
+    "not-found": "This account does not exist or you may not see it.",
+    "too-large": "The file is too large (at most 1 MB).",
+    "empty": "The file is empty.",
+    "unknown-format": "This file is not a known export from ING or Trade Republic.",
+    "invalid-row": "The file has a row that cannot be read (line {line}).",
+    "unsupported-currency": "The file has a booking in a currency other than euro (line {line}).",
+    "wrong-bank": "This file does not fit the bank of the chosen account.",
+    "failed": "That did not work. Please try again."
+  },
+  "list": {
+    "title": "Past imports",
+    "empty": "No imports yet.",
+    "counts": "{new} new, {duplicate} already there",
+    "remaining": "{count} still there",
+    "byOther": "by another member",
+    "undo": "Undo",
+    "undoTitle": "Undo this import?",
+    "undoText": "{count, plural, =0 {No bookings from this import are left.} one {# booking from this import will be deleted.} other {# bookings from this import will be deleted.}} The file can be imported again afterwards.",
+    "undoFailed": "That did not work. Please try again.",
+    "cancel": "Cancel",
+    "close": "Close"
+  }
+}

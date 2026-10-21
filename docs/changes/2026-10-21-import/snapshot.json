@@ -1,0 +1,1488 @@
+{
+  "version": 1,
+  "ref": {
+    "kind": "working-tree"
+  },
+  "adapter": "nextjs-eslint",
+  "units": [
+    {
+      "id": ".",
+      "parent": null,
+      "path": ".",
+      "hasRules": false
+    },
+    {
+      "id": "accounts",
+      "parent": ".",
+      "path": "src/accounts",
+      "hasRules": true
+    },
+    {
+      "id": "app",
+      "parent": ".",
+      "path": "src/app",
+      "hasRules": true
+    },
+    {
+      "id": "auth",
+      "parent": ".",
+      "path": "src/auth",
+      "hasRules": true
+    },
+    {
+      "id": "db",
+      "parent": ".",
+      "path": "src/db",
+      "hasRules": true
+    },
+    {
+      "id": "households",
+      "parent": ".",
+      "path": "src/households",
+      "hasRules": true
+    },
+    {
+      "id": "import",
+      "parent": ".",
+      "path": "src/import",
+      "hasRules": true
+    },
+    {
+      "id": "shared",
+      "parent": ".",
+      "path": "src/shared",
+      "hasRules": true
+    },
+    {
+      "id": "transactions",
+      "parent": ".",
+      "path": "src/transactions",
+      "hasRules": true
+    }
+  ],
+  "rules": {
+    "allowedEdges": [
+      {
+        "from": "accounts",
+        "to": "shared"
+      },
+      {
+        "from": "app",
+        "to": "accounts"
+      },
+      {
+        "from": "app",
+        "to": "auth"
+      },
+      {
+        "from": "app",
+        "to": "db"
+      },
+      {
+        "from": "app",
+        "to": "households"
+      },
+      {
+        "from": "app",
+        "to": "import"
+      },
+      {
+        "from": "app",
+        "to": "shared"
+      },
+      {
+        "from": "app",
+        "to": "transactions"
+      },
+      {
+        "from": "households",
+        "to": "shared"
+      },
+      {
+        "from": "import",
+        "to": "shared"
+      },
+      {
+        "from": "import",
+        "to": "transactions"
+      },
+      {
+        "from": "transactions",
+        "to": "shared"
+      }
+    ],
+    "entryPoints": [
+      {
+        "unit": "accounts",
+        "file": "src/accounts/index.ts",
+        "side": "client"
+      },
+      {
+        "unit": "accounts",
+        "file": "src/accounts/server.ts",
+        "side": "server"
+      },
+      {
+        "unit": "auth",
+        "file": "src/auth/index.ts",
+        "side": "client"
+      },
+      {
+        "unit": "auth",
+        "file": "src/auth/server.ts",
+        "side": "server"
+      },
+      {
+        "unit": "db",
+        "file": "src/db/index.ts",
+        "side": "client"
+      },
+      {
+        "unit": "db",
+        "file": "src/db/server.ts",
+        "side": "server"
+      },
+      {
+        "unit": "households",
+        "file": "src/households/index.ts",
+        "side": "client"
+      },
+      {
+        "unit": "households",
+        "file": "src/households/server.ts",
+        "side": "server"
+      },
+      {
+        "unit": "import",
+        "file": "src/import/index.ts",
+        "side": "client"
+      },
+      {
+        "unit": "import",
+        "file": "src/import/server.ts",
+        "side": "server"
+      },
+      {
+        "unit": "transactions",
+        "file": "src/transactions/index.ts",
+        "side": "client"
+      },
+      {
+        "unit": "transactions",
+        "file": "src/transactions/server.ts",
+        "side": "server"
+      }
+    ],
+    "resourceOwners": [
+      {
+        "resource": "account",
+        "owner": "accounts"
+      },
+      {
+        "resource": "authAccount",
+        "owner": "auth"
+      },
+      {
+        "resource": "authInvite",
+        "owner": "auth"
+      },
+      {
+        "resource": "authSession",
+        "owner": "auth"
+      },
+      {
+        "resource": "authUser",
+        "owner": "auth"
+      },
+      {
+        "resource": "authVerification",
+        "owner": "auth"
+      },
+      {
+        "resource": "household",
+        "owner": "households"
+      },
+      {
+        "resource": "householdInviteUse",
+        "owner": "households"
+      },
+      {
+        "resource": "householdMember",
+        "owner": "households"
+      },
+      {
+        "resource": "importBatch",
+        "owner": "import"
+      },
+      {
+        "resource": "importRow",
+        "owner": "import"
+      },
+      {
+        "resource": "transaction",
+        "owner": "transactions"
+      }
+    ],
+    "unmapped": []
+  },
+  "edges": [
+    {
+      "from": ".",
+      "to": "app",
+      "imports": [
+        {
+          "fromFile": "src/proxy.ts",
+          "toFile": "src/app/_lib/i18n/routing.ts",
+          "typeOnly": false,
+          "line": 2
+        }
+      ]
+    },
+    {
+      "from": "accounts",
+      "to": "shared",
+      "imports": [
+        {
+          "fromFile": "src/accounts/components/account-form.tsx",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/accounts/components/account-form.tsx",
+          "toFile": "src/shared/use-translate-key.ts",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "fromFile": "src/accounts/components/account-list.tsx",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/accounts/create-accounts.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/accounts/create-accounts.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "fromFile": "src/accounts/create-accounts.ts",
+          "toFile": "src/shared/iban.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/accounts/create-accounts.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/accounts/rls.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/accounts/test-utils.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/accounts/test-utils.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 7
+        },
+        {
+          "fromFile": "src/accounts/test-utils.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 8
+        },
+        {
+          "fromFile": "src/accounts/validation.ts",
+          "toFile": "src/shared/iban.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/accounts/validation.ts",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 2
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "accounts",
+      "imports": [
+        {
+          "fromFile": "src/app/[locale]/accounts/[id]/edit/page.tsx",
+          "toFile": "src/accounts/index.ts",
+          "typeOnly": false,
+          "line": 5
+        },
+        {
+          "fromFile": "src/app/[locale]/accounts/new/page.tsx",
+          "toFile": "src/accounts/index.ts",
+          "typeOnly": false,
+          "line": 5
+        },
+        {
+          "fromFile": "src/app/[locale]/page.tsx",
+          "toFile": "src/accounts/index.ts",
+          "typeOnly": false,
+          "line": 5
+        },
+        {
+          "fromFile": "src/app/_lib/accounts-route.ts",
+          "toFile": "src/accounts/server.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/accounts.ts",
+          "toFile": "src/accounts/server.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/accounts/index.ts",
+          "typeOnly": false,
+          "line": 1
+        },
+        {
+          "fromFile": "src/app/_lib/imports-route.ts",
+          "toFile": "src/accounts/server.ts",
+          "typeOnly": true,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/api/accounts/route.test.ts",
+          "toFile": "src/accounts/server.ts",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/accounts/server.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "fromFile": "src/app/api/transactions/route.test.ts",
+          "toFile": "src/accounts/server.ts",
+          "typeOnly": false,
+          "line": 7
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "auth",
+      "imports": [
+        {
+          "fromFile": "src/app/[locale]/invite/[token]/page.tsx",
+          "toFile": "src/auth/index.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/[locale]/page.tsx",
+          "toFile": "src/auth/index.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/app/[locale]/sign-in/page.tsx",
+          "toFile": "src/auth/index.ts",
+          "typeOnly": false,
+          "line": 1
+        },
+        {
+          "fromFile": "src/app/[locale]/sign-up/page.tsx",
+          "toFile": "src/auth/index.ts",
+          "typeOnly": false,
+          "line": 1
+        },
+        {
+          "fromFile": "src/app/_lib/auth.ts",
+          "toFile": "src/auth/server.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/auth/index.ts",
+          "typeOnly": false,
+          "line": 2
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "imports": [
+        {
+          "fromFile": "src/app/_lib/accounts.ts",
+          "toFile": "src/db/server.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/_lib/auth.ts",
+          "toFile": "src/db/server.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/_lib/households.ts",
+          "toFile": "src/db/server.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/imports.ts",
+          "toFile": "src/db/server.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/transactions.ts",
+          "toFile": "src/db/server.ts",
+          "typeOnly": false,
+          "line": 2
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "households",
+      "imports": [
+        {
+          "fromFile": "src/app/[locale]/household/new/page.tsx",
+          "toFile": "src/households/index.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/[locale]/page.tsx",
+          "toFile": "src/households/index.ts",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "fromFile": "src/app/_lib/households-route.ts",
+          "toFile": "src/households/server.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/households.ts",
+          "toFile": "src/households/server.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/households/index.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/api/accounts/route.test.ts",
+          "toFile": "src/households/server.ts",
+          "typeOnly": false,
+          "line": 8
+        },
+        {
+          "fromFile": "src/app/api/households/route.test.ts",
+          "toFile": "src/households/server.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/households/server.ts",
+          "typeOnly": false,
+          "line": 10
+        },
+        {
+          "fromFile": "src/app/api/transactions/route.test.ts",
+          "toFile": "src/households/server.ts",
+          "typeOnly": false,
+          "line": 8
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "import",
+      "imports": [
+        {
+          "fromFile": "src/app/[locale]/imports/page.tsx",
+          "toFile": "src/import/index.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/import/index.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/app/_lib/imports-route.ts",
+          "toFile": "src/import/server.ts",
+          "typeOnly": true,
+          "line": 4
+        },
+        {
+          "fromFile": "src/app/_lib/imports.ts",
+          "toFile": "src/import/server.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/import/server.ts",
+          "typeOnly": false,
+          "line": 11
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "shared",
+      "imports": [
+        {
+          "fromFile": "src/app/[locale]/accounts/[id]/page.tsx",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "fromFile": "src/app/[locale]/layout.tsx",
+          "toFile": "src/shared/i18n.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/app/[locale]/layout.tsx",
+          "toFile": "src/shared/locale-switcher.tsx",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "fromFile": "src/app/_lib/accounts.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/app/_lib/api.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/caller.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/shared/i18n.ts",
+          "typeOnly": true,
+          "line": 5
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/shared/messages/index.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/next-intl.d.ts",
+          "toFile": "src/shared/i18n.ts",
+          "typeOnly": true,
+          "line": 1
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/routing.ts",
+          "toFile": "src/shared/i18n.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/imports-route.ts",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 5
+        },
+        {
+          "fromFile": "src/app/_lib/imports-route.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 6
+        },
+        {
+          "fromFile": "src/app/_lib/imports.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/app/_lib/transactions.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/app/api/accounts/route.test.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "fromFile": "src/app/api/accounts/route.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 10
+        },
+        {
+          "fromFile": "src/app/api/accounts/route.test.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 11
+        },
+        {
+          "fromFile": "src/app/api/households/route.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 7
+        },
+        {
+          "fromFile": "src/app/api/households/route.test.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 8
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 12
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 13
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 14
+        },
+        {
+          "fromFile": "src/app/api/transactions/route.test.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "fromFile": "src/app/api/transactions/route.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 10
+        },
+        {
+          "fromFile": "src/app/api/transactions/route.test.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 11
+        }
+      ]
+    },
+    {
+      "from": "app",
+      "to": "transactions",
+      "imports": [
+        {
+          "fromFile": "src/app/[locale]/accounts/[id]/page.tsx",
+          "toFile": "src/transactions/index.ts",
+          "typeOnly": false,
+          "line": 10
+        },
+        {
+          "fromFile": "src/app/[locale]/transactions/[id]/page.tsx",
+          "toFile": "src/transactions/index.ts",
+          "typeOnly": false,
+          "line": 8
+        },
+        {
+          "fromFile": "src/app/[locale]/transactions/new/page.tsx",
+          "toFile": "src/transactions/index.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/app/_lib/i18n/messages.ts",
+          "toFile": "src/transactions/index.ts",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "fromFile": "src/app/_lib/imports-route.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": true,
+          "line": 7
+        },
+        {
+          "fromFile": "src/app/_lib/transactions-route.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "fromFile": "src/app/_lib/transactions.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/app/api/imports/route.test.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": false,
+          "line": 15
+        },
+        {
+          "fromFile": "src/app/api/transactions/route.test.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": false,
+          "line": 12
+        }
+      ]
+    },
+    {
+      "from": "households",
+      "to": "shared",
+      "imports": [
+        {
+          "fromFile": "src/households/components/create-household-form.tsx",
+          "toFile": "src/shared/use-translate-key.ts",
+          "typeOnly": false,
+          "line": 5
+        },
+        {
+          "fromFile": "src/households/components/household-name-editor.tsx",
+          "toFile": "src/shared/use-translate-key.ts",
+          "typeOnly": false,
+          "line": 5
+        },
+        {
+          "fromFile": "src/households/create-households.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/households/create-households.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/households/rls.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/households/test-utils.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 4
+        },
+        {
+          "fromFile": "src/households/test-utils.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 5
+        }
+      ]
+    },
+    {
+      "from": "import",
+      "to": "shared",
+      "imports": [
+        {
+          "fromFile": "src/import/components/import-upload.tsx",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/import/create-imports.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 4
+        },
+        {
+          "fromFile": "src/import/create-imports.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": true,
+          "line": 3
+        },
+        {
+          "fromFile": "src/import/create-imports.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/import/fingerprint.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "fromFile": "src/import/parsing/ing.ts",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 1
+        },
+        {
+          "fromFile": "src/import/parsing/trade-republic.ts",
+          "toFile": "src/shared/iban.ts",
+          "typeOnly": false,
+          "line": 1
+        },
+        {
+          "fromFile": "src/import/rls.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/import/test-utils.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/import/test-utils.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 7
+        },
+        {
+          "fromFile": "src/import/test-utils.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 8
+        }
+      ]
+    },
+    {
+      "from": "import",
+      "to": "transactions",
+      "imports": [
+        {
+          "fromFile": "src/import/create-imports.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": true,
+          "line": 5
+        },
+        {
+          "fromFile": "src/import/parsing/types.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": true,
+          "line": 1
+        },
+        {
+          "fromFile": "src/import/test-utils.ts",
+          "toFile": "src/transactions/server.ts",
+          "typeOnly": false,
+          "line": 9
+        }
+      ]
+    },
+    {
+      "from": "transactions",
+      "to": "shared",
+      "imports": [
+        {
+          "fromFile": "src/transactions/components/transaction-form.tsx",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/transactions/components/transaction-form.tsx",
+          "toFile": "src/shared/use-translate-key.ts",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "fromFile": "src/transactions/components/transaction-list.tsx",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/transactions/create-transactions.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/transactions/create-transactions.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "fromFile": "src/transactions/create-transactions.ts",
+          "toFile": "src/shared/iban.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/transactions/create-transactions.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 4
+        },
+        {
+          "fromFile": "src/transactions/rls.test.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": false,
+          "line": 3
+        },
+        {
+          "fromFile": "src/transactions/test-utils.ts",
+          "toFile": "src/shared/field-crypto.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "fromFile": "src/transactions/test-utils.ts",
+          "toFile": "src/shared/rls.ts",
+          "typeOnly": true,
+          "line": 7
+        },
+        {
+          "fromFile": "src/transactions/test-utils.ts",
+          "toFile": "src/shared/test-sessions.ts",
+          "typeOnly": false,
+          "line": 8
+        },
+        {
+          "fromFile": "src/transactions/validation.ts",
+          "toFile": "src/shared/iban.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "fromFile": "src/transactions/validation.ts",
+          "toFile": "src/shared/money.ts",
+          "typeOnly": false,
+          "line": 3
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "kind": "table",
+      "name": "account",
+      "owner": "accounts",
+      "definedIn": "src/accounts/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "authAccount",
+      "owner": "auth",
+      "definedIn": "src/auth/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "authInvite",
+      "owner": "auth",
+      "definedIn": "src/auth/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "authSession",
+      "owner": "auth",
+      "definedIn": "src/auth/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "authUser",
+      "owner": "auth",
+      "definedIn": "src/auth/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "authVerification",
+      "owner": "auth",
+      "definedIn": "src/auth/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "household",
+      "owner": "households",
+      "definedIn": "src/households/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "householdInviteUse",
+      "owner": "households",
+      "definedIn": "src/households/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "householdMember",
+      "owner": "households",
+      "definedIn": "src/households/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "importBatch",
+      "owner": "import",
+      "definedIn": "src/import/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "importRow",
+      "owner": "import",
+      "definedIn": "src/import/schema.ts"
+    },
+    {
+      "kind": "table",
+      "name": "transaction",
+      "owner": "transactions",
+      "definedIn": "src/transactions/schema.ts"
+    }
+  ],
+  "exports": [
+    {
+      "unit": "accounts",
+      "side": "client",
+      "name": "AccountActions",
+      "entry": "src/accounts/index.ts"
+    },
+    {
+      "unit": "accounts",
+      "side": "client",
+      "name": "AccountForm",
+      "entry": "src/accounts/index.ts"
+    },
+    {
+      "unit": "accounts",
+      "side": "client",
+      "name": "AccountList",
+      "entry": "src/accounts/index.ts"
+    },
+    {
+      "unit": "accounts",
+      "side": "client",
+      "name": "accountsMessages",
+      "entry": "src/accounts/index.ts"
+    },
+    {
+      "unit": "accounts",
+      "side": "server",
+      "name": "Accounts",
+      "entry": "src/accounts/server.ts"
+    },
+    {
+      "unit": "accounts",
+      "side": "server",
+      "name": "createAccounts",
+      "entry": "src/accounts/server.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "InviteAcceptance",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "InviteShareButton",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "SessionUser",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "SignInForm",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "SignOutButton",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "SignUpForm",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "authMessages",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "signInSchema",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "signUpSchema",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "client",
+      "name": "useSession",
+      "entry": "src/auth/index.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "server",
+      "name": "Auth",
+      "entry": "src/auth/server.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "server",
+      "name": "AuthOptions",
+      "entry": "src/auth/server.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "server",
+      "name": "authTables",
+      "entry": "src/auth/server.ts"
+    },
+    {
+      "unit": "auth",
+      "side": "server",
+      "name": "createAuth",
+      "entry": "src/auth/server.ts"
+    },
+    {
+      "unit": "db",
+      "side": "server",
+      "name": "Database",
+      "entry": "src/db/server.ts"
+    },
+    {
+      "unit": "db",
+      "side": "server",
+      "name": "db",
+      "entry": "src/db/server.ts"
+    },
+    {
+      "unit": "households",
+      "side": "client",
+      "name": "CreateHouseholdForm",
+      "entry": "src/households/index.ts"
+    },
+    {
+      "unit": "households",
+      "side": "client",
+      "name": "HouseholdNameEditor",
+      "entry": "src/households/index.ts"
+    },
+    {
+      "unit": "households",
+      "side": "client",
+      "name": "LeaveHouseholdButton",
+      "entry": "src/households/index.ts"
+    },
+    {
+      "unit": "households",
+      "side": "client",
+      "name": "createHouseholdSchema",
+      "entry": "src/households/index.ts"
+    },
+    {
+      "unit": "households",
+      "side": "client",
+      "name": "householdsMessages",
+      "entry": "src/households/index.ts"
+    },
+    {
+      "unit": "households",
+      "side": "server",
+      "name": "NoHouseholdError",
+      "entry": "src/households/server.ts"
+    },
+    {
+      "unit": "households",
+      "side": "server",
+      "name": "createHouseholds",
+      "entry": "src/households/server.ts"
+    },
+    {
+      "unit": "households",
+      "side": "server",
+      "name": "householdTables",
+      "entry": "src/households/server.ts"
+    },
+    {
+      "unit": "import",
+      "side": "client",
+      "name": "ImportList",
+      "entry": "src/import/index.ts"
+    },
+    {
+      "unit": "import",
+      "side": "client",
+      "name": "ImportUpload",
+      "entry": "src/import/index.ts"
+    },
+    {
+      "unit": "import",
+      "side": "client",
+      "name": "importMessages",
+      "entry": "src/import/index.ts"
+    },
+    {
+      "unit": "import",
+      "side": "server",
+      "name": "Imports",
+      "entry": "src/import/server.ts"
+    },
+    {
+      "unit": "import",
+      "side": "server",
+      "name": "createImports",
+      "entry": "src/import/server.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "client",
+      "name": "DeleteTransactionButton",
+      "entry": "src/transactions/index.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "client",
+      "name": "TransactionFilters",
+      "entry": "src/transactions/index.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "client",
+      "name": "TransactionForm",
+      "entry": "src/transactions/index.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "client",
+      "name": "TransactionList",
+      "entry": "src/transactions/index.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "client",
+      "name": "transactionsMessages",
+      "entry": "src/transactions/index.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "server",
+      "name": "TransactionValues",
+      "entry": "src/transactions/server.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "server",
+      "name": "Transactions",
+      "entry": "src/transactions/server.ts"
+    },
+    {
+      "unit": "transactions",
+      "side": "server",
+      "name": "createTransactions",
+      "entry": "src/transactions/server.ts"
+    }
+  ],
+  "packages": [
+    {
+      "name": "@electric-sql/pglite",
+      "version": "^0.5.10",
+      "dev": true
+    },
+    {
+      "name": "@jfinckh/change-map",
+      "version": "^0.6.0",
+      "dev": true
+    },
+    {
+      "name": "@tailwindcss/turbopack",
+      "version": "^4",
+      "dev": true
+    },
+    {
+      "name": "@types/node",
+      "version": "^22.20.5",
+      "dev": true
+    },
+    {
+      "name": "@types/pg",
+      "version": "^8.23.1",
+      "dev": true
+    },
+    {
+      "name": "@types/react",
+      "version": "^19",
+      "dev": true
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "^19",
+      "dev": true
+    },
+    {
+      "name": "better-auth",
+      "version": "^1.7.12",
+      "dev": false
+    },
+    {
+      "name": "daisyui",
+      "version": "^5.7.50",
+      "dev": true
+    },
+    {
+      "name": "drizzle-kit",
+      "version": "^0.31.11",
+      "dev": true
+    },
+    {
+      "name": "drizzle-orm",
+      "version": "^0.45.4",
+      "dev": false
+    },
+    {
+      "name": "eslint",
+      "version": "^9",
+      "dev": true
+    },
+    {
+      "name": "eslint-config-next",
+      "version": "16.4.2",
+      "dev": true
+    },
+    {
+      "name": "eslint-plugin-boundaries",
+      "version": "^7.2.0",
+      "dev": true
+    },
+    {
+      "name": "next",
+      "version": "16.4.2",
+      "dev": false
+    },
+    {
+      "name": "next-intl",
+      "version": "^4.14.9",
+      "dev": false
+    },
+    {
+      "name": "pg",
+      "version": "^8.23.1",
+      "dev": false
+    },
+    {
+      "name": "react",
+      "version": "19.3.0",
+      "dev": false
+    },
+    {
+      "name": "react-dom",
+      "version": "19.3.0",
+      "dev": false
+    },
+    {
+      "name": "server-only",
+      "version": "^0.0.1",
+      "dev": false
+    },
+    {
+      "name": "tailwindcss",
+      "version": "^4",
+      "dev": true
+    },
+    {
+      "name": "typescript",
+      "version": "^5",
+      "dev": true
+    },
+    {
+      "name": "vitest",
+      "version": "^5.0.5",
+      "dev": true
+    },
+    {
+      "name": "zod",
+      "version": "^4.6.7",
+      "dev": false
+    }
+  ],
+  "configKeys": [
+    {
+      "key": "BETTER_AUTH_SECRET",
+      "source": ".env.example"
+    },
+    {
+      "key": "BETTER_AUTH_URL",
+      "source": ".env.example"
+    },
+    {
+      "key": "BLIND_INDEX_KEY",
+      "source": ".env.example"
+    },
+    {
+      "key": "DATABASE_URL",
+      "source": ".env.example"
+    },
+    {
+      "key": "FIELD_ENCRYPTION_KEYS",
+      "source": ".env.example"
+    }
+  ]
+}
