@@ -2,19 +2,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { AccountActions, AccountForm } from "@/accounts";
 import { accounts } from "@/app/_lib/accounts";
+import { currentBalances } from "@/app/_lib/balances";
 import { requireCaller } from "@/app/_lib/caller";
+import { transactions } from "@/app/_lib/transactions";
+import { formatEuro } from "@/shared/money";
+import { TransactionFilters, TransactionList } from "@/transactions";
 
-type Params = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default function AccountPage({ params }: Params) {
+export default function AccountPage(props: Props) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4 sm:items-center">
+    <main className="flex flex-1 items-start justify-center p-4">
       <div className="card bg-base-100 w-full max-w-md shadow-md">
         <div className="card-body gap-4">
           <Suspense fallback={<span className="loading loading-spinner" />}>
-            <EditAccount params={params} />
+            <AccountBookings {...props} />
           </Suspense>
         </div>
       </div>
@@ -22,16 +28,28 @@ export default function AccountPage({ params }: Params) {
   );
 }
 
-async function EditAccount({ params }: Params) {
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
+async function AccountBookings({ params, searchParams }: Props) {
   const { caller } = await requireCaller("/sign-in");
+  const { id } = await params;
   // Another member's private account does not exist for this caller: same 404 as an unknown id.
-  const account = await accounts.getAccount(caller, (await params).id);
+  const account = await accounts.getAccount(caller, id);
   if (!account) notFound();
+  const query = await searchParams;
+  const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
+  const [listed, sums] = await Promise.all([
+    transactions.listTransactions(caller, { accountId: id, ...filters }),
+    transactions.balances(caller),
+  ]);
+  if (!listed.ok && listed.reason === "not-found") notFound();
+  const balance = currentBalances([account], sums)[account.id];
   const t = await getTranslations("app.accounts");
+
   return (
     <>
       <div className="flex items-center justify-between gap-2">
-        <h1 className="card-title text-2xl">{account.name}</h1>
+        <h1 className="card-title truncate text-2xl">{account.name}</h1>
         <Link href="/" className="btn btn-ghost btn-sm">
           {t("back")}
         </Link>
@@ -41,9 +59,27 @@ async function EditAccount({ params }: Params) {
           <span>{t("archived")}</span>
         </div>
       )}
-      <AccountForm account={account} />
+      <div className="flex items-end justify-between gap-2">
+        <div>
+          <p className="text-sm opacity-70">{t("balance")}</p>
+          <p className={`text-3xl font-semibold tabular-nums ${balance < 0 ? "text-error" : ""}`}>{formatEuro(balance)}</p>
+        </div>
+        <Link href={`/accounts/${account.id}/edit`} className="btn btn-ghost btn-sm">
+          {t("edit")}
+        </Link>
+      </div>
+      <Link href={`/transactions/new?accountId=${account.id}`} className="btn btn-primary">
+        {t("addBooking")}
+      </Link>
       <div className="divider my-0" />
-      <AccountActions id={account.id} archived={account.archived} shared={account.visibility === "shared"} />
+      <TransactionFilters values={filters} />
+      {listed.ok ? (
+        <TransactionList transactions={listed.transactions} />
+      ) : (
+        <div role="alert" className="alert alert-warning alert-soft">
+          <span>{t("invalidFilter")}</span>
+        </div>
+      )}
     </>
   );
 }

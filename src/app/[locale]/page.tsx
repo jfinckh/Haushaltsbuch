@@ -9,6 +9,8 @@ import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
+import { transactions } from "@/app/_lib/transactions";
+import { currentBalances } from "@/app/_lib/balances";
 import { describeMembers } from "@/app/_lib/member-names";
 
 export default function Home() {
@@ -31,6 +33,7 @@ async function Welcome() {
   const household = await households.getHousehold(caller);
   if (!household) redirect("/household/new");
   const visibleAccounts = await accounts.listAccounts(caller);
+  const balances = currentBalances(visibleAccounts, await transactions.balances(caller));
   // Only ids of the caller's own household go to auth, so only their names are shown.
   const members = await households.listMembers(caller);
   const memberIds = members.map((m) => m.userId);
@@ -77,7 +80,7 @@ async function Welcome() {
             {t("home.addAccount")}
           </Link>
         </div>
-        <AccountList accounts={visibleAccounts} />
+        <AccountList accounts={visibleAccounts} balances={balances} />
         <div className="divider my-0" />
         <h2 className="font-semibold">{t("home.invitePartner")}</h2>
         <InviteShareButton shareText={t("home.shareText")} />

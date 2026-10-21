@@ -1,0 +1,117 @@
+{
+  "kinds": {
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer",
+    "saving": "Saving"
+  },
+  "validation": {
+    "accountRequired": "Choose an account.",
+    "dateInvalid": "Enter a valid date.",
+    "amountZero": "The amount cannot be zero.",
+    "categoryNotForKind": "This category does not fit the type.",
+    "counterpartyTooLong": "Name is too long.",
+    "referenceTooLong": "Reference is too long.",
+    "ibanInvalid": "Enter a valid IBAN."
+  },
+  "list": {
+    "empty": "No bookings in this period.",
+    "uncategorized": "Uncategorized",
+    "noText": "Booking"
+  },
+  "filters": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "kind": "Type",
+    "allKinds": "All types",
+    "category": "Category",
+    "allCategories": "All categories",
+    "search": "Search",
+    "searchPlaceholder": "Search name or reference",
+    "apply": "Apply"
+  },
+  "form": {
+    "amount": "Amount (€)",
+    "date": "Date",
+    "kind": "Type",
+    "category": "Category",
+    "noCategory": "No category",
+    "counterparty": "Counterparty",
+    "counterpartyPlaceholder": "e.g. REWE",
+    "reference": "Reference",
+    "account": "Account",
+    "more": "More",
+    "iban": "Counterparty IBAN (optional)",
+    "add": "Add booking",
+    "save": "Save",
+    "saveFailed": "Could not save the booking. Please try again.",
+    "notFound": "This account or booking no longer exists."
+  },
+  "actions": {
+    "delete": "Delete booking",
+    "deleteTitle": "Delete this booking?",
+    "deleteText": "The booking is removed and the balance changes. This cannot be undone.",
+    "deleteFailed": "Could not delete the booking. Please try again.",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "categoryGroups": {
+    "housing": "Housing",
+    "groceries": "Groceries",
+    "mobility": "Mobility",
+    "contracts": "Insurance & contracts",
+    "leisure": "Leisure",
+    "children": "Children",
+    "health": "Health",
+    "shopping": "Shopping",
+    "other": "Other",
+    "salary": "Salary",
+    "childBenefit": "Child benefit",
+    "investmentIncome": "Interest & dividends",
+    "reimbursements": "Reimbursements",
+    "otherIncome": "Other income"
+  },
+  "categories": {
+    "housing": {
+      "rent": "Rent",
+      "utilities": "Utilities",
+      "electricity": "Electricity",
+      "internet": "Internet"
+    },
+    "groceries": {
+      "supermarket": "Supermarket",
+      "drugstore": "Drugstore"
+    },
+    "mobility": {
+      "car": "Car",
+      "fuel": "Fuel",
+      "publicTransport": "Public transport"
+    },
+    "contracts": {
+      "insurance": "Insurance",
+      "subscriptions": "Subscriptions",
+      "phone": "Phone"
+    },
+    "leisure": {
+      "restaurant": "Restaurant",
+      "goingOut": "Going out",
+      "hobbies": "Hobbies",
+      "travel": "Travel"
+    },
+    "children": {
+      "childcare": "Childcare",
+      "clothing": "Clothing",
+      "school": "School"
+    },
+    "health": {
+      "pharmacy": "Pharmacy",
+      "doctor": "Doctor",
+      "sports": "Sports"
+    },
+    "shopping": {
+      "clothing": "Clothing",
+      "electronics": "Electronics",
+      "household": "Household"
+    }
+  }
+}

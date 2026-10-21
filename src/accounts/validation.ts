@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { germanAmountSchema } from "@/shared/money";
-import { isValidIban, normalizeIban } from "./iban";
+import { isValidIban, normalizeIban } from "@/shared/iban";
 
 // Shared by the form (client) and the API routes (server). Messages are translation keys; the
 // form translates them, as it does the bank, type and role names (accounts messages).

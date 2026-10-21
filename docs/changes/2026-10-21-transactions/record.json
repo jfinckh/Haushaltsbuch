@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-21",
+  "slug": "transactions",
+  "description": "Transactions",
+  "plan": {
+    "path": "docs/plans/2026-10-21-transactions.md",
+    "sha256": "d174d6c33e1ef6a7544dbe7c0bec11fd3ca4d872f952c291eab39b5c287cfb40"
+  },
+  "status": "final",
+  "base": "a64f1add0050d65bcb88043835e9afbd9254d708"
+}

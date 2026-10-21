@@ -1,7 +1,7 @@
 import { and, asc, eq, or, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import { formatIban } from "./iban";
+import { formatIban } from "@/shared/iban";
 import { account } from "./schema";
 import {
   accountValuesSchema,

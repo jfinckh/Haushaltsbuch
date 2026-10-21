@@ -7,9 +7,11 @@ type Props = {
   accounts: AccountView[];
   /** Link to one account: `${href}/${id}`. Default: /accounts */
   href?: string;
+  /** Current balance per account id (cents). Without it, rows show the opening balance. */
+  balances?: Record<string, number>;
 };
 
-function AccountRow({ account, href }: { account: AccountView; href: string }) {
+function AccountRow({ account, href, balance }: { account: AccountView; href: string; balance: number }) {
   const t = useTranslations("accounts");
   return (
     <li>
@@ -24,16 +26,17 @@ function AccountRow({ account, href }: { account: AccountView; href: string }) {
             </span>
           </p>
         </div>
-        <span className={`shrink-0 tabular-nums ${account.openingBalanceCents < 0 ? "text-error" : ""}`}>
-          {formatEuro(account.openingBalanceCents)}
+        <span className={`shrink-0 tabular-nums ${balance < 0 ? "text-error" : ""}`}>
+          {formatEuro(balance)}
         </span>
       </Link>
     </li>
   );
 }
 
-/** The accounts the user may see with their opening balances; archived ones folded away. */
-export function AccountList({ accounts, href = "/accounts" }: Props) {
+/** The accounts the user may see with their balances; archived ones folded away. */
+export function AccountList({ accounts, href = "/accounts", balances }: Props) {
+  const balanceOf = (account: AccountView) => balances?.[account.id] ?? account.openingBalanceCents;
   const t = useTranslations("accounts.list");
   const active = accounts.filter((a) => !a.archived);
   const archived = accounts.filter((a) => a.archived);
@@ -45,7 +48,7 @@ export function AccountList({ accounts, href = "/accounts" }: Props) {
       ) : (
         <ul className="flex flex-col">
           {active.map((account) => (
-            <AccountRow key={account.id} account={account} href={href} />
+            <AccountRow key={account.id} account={account} href={href} balance={balanceOf(account)} />
           ))}
         </ul>
       )}
@@ -54,7 +57,7 @@ export function AccountList({ accounts, href = "/accounts" }: Props) {
           <summary className="collapse-title text-sm">{t("archived", { count: archived.length })}</summary>
           <ul className="collapse-content flex flex-col">
             {archived.map((account) => (
-              <AccountRow key={account.id} account={account} href={href} />
+              <AccountRow key={account.id} account={account} href={href} balance={balanceOf(account)} />
             ))}
           </ul>
         </details>

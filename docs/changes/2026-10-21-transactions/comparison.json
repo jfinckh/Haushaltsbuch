@@ -1,0 +1,470 @@
+{
+  "version": 1,
+  "base": "a64f1add0050d65bcb88043835e9afbd9254d708",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "drizzle/0010_accounts_visible_ids.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0011_transactions.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0012_transactions_rls.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0010_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0011_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0012_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/categories.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/categories.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/validation.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-filters.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/delete-transaction-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/transactions-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transactions/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transactions/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transactions/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/i18n/messages.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/edit/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/transactions/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/transactions/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/iban.ts",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/iban.ts",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/iban.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/iban.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.ts",
+      "status": "convergence",
+      "viaAmendment": "A10"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/validation.ts",
+      "status": "convergence",
+      "viaAmendment": "A11"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/balances.ts",
+      "status": "convergence",
+      "viaAmendment": "A12"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/balances.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A13"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/kinds.ts",
+      "status": "convergence",
+      "viaAmendment": "A14"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/months.ts",
+      "status": "convergence",
+      "viaAmendment": "A15"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/months.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A16"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/category-select.tsx",
+      "status": "convergence",
+      "viaAmendment": "A17"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/use-category-name.ts",
+      "status": "convergence",
+      "viaAmendment": "A18"
+    },
+    {
+      "kind": "unit",
+      "id": "transactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "transactions->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "transaction",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:TransactionForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:TransactionList",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:TransactionFilters",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:DeleteTransactionButton",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:transactionsMessages",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:createTransactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:Transactions",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "transactions",
+      "state": "new"
+    },
+    {
+      "from": "transactions",
+      "to": "shared",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:transactions->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:transaction",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:database:visible-accounts",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:transaction:manage",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionList",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionFilters",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:DeleteTransactionButton",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:transactionsMessages",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:server:createTransactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:server:Transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

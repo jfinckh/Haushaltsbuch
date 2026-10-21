@@ -96,3 +96,24 @@ describe("row-level security on accounts", () => {
     expect(ids(await asUser("erika", (tx) => tx.select().from(account)))).toEqual(["erika-private"]);
   });
 });
+
+describe("accounts_visible_account_ids (accounts' database contract)", () => {
+  async function visibleIds(userId: string) {
+    const result = (await asUser(userId, (tx) =>
+      tx.execute(sql`SELECT accounts_visible_account_ids() AS id`),
+    )) as unknown as { rows: { id: string }[] };
+    return ids(result.rows);
+  }
+
+  it("lists exactly the accounts the session's user may see", async () => {
+    expect(await visibleIds("max")).toEqual(["max-private", "max-shared"]);
+    expect(await visibleIds("erika")).toEqual(["erika-private", "max-shared"]);
+    expect(await visibleIds("dora")).toEqual(["dora-shared"]);
+    expect(await visibleIds("lone")).toEqual([]);
+  });
+
+  it("includes archived accounts", async () => {
+    await setup.db.update(account).set({ archivedAt: new Date() }).where(eq(account.id, "max-private"));
+    expect(await visibleIds("max")).toEqual(["max-private", "max-shared"]);
+  });
+});

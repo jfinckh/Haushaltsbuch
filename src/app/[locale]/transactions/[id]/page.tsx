@@ -1,0 +1,51 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import { accounts } from "@/app/_lib/accounts";
+import { requireCaller } from "@/app/_lib/caller";
+import { transactions } from "@/app/_lib/transactions";
+import { DeleteTransactionButton, TransactionForm } from "@/transactions";
+
+type Params = { params: Promise<{ id: string }> };
+
+export default function TransactionPage({ params }: Params) {
+  return (
+    <main className="flex flex-1 items-start justify-center p-4 sm:items-center">
+      <div className="card bg-base-100 w-full max-w-md shadow-md">
+        <div className="card-body gap-4">
+          <Suspense fallback={<span className="loading loading-spinner" />}>
+            <EditTransaction params={params} />
+          </Suspense>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+async function EditTransaction({ params }: Params) {
+  const { caller } = await requireCaller("/sign-in");
+  // A booking of another member's private account does not exist for this caller.
+  const transaction = await transactions.getTransaction(caller, (await params).id);
+  if (!transaction) notFound();
+  const visible = await accounts.listAccounts(caller);
+  // Active accounts, plus the booking's own account even if it is archived.
+  const bookable = visible
+    .filter((a) => !a.archived || a.id === transaction.accountId)
+    .map(({ id, name }) => ({ id, name }));
+  const t = await getTranslations("app.transactions");
+  const accountHref = `/accounts/${transaction.accountId}`;
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="card-title text-2xl">{t("editTitle")}</h1>
+        <Link href={accountHref} className="btn btn-ghost btn-sm">
+          {t("back")}
+        </Link>
+      </div>
+      <TransactionForm accounts={bookable} transaction={transaction} />
+      <div className="divider my-0" />
+      <DeleteTransactionButton id={transaction.id} redirectTo={accountHref} />
+    </>
+  );
+}

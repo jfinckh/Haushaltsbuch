@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:transactions",
+      "itemHash": "sha256:994f9951bda81003c6e4c2c9d544ddf2876bfc28319163ea889f3c23f49b6378",
+      "decision": "approve",
+      "at": "2026-10-21T09:27:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:transactions->shared",
+      "itemHash": "sha256:0dc0cb42bfbc97be565f5f482f3c43722431a5a4a62199af06da4307d41a9db2",
+      "decision": "approve",
+      "at": "2026-10-21T09:27:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->transactions",
+      "itemHash": "sha256:a102b52bbb254876369ad861ff49684f45ce7baad9558421fd165dbf503a427f",
+      "decision": "approve",
+      "at": "2026-10-21T09:27:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:transaction",
+      "itemHash": "sha256:ca6e8a4d7d2851ebe1139b5eaeb2cde035d9d1577a3e88e0857548b0654add29",
+      "decision": "approve",
+      "at": "2026-10-21T09:27:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:visible-accounts",
+      "itemHash": "sha256:0d20bc99268ac48c861e860547e686791955403e3fdebb9b0d6d13ec389e0b2a",
+      "decision": "approve",
+      "at": "2026-10-21T09:28:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:transaction:manage",
+      "itemHash": "sha256:a2d5fc6f1019c80a2b29bc3b1a8a480f7c4041d65797d086263db2dba3601bd9",
+      "decision": "approve",
+      "at": "2026-10-21T09:28:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionForm",
+      "itemHash": "sha256:f6abae287d4daf1ad74be392476c0ea83c209cc0a67e4c332852a168357ab467",
+      "decision": "approve",
+      "at": "2026-10-21T09:28:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionList",
+      "itemHash": "sha256:5d661b8fe1bf4d8ac2a4c0154502e2e436e5a6e2a6d6cbe3767274884ead7c9e",
+      "decision": "approve",
+      "at": "2026-10-21T09:28:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionFilters",
+      "itemHash": "sha256:a72436e3a05e03c74e1ab32796976d724337d2cb1508ce8d9cd3072d962d2ff0",
+      "decision": "approve",
+      "at": "2026-10-21T09:31:04Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:DeleteTransactionButton",
+      "itemHash": "sha256:e10816b48301383c4a2fc3b4e02bbc15ce0371113bfeb1c7ae7ee28b5541c963",
+      "decision": "approve",
+      "at": "2026-10-21T09:31:04Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:transactionsMessages",
+      "itemHash": "sha256:2dc1577fa36c78fef6e5b5793c1b4fafb67fd9a779cc27bcdcebd34f459f997c",
+      "decision": "approve",
+      "at": "2026-10-21T09:31:04Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:createTransactions",
+      "itemHash": "sha256:34e338b8f2b619fd87dc3b32ee3b9116c7bb8ffd99b3a9973434b579746da139",
+      "decision": "approve",
+      "at": "2026-10-21T09:31:04Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:Transactions",
+      "itemHash": "sha256:582cd1ef6dba1e15379b6f8c638f9652dea3f8221c9234d6a03431724b3e6558",
+      "decision": "approve",
+      "at": "2026-10-21T09:31:12Z",
+      "source": "hook"
+    }
+  ]
+}

@@ -22,6 +22,17 @@
   "accounts": {
     "addTitle": "Add account",
     "back": "Back",
-    "archived": "This account is archived."
+    "archived": "This account is archived.",
+    "editTitle": "Edit account",
+    "edit": "Edit account",
+    "balance": "Balance",
+    "addBooking": "Add booking",
+    "invalidFilter": "These filters are not valid. Showing nothing."
+  },
+  "transactions": {
+    "addTitle": "Add booking",
+    "editTitle": "Edit booking",
+    "back": "Back",
+    "noAccounts": "Add an account first."
   }
 }

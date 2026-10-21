@@ -1,0 +1,117 @@
+{
+  "kinds": {
+    "expense": "Ausgabe",
+    "income": "Einnahme",
+    "transfer": "Umbuchung",
+    "saving": "Sparen"
+  },
+  "validation": {
+    "accountRequired": "Wähle ein Konto.",
+    "dateInvalid": "Gib ein gültiges Datum ein.",
+    "amountZero": "Der Betrag darf nicht null sein.",
+    "categoryNotForKind": "Diese Kategorie passt nicht zur Art.",
+    "counterpartyTooLong": "Der Name ist zu lang.",
+    "referenceTooLong": "Der Verwendungszweck ist zu lang.",
+    "ibanInvalid": "Gib eine gültige IBAN ein."
+  },
+  "list": {
+    "empty": "Keine Buchungen in diesem Zeitraum.",
+    "uncategorized": "Ohne Kategorie",
+    "noText": "Buchung"
+  },
+  "filters": {
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "kind": "Art",
+    "allKinds": "Alle Arten",
+    "category": "Kategorie",
+    "allCategories": "Alle Kategorien",
+    "search": "Suche",
+    "searchPlaceholder": "Name oder Verwendungszweck suchen",
+    "apply": "Anwenden"
+  },
+  "form": {
+    "amount": "Betrag (€)",
+    "date": "Datum",
+    "kind": "Art",
+    "category": "Kategorie",
+    "noCategory": "Keine Kategorie",
+    "counterparty": "Gegenpartei",
+    "counterpartyPlaceholder": "z. B. REWE",
+    "reference": "Verwendungszweck",
+    "account": "Konto",
+    "more": "Mehr",
+    "iban": "IBAN der Gegenpartei (optional)",
+    "add": "Buchung hinzufügen",
+    "save": "Speichern",
+    "saveFailed": "Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "notFound": "Dieses Konto oder diese Buchung gibt es nicht mehr."
+  },
+  "actions": {
+    "delete": "Buchung löschen",
+    "deleteTitle": "Diese Buchung löschen?",
+    "deleteText": "Die Buchung wird entfernt und der Kontostand ändert sich. Das lässt sich nicht rückgängig machen.",
+    "deleteFailed": "Die Buchung konnte nicht gelöscht werden. Bitte versuche es erneut.",
+    "cancel": "Abbrechen",
+    "close": "Schließen"
+  },
+  "categoryGroups": {
+    "housing": "Wohnen",
+    "groceries": "Lebensmittel",
+    "mobility": "Mobilität",
+    "contracts": "Versicherungen & Verträge",
+    "leisure": "Freizeit",
+    "children": "Kinder",
+    "health": "Gesundheit",
+    "shopping": "Shopping",
+    "other": "Sonstiges",
+    "salary": "Gehalt",
+    "childBenefit": "Kindergeld",
+    "investmentIncome": "Zinsen & Dividenden",
+    "reimbursements": "Erstattungen & Spesen",
+    "otherIncome": "Sonstige Einnahmen"
+  },
+  "categories": {
+    "housing": {
+      "rent": "Miete",
+      "utilities": "Nebenkosten",
+      "electricity": "Strom",
+      "internet": "Internet"
+    },
+    "groceries": {
+      "supermarket": "Supermarkt",
+      "drugstore": "Drogerie"
+    },
+    "mobility": {
+      "car": "Auto",
+      "fuel": "Tanken",
+      "publicTransport": "ÖPNV"
+    },
+    "contracts": {
+      "insurance": "Versicherungen",
+      "subscriptions": "Abos",
+      "phone": "Handy"
+    },
+    "leisure": {
+      "restaurant": "Restaurant",
+      "goingOut": "Ausgehen",
+      "hobbies": "Hobbys",
+      "travel": "Urlaub"
+    },
+    "children": {
+      "childcare": "Betreuung",
+      "clothing": "Kleidung",
+      "school": "Schule"
+    },
+    "health": {
+      "pharmacy": "Apotheke",
+      "doctor": "Arzt",
+      "sports": "Sport"
+    },
+    "shopping": {
+      "clothing": "Kleidung",
+      "electronics": "Elektronik",
+      "household": "Haushalt"
+    }
+  }
+}

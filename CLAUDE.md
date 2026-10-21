@@ -31,7 +31,7 @@ src/db/             Postgres connection (server only)        → nothing
 src/auth/           login, sessions, invite links, auth UI   → nothing (db is injected via createAuth)
 src/households/     households, members, account visibility  → nothing (db is injected via createHouseholds)
 src/accounts/       accounts, role (everyday/savings)        → shared, households
-src/transactions/   bookings, categories, rules              → shared, accounts
+src/transactions/   bookings, categories, rules              → shared (account access via accounts' SQL function accounts_visible_account_ids)
 src/transfers/      transfer matching, manual linking        → transactions
 src/import/         ING and Trade Republic parsers, dedup    → transactions, transfers, accounts
 src/budgets/        budgets per account                      → transactions

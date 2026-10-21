@@ -22,6 +22,17 @@
   "accounts": {
     "addTitle": "Konto anlegen",
     "back": "Zurück",
-    "archived": "Dieses Konto ist archiviert."
+    "archived": "Dieses Konto ist archiviert.",
+    "editTitle": "Konto bearbeiten",
+    "edit": "Konto bearbeiten",
+    "balance": "Kontostand",
+    "addBooking": "Buchung hinzufügen",
+    "invalidFilter": "Diese Filter sind ungültig. Es wird nichts angezeigt."
+  },
+  "transactions": {
+    "addTitle": "Buchung hinzufügen",
+    "editTitle": "Buchung bearbeiten",
+    "back": "Zurück",
+    "noAccounts": "Lege zuerst ein Konto an."
   }
 }

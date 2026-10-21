@@ -3,12 +3,13 @@
   "root": "src",
   "libraries": ["shared"],
   "modules": {
-    "app": ["accounts", "auth", "db", "households", "shared"],
+    "app": ["accounts", "auth", "db", "households", "shared", "transactions"],
     "shared": [],
     "db": [],
     "auth": [],
     "households": ["shared"],
-    "accounts": ["shared"]
+    "accounts": ["shared"],
+    "transactions": ["shared"]
   },
   "features": {}
 }
