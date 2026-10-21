@@ -18,7 +18,7 @@ Diese Objekte tragen die ganze App; sie früh richtig zu schneiden spart später
 
 | Objekt | Wichtigste Felder | Hinweis |
 | --- | --- | --- |
-| Haushalt | Name, Währung, Monatsbeginn (z. B. Gehaltstag) | Alles hängt an einem Haushalt |
+| Haushalt | Name, Währung | Alles hängt an einem Haushalt |
 | Mitglied | Nutzer, Haushalt | Keine Rollen, alle dürfen alles |
 | Konto | Name, Bank, IBAN, Typ, Rolle (Alltag/Sparen), Besitzer, privat oder gemeinsam, Startsaldo | Zum Start: ING Giro (privat), ING Gemeinschaftskonto (gemeinsam, gleicher Parser wie Giro), Trade Republic Verrechnungskonto, Trade Republic Depot, Bargeld |
 | Transaktion | Konto, Datum, Betrag, Gegenpartei, Gegen-IBAN, Verwendungszweck, Kategorie, Art, verknüpfte Gegenbuchung, angelegt von | Art: Ausgabe, Einnahme, Umbuchung, Sparen |
@@ -32,7 +32,7 @@ Technische Leitplanken:
 - Beträge als **Ganzzahl in Cent** speichern, nie als Float.
 - Umbuchungen als **Paar** zweier verknüpfter Transaktionen, damit beide Konten stimmen.
 - Jede Transaktion behält die **Rohdaten** aus dem Import, damit Regeln später neu angewendet werden können.
-- Ein **Monatsbeginn pro Haushalt** (z. B. der 25.), weil viele ab Gehaltseingang statt ab dem 1. rechnen.
+- Ein Monat ist immer der **Kalendermonat** (vom 1. bis zum letzten Tag); es gibt keinen einstellbaren Monatsbeginn.
 
 ## Familienfunktionen
 
@@ -254,7 +254,6 @@ Zum Prüfen von Duplikaten: dieselbe Datei zweimal importieren (0 neu) oder eine
 
 ## Offene Fragen
 
-- [ ] Monatsbeginn: Kalendermonat oder ab Gehaltseingang?
 - [ ] Reichen gemeinsame Konten, oder brauchen wir „wer schuldet wem“ für privat ausgelegte Ausgaben?
 - [ ] Welche ING-Konten importieren wir: nur Giro oder auch Extra-Konto und Depot?
 - [ ] Deployment auf Hetzner: Setup, Domain, Backups (später, zunächst lokal).
