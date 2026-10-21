@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "../client";
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function SignOutButton({ redirectTo = "/sign-in", className = "btn btn-ghost" }: Props) {
+  const t = useTranslations("auth");
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -23,7 +25,7 @@ export function SignOutButton({ redirectTo = "/sign-in", className = "btn btn-gh
 
   return (
     <button type="button" className={className} onClick={onClick} disabled={pending}>
-      Sign out
+      {t("signOut")}
     </button>
   );
 }

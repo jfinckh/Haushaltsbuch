@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-21",
+  "slug": "i18n",
+  "description": "German and English UI",
+  "plan": {
+    "path": "docs/plans/2026-10-21-i18n.md",
+    "sha256": "e23d47e6fb314ef9aa701ed312a02dcecbc24bc2a73b379972232bd1763223ab"
+  },
+  "status": "final",
+  "base": "3969234778b7304bf125f8ab2c5cd4faade3414b"
+}

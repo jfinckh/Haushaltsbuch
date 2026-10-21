@@ -1,6 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useTranslateKey } from "@/shared/use-translate-key";
 import { useState, type FormEvent } from "react";
 import { renameHouseholdSchema } from "../validation";
 
@@ -12,8 +14,11 @@ type Props = {
 
 /** The household name with an inline edit. Any member may rename the household. */
 export function HouseholdNameEditor({ name, action = "/api/households" }: Props) {
+  const t = useTranslations("households.rename");
+  const tk = useTranslateKey();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  // A message key, translated when shown.
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -21,7 +26,7 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const parsed = renameHouseholdSchema.safeParse({ name: form.get("name") });
-    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Invalid input");
+    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "households.validation.nameRequired");
 
     setPending(true);
     setError(null);
@@ -31,7 +36,7 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
       body: JSON.stringify(parsed.data),
     });
     setPending(false);
-    if (!response.ok) return setError("Could not rename the household. Please try again.");
+    if (!response.ok) return setError("households.rename.failed");
     setEditing(false);
     router.refresh();
   }
@@ -41,7 +46,7 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
       <div className="flex items-center gap-2">
         <p className="text-lg font-semibold">{name}</p>
         <button type="button" className="btn btn-ghost btn-xs" onClick={() => setEditing(true)}>
-          Rename
+          {t("button")}
         </button>
       </div>
     );
@@ -53,7 +58,7 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
         <input
           name="name"
           type="text"
-          aria-label="Household name"
+          aria-label={t("nameLabel")}
           defaultValue={name}
           className="input join-item w-full"
           required
@@ -62,7 +67,7 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
         />
         <button type="submit" className="btn btn-primary join-item" disabled={pending}>
           {pending && <span className="loading loading-spinner loading-sm" />}
-          Save
+          {t("save")}
         </button>
         <button
           type="button"
@@ -72,10 +77,10 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
             setError(null);
           }}
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
-      {error && <p className="label text-error mt-1">{error}</p>}
+      {error && <p className="label text-error mt-1">{tk(error)}</p>}
     </form>
   );
 }

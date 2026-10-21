@@ -57,4 +57,6 @@ src/insights/       dashboard figures, combined view         → transactions, b
 
 ## Language
 
-Code, identifiers and comments in English. UI text and routes in English for now.
+Code, identifiers and comments in English. Routes in English, without a language prefix.
+
+UI text in German and English via next-intl. Each part keeps its texts in `messages/de.json` and `messages/en.json` (its own namespace) and exports them from its entry point; the app merges them in `src/app/_lib/i18n/`. Never hard-code UI text; both files need the same keys (a test checks it). Zod messages are translation keys (e.g. `accounts.validation.nameRequired`), translated by the form. Amounts stay in German format in both languages.

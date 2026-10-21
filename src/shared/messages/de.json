@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "amountInvalid": "Gib einen Betrag wie „1.234,56“ ein."
+  },
+  "localeSwitcher": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

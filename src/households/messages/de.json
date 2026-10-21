@@ -1,0 +1,31 @@
+{
+  "validation": {
+    "nameRequired": "Bitte gib einen Namen ein.",
+    "nameTooLong": "Der Name ist zu lang."
+  },
+  "create": {
+    "title": "Haushalt anlegen",
+    "intro": "Deine Partnerin oder deinen Partner kannst du danach einladen.",
+    "nameLabel": "Name",
+    "namePlaceholder": "z. B. Mustermann",
+    "submit": "Haushalt anlegen",
+    "failed": "Der Haushalt konnte nicht angelegt werden. Bitte versuch es noch einmal."
+  },
+  "rename": {
+    "button": "Umbenennen",
+    "nameLabel": "Name des Haushalts",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "failed": "Der Haushalt konnte nicht umbenannt werden. Bitte versuch es noch einmal."
+  },
+  "leave": {
+    "button": "Haushalt verlassen",
+    "title": "Diesen Haushalt verlassen?",
+    "lastMember": "Du bist das einzige Mitglied. Wenn du gehst, wird der Haushalt gelöscht. Danach kannst du einen neuen anlegen oder über einen neuen Einladungslink einem anderen beitreten.",
+    "otherMembers": "Die anderen Mitglieder behalten den Haushalt. Danach kannst du einen neuen anlegen oder über einen neuen Einladungslink einem anderen beitreten.",
+    "cancel": "Abbrechen",
+    "confirm": "Verlassen",
+    "close": "Schließen",
+    "failed": "Der Haushalt konnte nicht verlassen werden. Bitte versuch es noch einmal."
+  }
+}

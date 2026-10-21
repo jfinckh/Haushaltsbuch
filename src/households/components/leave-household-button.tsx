@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
@@ -21,17 +22,18 @@ export function LeaveHouseholdButton({
   action = "/api/households/membership",
   redirectTo = "/household/new",
 }: Props) {
+  const t = useTranslations("households.leave");
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const [pending, setPending] = useState(false);
 
   async function leave() {
     setPending(true);
-    setError(null);
+    setFailed(false);
     const response = await fetch(action, { method: "DELETE" });
     setPending(false);
-    if (!response.ok && response.status !== 404) return setError("Could not leave the household. Please try again.");
+    if (!response.ok && response.status !== 404) return setFailed(true);
     dialog.current?.close();
     router.push(redirectTo);
     router.refresh();
@@ -40,30 +42,28 @@ export function LeaveHouseholdButton({
   return (
     <>
       <button type="button" className="btn btn-ghost btn-sm text-error" onClick={() => dialog.current?.showModal()}>
-        Leave household
+        {t("button")}
       </button>
       <dialog ref={dialog} className="modal">
         <div className="modal-box">
-          <h3 className="text-lg font-bold">Leave this household?</h3>
+          <h3 className="text-lg font-bold">{t("title")}</h3>
           <p className="py-4">
-            {lastMember
-              ? "You are the only member. Leaving deletes the household. Afterwards you can create a new one or join another one through a new invite link."
-              : "The other members keep the household. Afterwards you can create a new one or join another one through a new invite link."}
+            {lastMember ? t("lastMember") : t("otherMembers")}
           </p>
           {note && <p className="pb-4">{note}</p>}
-          {error && <p className="text-error">{error}</p>}
+          {failed && <p className="text-error">{t("failed")}</p>}
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn">Cancel</button>
+              <button className="btn">{t("cancel")}</button>
             </form>
             <button type="button" className="btn btn-error" onClick={leave} disabled={pending}>
               {pending && <span className="loading loading-spinner loading-sm" />}
-              Leave
+              {t("confirm")}
             </button>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
-          <button>close</button>
+          <button>{t("close")}</button>
         </form>
       </dialog>
     </>

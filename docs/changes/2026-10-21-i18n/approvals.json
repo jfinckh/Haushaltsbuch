@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "package-new:next-intl",
+      "itemHash": "sha256:dce0f776318775322942ae4e952e451807717c6a530d88cbb44bfd91b5b76df2",
+      "decision": "approve",
+      "at": "2026-10-21T08:22:26Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:authMessages",
+      "itemHash": "sha256:e45e00f7332177b2e3d5873150945ee33ae99d7d9985f297d6c4e2e267887702",
+      "decision": "approve",
+      "at": "2026-10-21T08:22:26Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:households:client:householdsMessages",
+      "itemHash": "sha256:d73b7ab980df70c50a7f0070c02487362aeb93db98dbeece67ee277c2187ad23",
+      "decision": "approve",
+      "at": "2026-10-21T08:22:26Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:accounts:client:accountsMessages",
+      "itemHash": "sha256:c1e1fbd05bfccc61cfcae99753b80dd0ddcb932a8d0ea99e908a615042aa0485",
+      "decision": "approve",
+      "at": "2026-10-21T08:22:26Z",
+      "source": "hook"
+    }
+  ]
+}

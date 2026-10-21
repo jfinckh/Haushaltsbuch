@@ -1,0 +1,69 @@
+{
+  "validation": {
+    "nameRequired": "Bitte gib einen Namen ein.",
+    "nameTooLong": "Der Name ist zu lang.",
+    "ibanInvalid": "Gib eine gültige IBAN ein.",
+    "typeNotAtBank": "Diese Kontoart gibt es bei dieser Bank nicht.",
+    "cashHasNoIban": "Bargeld hat keine IBAN."
+  },
+  "banks": {
+    "ing": "ING",
+    "trade_republic": "Trade Republic",
+    "cash": "Bargeld",
+    "other": "Andere Bank"
+  },
+  "types": {
+    "checking": "Girokonto",
+    "savings": "Tagesgeldkonto",
+    "clearing": "Verrechnungskonto",
+    "depot": "Depot",
+    "cash": "Bargeld"
+  },
+  "roles": {
+    "everyday": "Alltag",
+    "savings": "Sparen"
+  },
+  "visibility": {
+    "private": "Privat",
+    "shared": "Gemeinsam"
+  },
+  "list": {
+    "empty": "Noch keine Konten.",
+    "archived": "Archiviert ({count})"
+  },
+  "form": {
+    "bank": "Bank",
+    "tradeRepublicPair": "Verrechnungskonto (Alltag) und Depot (Sparen) zusammen anlegen",
+    "name": "Name",
+    "namePlaceholder": "z. B. ING Giro",
+    "type": "Kontoart",
+    "role": "Rolle",
+    "openingBalance": "Anfangssaldo (€)",
+    "clearingBalance": "Saldo Verrechnungskonto (€)",
+    "depotBalance": "Saldo Depot (€)",
+    "iban": "IBAN (optional)",
+    "ibanOfClearing": "IBAN des Verrechnungskontos (optional)",
+    "whoCanSee": "Wer es sehen kann",
+    "private": "Privat: nur du. Die anderen sehen nicht, dass es existiert.",
+    "shared": "Gemeinsam: alle in deinem Haushalt.",
+    "onlyOwnerCanMakePrivate": "Nur die Person, die das Konto angelegt hat, kann es privat machen.",
+    "save": "Speichern",
+    "addBoth": "Beide Konten anlegen",
+    "add": "Konto anlegen",
+    "saveFailed": "Das Konto konnte nicht gespeichert werden. Bitte versuch es noch einmal.",
+    "notOwner": "Nur die Person, die das Konto angelegt hat, kann ändern, wer es sieht.",
+    "noHousehold": "Lege zuerst einen Haushalt an, um Konten zu teilen."
+  },
+  "actions": {
+    "archive": "Archivieren",
+    "unarchive": "Wiederherstellen",
+    "delete": "Löschen",
+    "deleteTitle": "Dieses Konto löschen?",
+    "deleteShared": "Es wird für alle in deinem Haushalt gelöscht. Das kann nicht rückgängig gemacht werden. Archiviere es stattdessen, um es zu behalten.",
+    "deletePrivate": "Das kann nicht rückgängig gemacht werden. Archiviere es stattdessen, um es zu behalten.",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "changeFailed": "Das Konto konnte nicht geändert werden. Bitte versuch es noch einmal.",
+    "deleteFailed": "Das Konto konnte nicht gelöscht werden. Bitte versuch es noch einmal."
+  }
+}

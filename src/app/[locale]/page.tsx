@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { AccountList } from "@/accounts";
 import { InviteShareButton, SignOutButton } from "@/auth";
@@ -36,49 +37,56 @@ async function Welcome() {
   const names = await auth.getUserNames(memberIds);
   const invitedHere = inviter && memberIds.includes(inviter.id);
   const lastMember = household.memberCount === 1;
+  const t = await getTranslations("app");
+  const format = await getFormatter();
+  const memberLine = describeMembers(
+    user.id,
+    memberIds,
+    names,
+    { you: t("members.you"), onlyYou: t("members.onlyYou"), aMember: t("members.aMember") },
+    (items) => format.list(items, { type: "conjunction" }),
+  );
 
   return (
     <div className="card bg-base-100 w-full max-w-md shadow-md">
       <div className="card-body gap-4">
         <div className="flex items-center justify-between gap-2">
-          <h1 className="card-title text-2xl">Hello, {user.name}</h1>
+          <h1 className="card-title text-2xl">{t("home.greeting", { name: user.name })}</h1>
           <SignOutButton redirectTo="/sign-in" />
         </div>
         <div>
           <HouseholdNameEditor name={household.name} />
           <p className="opacity-70">
-            {describeMembers(user.id, memberIds, names)}
-            {invitedHere && ` · invited by ${inviter.name}`}
+            {memberLine}
+            {invitedHere && ` · ${t("home.invitedBy", { name: inviter.name })}`}
           </p>
         </div>
         {keptReason && inviter && (
           <div role="status" className="alert alert-info alert-soft">
             <span>
               {keptReason === "other-members"
-                ? `${inviter.name} invited you to their household. You stay in yours because it has other members. Leave it to join theirs.`
-                : `${inviter.name} invited you to their household. You stay in yours because it has shared accounts. Leave it to join theirs. Leaving deletes the shared accounts; your private accounts stay with you.`}
+                ? t("home.keptOtherMembers", { name: inviter.name })
+                : t("home.keptSharedAccounts", { name: inviter.name })}
             </span>
           </div>
         )}
         <div className="divider my-0" />
         <div className="flex items-center justify-between gap-2">
-          <h2 className="font-semibold">Accounts</h2>
+          <h2 className="font-semibold">{t("home.accounts")}</h2>
           <Link href="/accounts/new" className="btn btn-primary btn-sm">
-            Add account
+            {t("home.addAccount")}
           </Link>
         </div>
         <AccountList accounts={visibleAccounts} />
         <div className="divider my-0" />
-        <h2 className="font-semibold">Invite your partner</h2>
-        <InviteShareButton shareText="Join our Haushaltsbuch:" />
+        <h2 className="font-semibold">{t("home.invitePartner")}</h2>
+        <InviteShareButton shareText={t("home.shareText")} />
         <div className="divider my-0" />
         <div className="flex justify-end">
           <LeaveHouseholdButton
             lastMember={lastMember}
             note={
-              lastMember
-                ? "Its shared accounts are deleted with it. Your private accounts stay with you."
-                : "Your private accounts stay with you. Shared accounts stay with the household."
+              lastMember ? t("home.leaveNoteLastMember") : t("home.leaveNoteOthers")
             }
           />
         </div>

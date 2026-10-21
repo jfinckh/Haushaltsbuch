@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { AccountActions, AccountForm } from "@/accounts";
 import { accounts } from "@/app/_lib/accounts";
@@ -26,17 +27,18 @@ async function EditAccount({ params }: Params) {
   // Another member's private account does not exist for this caller: same 404 as an unknown id.
   const account = await accounts.getAccount(caller, (await params).id);
   if (!account) notFound();
+  const t = await getTranslations("app.accounts");
   return (
     <>
       <div className="flex items-center justify-between gap-2">
         <h1 className="card-title text-2xl">{account.name}</h1>
         <Link href="/" className="btn btn-ghost btn-sm">
-          Back
+          {t("back")}
         </Link>
       </div>
       {account.archived && (
         <div role="status" className="alert alert-soft">
-          <span>This account is archived.</span>
+          <span>{t("archived")}</span>
         </div>
       )}
       <AccountForm account={account} />

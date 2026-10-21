@@ -1,10 +1,11 @@
 "use client";
 
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { authClient } from "../client";
 
 type Props = {
-  /** Text shown in the native share sheet. */
+  /** Text shown in the native share sheet. Default: none, only the link. */
   shareText?: string;
 };
 
@@ -15,7 +16,9 @@ type State =
   | { status: "error" };
 
 /** Creates a single-use invite link and shares it (native share sheet) or shows it to copy. */
-export function InviteShareButton({ shareText = "Join me:" }: Props) {
+export function InviteShareButton({ shareText }: Props) {
+  const t = useTranslations("auth.invite");
+  const format = useFormatter();
   const [state, setState] = useState<State>({ status: "idle" });
 
   async function createAndShare() {
@@ -43,23 +46,23 @@ export function InviteShareButton({ shareText = "Join me:" }: Props) {
     <div className="flex flex-col gap-3">
       <button type="button" className="btn btn-primary" onClick={createAndShare} disabled={state.status === "pending"}>
         {state.status === "pending" && <span className="loading loading-spinner loading-sm" />}
-        Invite someone
+        {t("button")}
       </button>
       {state.status === "error" && (
         <div role="alert" className="alert alert-error alert-soft">
-          Could not create an invite link. Please try again.
+          {t("createFailed")}
         </div>
       )}
       {state.status === "ready" && (
         <div className="flex flex-col gap-2">
           <div className="join w-full">
-            <input className="input join-item w-full" value={state.url} readOnly aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} />
+            <input className="input join-item w-full" value={state.url} readOnly aria-label={t("linkLabel")} onFocus={(e) => e.currentTarget.select()} />
             <button type="button" className="btn join-item" onClick={() => copy(state.url, state.expiresAt)}>
-              {state.copied ? "Copied" : "Copy"}
+              {state.copied ? t("copied") : t("copy")}
             </button>
           </div>
           <p className="text-sm opacity-70">
-            Works once, valid until {state.expiresAt.toLocaleDateString("en-GB")}.
+            {t("validUntil", { date: format.dateTime(state.expiresAt, { dateStyle: "medium" }) })}
           </p>
         </div>
       )}

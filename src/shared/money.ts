@@ -37,7 +37,7 @@ export function formatEuro(cents: number): string {
 export const germanAmountSchema = z.string().transform((value, ctx) => {
   const cents = parseGermanAmount(value);
   if (cents === null) {
-    ctx.addIssue({ code: "custom", message: 'Enter an amount like "1.234,56".' });
+    ctx.addIssue({ code: "custom", message: "shared.validation.amountInvalid" });
     return z.NEVER;
   }
   return cents;

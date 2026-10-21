@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { authClient } from "../client";
@@ -21,6 +22,7 @@ const openInvite = (token: string) => authClient.invite.open({ token });
 
 /** Landing view for an invite link: checks it and remembers it for the next sign-up or sign-in. */
 export function InviteAcceptance({ token, signInHref, signUpHref, continueHref = "/" }: Props) {
+  const t = useTranslations("auth.inviteAcceptance");
   const [state, setState] = useState<State>({ status: "loading" });
   // Opening an invite applies it, so it must run once per token. Effects can run twice
   // (React Strict Mode); both runs share the same request.
@@ -45,39 +47,39 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
         {state.status === "loading" && <span className="loading loading-spinner mx-auto" />}
         {state.status === "invalid" && (
           <>
-            <h1 className="card-title text-2xl">Invite link not valid</h1>
-            <p>This link has expired or was already used. Ask for a new one, or sign up without an invite.</p>
+            <h1 className="card-title text-2xl">{t("invalidTitle")}</h1>
+            <p>{t("invalidText")}</p>
             <div className="card-actions">
-              <Link href={signUpHref} className="btn btn-primary">Sign up</Link>
-              <Link href={signInHref} className="btn btn-ghost">Sign in</Link>
+              <Link href={signUpHref} className="btn btn-primary">{t("signUp")}</Link>
+              <Link href={signInHref} className="btn btn-ghost">{t("signIn")}</Link>
             </div>
           </>
         )}
         {state.status === "valid" && state.applied && (
           <>
-            <h1 className="card-title text-2xl">Invite accepted</h1>
-            <p>You were invited by {state.inviterName}.</p>
+            <h1 className="card-title text-2xl">{t("acceptedTitle")}</h1>
+            <p>{t("acceptedText", { name: state.inviterName })}</p>
             <div className="card-actions">
-              <Link href={continueHref} className="btn btn-primary">Continue</Link>
+              <Link href={continueHref} className="btn btn-primary">{t("continue")}</Link>
             </div>
           </>
         )}
         {state.status === "valid" && !state.applied && state.signedIn && (
           <>
-            <h1 className="card-title text-2xl">This is your own invite</h1>
-            <p>You can&apos;t accept your own invite link. Share it with the person you want to invite.</p>
+            <h1 className="card-title text-2xl">{t("ownTitle")}</h1>
+            <p>{t("ownText")}</p>
             <div className="card-actions">
-              <Link href={continueHref} className="btn btn-primary">Continue</Link>
+              <Link href={continueHref} className="btn btn-primary">{t("continue")}</Link>
             </div>
           </>
         )}
         {state.status === "valid" && !state.applied && !state.signedIn && (
           <>
-            <h1 className="card-title text-2xl">{state.inviterName} invited you</h1>
-            <p>Create an account, or sign in if you already have one.</p>
+            <h1 className="card-title text-2xl">{t("invitedTitle", { name: state.inviterName })}</h1>
+            <p>{t("invitedText")}</p>
             <div className="card-actions">
-              <Link href={signUpHref} className="btn btn-primary">Sign up</Link>
-              <Link href={signInHref} className="btn btn-ghost">Sign in</Link>
+              <Link href={signUpHref} className="btn btn-primary">{t("signUp")}</Link>
+              <Link href={signInHref} className="btn btn-ghost">{t("signIn")}</Link>
             </div>
           </>
         )}

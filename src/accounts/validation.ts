@@ -2,7 +2,8 @@ import { z } from "zod";
 import { germanAmountSchema } from "@/shared/money";
 import { isValidIban, normalizeIban } from "./iban";
 
-// Shared by the form (client) and the API routes (server).
+// Shared by the form (client) and the API routes (server). Messages are translation keys; the
+// form translates them, as it does the bank, type and role names (accounts messages).
 
 export const BANKS = ["ing", "trade_republic", "cash", "other"] as const;
 export const ACCOUNT_TYPES = ["checking", "savings", "clearing", "depot", "cash"] as const;
@@ -13,23 +14,6 @@ export type Bank = (typeof BANKS)[number];
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 export type AccountRole = (typeof ACCOUNT_ROLES)[number];
 export type Visibility = (typeof VISIBILITIES)[number];
-
-export const BANK_LABELS: Record<Bank, string> = {
-  ing: "ING",
-  trade_republic: "Trade Republic",
-  cash: "Cash",
-  other: "Other bank",
-};
-
-export const TYPE_LABELS: Record<AccountType, string> = {
-  checking: "Checking account",
-  savings: "Savings account (Tagesgeld)",
-  clearing: "Clearing account",
-  depot: "Depot",
-  cash: "Cash",
-};
-
-export const ROLE_LABELS: Record<AccountRole, string> = { everyday: "Everyday", savings: "Savings" };
 
 /** The account types each bank offers. */
 export const TYPES_BY_BANK: Record<Bank, readonly AccountType[]> = {
@@ -44,13 +28,13 @@ export function defaultRole(type: AccountType): AccountRole {
   return type === "savings" || type === "depot" ? "savings" : "everyday";
 }
 
-const nameSchema = z.string().trim().min(1, "Please enter a name.").max(60, "Name is too long.");
+const nameSchema = z.string().trim().min(1, "accounts.validation.nameRequired").max(60, "accounts.validation.nameTooLong");
 
 /** An optional IBAN as typed: spaces and case do not matter, empty means none. */
 const ibanSchema = z
   .string()
   .transform(normalizeIban)
-  .refine((iban) => iban === "" || isValidIban(iban), "Enter a valid IBAN.")
+  .refine((iban) => iban === "" || isValidIban(iban), "accounts.validation.ibanInvalid")
   .transform((iban) => iban || null)
   .nullable();
 
@@ -67,10 +51,10 @@ export const accountValuesSchema = z
   })
   .superRefine((account, ctx) => {
     if (!TYPES_BY_BANK[account.bank].includes(account.type)) {
-      ctx.addIssue({ code: "custom", path: ["type"], message: "This bank has no such account type." });
+      ctx.addIssue({ code: "custom", path: ["type"], message: "accounts.validation.typeNotAtBank" });
     }
     if (account.bank === "cash" && account.iban) {
-      ctx.addIssue({ code: "custom", path: ["iban"], message: "Cash has no IBAN." });
+      ctx.addIssue({ code: "custom", path: ["iban"], message: "accounts.validation.cashHasNoIban" });
     }
   });
 

@@ -1,0 +1,31 @@
+{
+  "validation": {
+    "nameRequired": "Please enter a name.",
+    "nameTooLong": "Name is too long."
+  },
+  "create": {
+    "title": "Create your household",
+    "intro": "You can invite your partner afterwards.",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Mustermann",
+    "submit": "Create household",
+    "failed": "Could not create the household. Please try again."
+  },
+  "rename": {
+    "button": "Rename",
+    "nameLabel": "Household name",
+    "save": "Save",
+    "cancel": "Cancel",
+    "failed": "Could not rename the household. Please try again."
+  },
+  "leave": {
+    "button": "Leave household",
+    "title": "Leave this household?",
+    "lastMember": "You are the only member. Leaving deletes the household. Afterwards you can create a new one or join another one through a new invite link.",
+    "otherMembers": "The other members keep the household. Afterwards you can create a new one or join another one through a new invite link.",
+    "cancel": "Cancel",
+    "confirm": "Leave",
+    "close": "Close",
+    "failed": "Could not leave the household. Please try again."
+  }
+}

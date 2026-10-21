@@ -2,3 +2,4 @@
 export { AccountActions } from "./components/account-actions";
 export { AccountForm } from "./components/account-form";
 export { AccountList } from "./components/account-list";
+export { messages as accountsMessages } from "./messages";

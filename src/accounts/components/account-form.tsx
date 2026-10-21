@@ -1,18 +1,17 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatCents } from "@/shared/money";
+import { useTranslateKey } from "@/shared/use-translate-key";
 import type { AccountView } from "../create-accounts";
 import {
   ACCOUNT_ROLES,
-  BANK_LABELS,
   BANKS,
   createAccountSchema,
   createTradeRepublicSchema,
   defaultRole,
-  ROLE_LABELS,
-  TYPE_LABELS,
   TYPES_BY_BANK,
   updateAccountSchema,
   type AccountRole,
@@ -30,6 +29,7 @@ type Props = {
   redirectTo?: string;
 };
 
+/** Message keys per field, translated when shown. */
 type Errors = Record<string, string>;
 
 function firstErrors(issues: { path: PropertyKey[]; message: string }[]): Errors {
@@ -40,6 +40,8 @@ function firstErrors(issues: { path: PropertyKey[]; message: string }[]): Errors
 
 /** Creates or edits an account. Amounts are typed in German format ("1.234,56"). */
 export function AccountForm({ account, action = "/api/accounts", redirectTo = "/" }: Props) {
+  const t = useTranslations("accounts");
+  const tk = useTranslateKey();
   const router = useRouter();
   const editing = Boolean(account);
   const [bank, setBank] = useState<Bank>(account?.bank ?? "ing");
@@ -101,8 +103,13 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
     });
     setPending(false);
     if (!response.ok) {
-      const { error } = (await response.json().catch(() => ({}))) as { error?: string };
-      return setErrors({ form: error ?? "Could not save the account. Please try again." });
+      const form =
+        response.status === 403
+          ? "accounts.form.notOwner"
+          : response.status === 409
+            ? "accounts.form.noHousehold"
+            : "accounts.form.saveFailed";
+      return setErrors({ form });
     }
     router.push(redirectTo);
     router.refresh();
@@ -111,11 +118,11 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-2">
       <fieldset className="fieldset">
-        <label className="fieldset-legend" htmlFor="account-bank">Bank</label>
+        <label className="fieldset-legend" htmlFor="account-bank">{t("form.bank")}</label>
         <select id="account-bank" className="select w-full" value={bank} onChange={(e) => chooseBank(e.target.value as Bank)}>
           {BANKS.map((b) => (
             <option key={b} value={b}>
-              {BANK_LABELS[b]}
+              {t(`banks.${b}`)}
             </option>
           ))}
         </select>
@@ -129,40 +136,40 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
             checked={tradeRepublicPair}
             onChange={(e) => setTradeRepublicPair(e.target.checked)}
           />
-          Create clearing account (everyday) and depot (savings) together
+          {t("form.tradeRepublicPair")}
         </label>
       )}
 
       {!pair && (
         <>
           <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-name">Name</label>
+            <label className="fieldset-legend" htmlFor="account-name">{t("form.name")}</label>
             <input
               id="account-name"
               name="name"
               type="text"
-              placeholder="e.g. ING Giro"
+              placeholder={t("form.namePlaceholder")}
               defaultValue={account?.name}
               className="input w-full"
               maxLength={60}
               required
             />
-            {errors.name && <p className="label text-error">{errors.name}</p>}
+            {errors.name && <p className="label text-error">{tk(errors.name)}</p>}
           </fieldset>
           <div className="grid gap-2 sm:grid-cols-2">
             <fieldset className="fieldset">
-              <label className="fieldset-legend" htmlFor="account-type">Type</label>
+              <label className="fieldset-legend" htmlFor="account-type">{t("form.type")}</label>
               <select id="account-type" className="select w-full" value={type} onChange={(e) => chooseType(e.target.value as AccountType)}>
-                {types.map((t) => (
-                  <option key={t} value={t}>
-                    {TYPE_LABELS[t]}
+                {types.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`types.${option}`)}
                   </option>
                 ))}
               </select>
-              {errors.type && <p className="label text-error">{errors.type}</p>}
+              {errors.type && <p className="label text-error">{tk(errors.type)}</p>}
             </fieldset>
             <fieldset className="fieldset">
-              <label className="fieldset-legend" htmlFor="account-role">Role</label>
+              <label className="fieldset-legend" htmlFor="account-role">{t("form.role")}</label>
               <select
                 id="account-role"
                 className="select w-full"
@@ -174,14 +181,14 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
               >
                 {ACCOUNT_ROLES.map((r) => (
                   <option key={r} value={r}>
-                    {ROLE_LABELS[r]}
+                    {t(`roles.${r}`)}
                   </option>
                 ))}
               </select>
             </fieldset>
           </div>
           <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-balance">Opening balance (€)</label>
+            <label className="fieldset-legend" htmlFor="account-balance">{t("form.openingBalance")}</label>
             <input
               id="account-balance"
               name="openingBalance"
@@ -192,7 +199,7 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
               className="input w-full"
               required
             />
-            {errors.openingBalance && <p className="label text-error">{errors.openingBalance}</p>}
+            {errors.openingBalance && <p className="label text-error">{tk(errors.openingBalance)}</p>}
           </fieldset>
         </>
       )}
@@ -200,14 +207,14 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
       {pair && (
         <div className="grid gap-2 sm:grid-cols-2">
           <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-clearing-balance">Clearing account balance (€)</label>
+            <label className="fieldset-legend" htmlFor="account-clearing-balance">{t("form.clearingBalance")}</label>
             <input id="account-clearing-balance" name="clearingOpeningBalance" type="text" inputMode="decimal" placeholder="0,00" className="input w-full" />
-            {errors.clearingOpeningBalance && <p className="label text-error">{errors.clearingOpeningBalance}</p>}
+            {errors.clearingOpeningBalance && <p className="label text-error">{tk(errors.clearingOpeningBalance)}</p>}
           </fieldset>
           <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-depot-balance">Depot balance (€)</label>
+            <label className="fieldset-legend" htmlFor="account-depot-balance">{t("form.depotBalance")}</label>
             <input id="account-depot-balance" name="depotOpeningBalance" type="text" inputMode="decimal" placeholder="0,00" className="input w-full" />
-            {errors.depotOpeningBalance && <p className="label text-error">{errors.depotOpeningBalance}</p>}
+            {errors.depotOpeningBalance && <p className="label text-error">{tk(errors.depotOpeningBalance)}</p>}
           </fieldset>
         </div>
       )}
@@ -215,7 +222,7 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
       {bank !== "cash" && (
         <fieldset className="fieldset">
           <label className="fieldset-legend" htmlFor="account-iban">
-            IBAN {pair ? "of the clearing account " : ""}(optional)
+            {pair ? t("form.ibanOfClearing") : t("form.iban")}
           </label>
           <input
             id="account-iban"
@@ -226,12 +233,12 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
             defaultValue={account?.iban ?? ""}
             className="input w-full font-mono"
           />
-          {errors.iban && <p className="label text-error">{errors.iban}</p>}
+          {errors.iban && <p className="label text-error">{tk(errors.iban)}</p>}
         </fieldset>
       )}
 
       <fieldset className="fieldset">
-        <legend className="fieldset-legend">Who can see it</legend>
+        <legend className="fieldset-legend">{t("form.whoCanSee")}</legend>
         <label className="label cursor-pointer gap-2 whitespace-normal">
           <input
             type="radio"
@@ -241,7 +248,7 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
             disabled={!canChangeVisibility}
             onChange={() => setVisibility("private")}
           />
-          Private: only you. The others do not see that it exists.
+          {t("form.private")}
         </label>
         <label className="label cursor-pointer gap-2 whitespace-normal">
           <input
@@ -252,20 +259,20 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
             disabled={!canChangeVisibility}
             onChange={() => setVisibility("shared")}
           />
-          Shared: everyone in your household.
+          {t("form.shared")}
         </label>
-        {!canChangeVisibility && <p className="label">Only the person who added this account can make it private.</p>}
-        {errors.visibility && <p className="label text-error">{errors.visibility}</p>}
+        {!canChangeVisibility && <p className="label">{t("form.onlyOwnerCanMakePrivate")}</p>}
+        {errors.visibility && <p className="label text-error">{tk(errors.visibility)}</p>}
       </fieldset>
 
       {errors.form && (
         <p role="alert" className="text-error">
-          {errors.form}
+          {tk(errors.form)}
         </p>
       )}
       <button type="submit" className="btn btn-primary mt-2" disabled={pending}>
         {pending && <span className="loading loading-spinner loading-sm" />}
-        {editing ? "Save" : pair ? "Add both accounts" : "Add account"}
+        {editing ? t("form.save") : pair ? t("form.addBoth") : t("form.add")}
       </button>
     </form>
   );

@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "amountInvalid": "Enter an amount like \"1.234,56\"."
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

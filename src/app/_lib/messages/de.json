@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "description": "Haushaltsbuch für den gemeinsamen Haushalt"
+  },
+  "home": {
+    "greeting": "Hallo, {name}",
+    "invitedBy": "eingeladen von {name}",
+    "keptOtherMembers": "{name} hat dich in den eigenen Haushalt eingeladen. Du bleibst in deinem, weil er weitere Mitglieder hat. Verlass ihn, um beizutreten.",
+    "keptSharedAccounts": "{name} hat dich in den eigenen Haushalt eingeladen. Du bleibst in deinem, weil er gemeinsame Konten hat. Verlass ihn, um beizutreten. Dabei werden die gemeinsamen Konten gelöscht; deine privaten Konten bleiben bei dir.",
+    "accounts": "Konten",
+    "addAccount": "Konto anlegen",
+    "invitePartner": "Lade deine Partnerin oder deinen Partner ein",
+    "shareText": "Komm in unser Haushaltsbuch:",
+    "leaveNoteLastMember": "Seine gemeinsamen Konten werden mit gelöscht. Deine privaten Konten bleiben bei dir.",
+    "leaveNoteOthers": "Deine privaten Konten bleiben bei dir. Gemeinsame Konten bleiben im Haushalt."
+  },
+  "members": {
+    "you": "Du",
+    "onlyYou": "Bisher nur du",
+    "aMember": "ein Mitglied"
+  },
+  "accounts": {
+    "addTitle": "Konto anlegen",
+    "back": "Zurück",
+    "archived": "Dieses Konto ist archiviert."
+  }
+}

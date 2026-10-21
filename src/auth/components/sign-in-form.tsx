@@ -1,11 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { authClient } from "../client";
 import { signInSchema } from "../validation";
-import { fieldErrors } from "./field-errors";
+import { fieldErrors, useTranslateKey } from "./field-errors";
 
 type Props = {
   /** Where to go after signing in. Default: / */
@@ -15,7 +16,10 @@ type Props = {
 };
 
 export function SignInForm({ redirectTo = "/", signUpHref }: Props) {
+  const t = useTranslations("auth");
+  const tk = useTranslateKey();
   const router = useRouter();
+  // Message keys, translated when shown.
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
 
@@ -29,7 +33,10 @@ export function SignInForm({ redirectTo = "/", signUpHref }: Props) {
     setErrors({});
     const { error } = await authClient.signIn.email(parsed.data);
     setPending(false);
-    if (error) return setErrors({ form: error.status === 401 ? "Wrong email or password." : (error.message ?? "Sign-in failed.") });
+    if (error) {
+      const wrong = error.status === 401 || error.code === "INVALID_EMAIL_OR_PASSWORD";
+      return setErrors({ form: wrong ? "auth.signIn.wrongCredentials" : "auth.signIn.failed" });
+    }
     router.push(redirectTo);
     router.refresh();
   }
@@ -37,29 +44,29 @@ export function SignInForm({ redirectTo = "/", signUpHref }: Props) {
   return (
     <form onSubmit={onSubmit} noValidate className="card bg-base-100 w-full max-w-sm shadow-md">
       <div className="card-body gap-3">
-        <h1 className="card-title text-2xl">Sign in</h1>
+        <h1 className="card-title text-2xl">{t("signIn.title")}</h1>
         {errors.form && (
           <div role="alert" className="alert alert-error alert-soft">
-            {errors.form}
+            {tk(errors.form)}
           </div>
         )}
         <fieldset className="fieldset">
-          <label className="fieldset-legend" htmlFor="sign-in-email">Email</label>
+          <label className="fieldset-legend" htmlFor="sign-in-email">{t("fields.email")}</label>
           <input id="sign-in-email" name="email" type="email" autoComplete="email" className="input w-full" required />
-          {errors.email && <p className="label text-error">{errors.email}</p>}
-          <label className="fieldset-legend" htmlFor="sign-in-password">Password</label>
+          {errors.email && <p className="label text-error">{tk(errors.email)}</p>}
+          <label className="fieldset-legend" htmlFor="sign-in-password">{t("fields.password")}</label>
           <input id="sign-in-password" name="password" type="password" autoComplete="current-password" className="input w-full" required />
-          {errors.password && <p className="label text-error">{errors.password}</p>}
+          {errors.password && <p className="label text-error">{tk(errors.password)}</p>}
         </fieldset>
         <button type="submit" className="btn btn-primary" disabled={pending}>
           {pending && <span className="loading loading-spinner loading-sm" />}
-          Sign in
+          {t("signIn.submit")}
         </button>
         {signUpHref && (
           <p className="text-sm">
-            No account yet?{" "}
+            {t("signIn.noAccount")}{" "}
             <Link href={signUpHref} className="link link-primary">
-              Sign up
+              {t("signIn.signUpLink")}
             </Link>
           </p>
         )}

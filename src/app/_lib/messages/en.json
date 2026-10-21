@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "description": "Household budget book"
+  },
+  "home": {
+    "greeting": "Hello, {name}",
+    "invitedBy": "invited by {name}",
+    "keptOtherMembers": "{name} invited you to their household. You stay in yours because it has other members. Leave it to join theirs.",
+    "keptSharedAccounts": "{name} invited you to their household. You stay in yours because it has shared accounts. Leave it to join theirs. Leaving deletes the shared accounts; your private accounts stay with you.",
+    "accounts": "Accounts",
+    "addAccount": "Add account",
+    "invitePartner": "Invite your partner",
+    "shareText": "Join our Haushaltsbuch:",
+    "leaveNoteLastMember": "Its shared accounts are deleted with it. Your private accounts stay with you.",
+    "leaveNoteOthers": "Your private accounts stay with you. Shared accounts stay with the household."
+  },
+  "members": {
+    "you": "You",
+    "onlyYou": "Only you so far",
+    "aMember": "a member"
+  },
+  "accounts": {
+    "addTitle": "Add account",
+    "back": "Back",
+    "archived": "This account is archived."
+  }
+}

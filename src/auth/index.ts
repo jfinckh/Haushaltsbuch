@@ -6,3 +6,4 @@ export { InviteShareButton } from "./components/invite-share-button";
 export { InviteAcceptance } from "./components/invite-acceptance";
 export { useSession, type SessionUser } from "./client";
 export { signInSchema, signUpSchema } from "./validation";
+export { messages as authMessages } from "./messages";
