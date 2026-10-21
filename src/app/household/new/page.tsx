@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { CreateHouseholdForm } from "@/households";
 import { auth } from "@/app/_lib/auth";
+import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
 
 export default function NewHouseholdPage() {
@@ -15,10 +16,10 @@ export default function NewHouseholdPage() {
 }
 
 async function NewHousehold() {
-  const { user } = await auth.requireSession("/sign-in");
+  const { user, caller } = await requireCaller("/sign-in");
   const inviter = await auth.getInviter(user.id);
   const { membership } = await households.joinInvitersHousehold(
-    user.id,
+    caller,
     inviter && { inviterId: inviter.id, invitedAt: inviter.invitedAt },
   );
   if (membership) redirect("/");

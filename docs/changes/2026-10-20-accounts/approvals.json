@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:accounts",
+      "itemHash": "sha256:752c7b92dfbad0ca8f89b9e6b5b692078b7b7f8bdf7eba8c4d126cf844060fb2",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T15:53:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:accounts->households",
+      "itemHash": "sha256:c0ee5b25bed806bd9edc0f7a05d02f2d1a99f8b289395f80a17aed5d9b6a25fa",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T15:53:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:accounts->shared",
+      "itemHash": "sha256:3f57aa58fa6028db91f069e1be6056c9213f653950a100ac8b5c0116131a592b",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T15:53:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->accounts",
+      "itemHash": "sha256:44e2977bd3d2f287418cc915ed4fc78c0b05fde5c2bca17a7d830e6e67cf7950",
+      "decision": "changes-requested",
+      "comment": "[User did not answer this question — they sent a message instead. Treat that message as their response; do not re-ask.]",
+      "at": "2026-10-20T15:53:24Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "unit-new:accounts",
+      "itemHash": "sha256:752c7b92dfbad0ca8f89b9e6b5b692078b7b7f8bdf7eba8c4d126cf844060fb2",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:21Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:accounts->shared",
+      "itemHash": "sha256:3f57aa58fa6028db91f069e1be6056c9213f653950a100ac8b5c0116131a592b",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:21Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:households->shared",
+      "itemHash": "sha256:2fb373da50d0c074c1cbc040e3a5a737ea1479c5decefdac1c612c55f97cad86",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:21Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->accounts",
+      "itemHash": "sha256:44e2977bd3d2f287418cc915ed4fc78c0b05fde5c2bca17a7d830e6e67cf7950",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:21Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:account",
+      "itemHash": "sha256:2d9aa717a63f37d8381ca4340f1d76675226d1e2b0ba32a990b8b27a64e0fe11",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:35Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:session-check",
+      "itemHash": "sha256:1a30f34dad1399577985aa170176f3082662e743d3c803923d6bea7b7c58d172",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:35Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:FIELD_ENCRYPTION_KEYS",
+      "itemHash": "sha256:7ee6b9a5adeb2e87d89ce01ecb985fc9cec6eaafc756028439430385bc9cac30",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:35Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:BLIND_INDEX_KEY",
+      "itemHash": "sha256:3f97b7af5dd261f6ff2eaea76729c7a19f076095886b3c9c3d52a3d17406ec32",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:35Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:account:manage",
+      "itemHash": "sha256:fa5ce12c8dc3423aba14a74bb742fa36e380e32a3263e22b35959c90cd7b4997",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:44Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:household:switch",
+      "itemHash": "sha256:c7991b45d4ce4c739a5f91a690b7393cee954c76c3ec3e748e4282b699dacca1",
+      "decision": "approve",
+      "at": "2026-10-21T07:41:44Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:accounts:client:AccountForm",
+      "itemHash": "sha256:5c37f6121041c1ce508053442400421b7e38aa0dabd7e2a5e08cf1ea50e1d62f",
+      "decision": "approve",
+      "at": "2026-10-21T08:12:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:accounts:client:AccountList",
+      "itemHash": "sha256:bd519f8ca45b7ef03f4ca3445b9ebb6582f2aa3e4aab041ca57bb7d9c62061da",
+      "decision": "approve",
+      "at": "2026-10-21T08:12:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:accounts:client:AccountActions",
+      "itemHash": "sha256:945fbf2a640f50836750873e52b01b2b0ada11b736053ff020a6eef0ac5429fc",
+      "decision": "approve",
+      "at": "2026-10-21T08:12:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:accounts:server:createAccounts",
+      "itemHash": "sha256:52f635c2c9baac6e39febc2fef7a8edf2916d9d0cd43a600ac8723acace75703",
+      "decision": "approve",
+      "at": "2026-10-21T08:12:59Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:accounts:server:Accounts",
+      "itemHash": "sha256:99a020da3fb02e7aa554e7bec8e866c8907dd578b737a36a3988badc97495acf",
+      "decision": "approve",
+      "at": "2026-10-21T08:13:27Z",
+      "source": "hook"
+    }
+  ]
+}

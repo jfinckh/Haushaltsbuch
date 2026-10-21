@@ -1,8 +1,5 @@
-import { auth } from "@/app/_lib/auth";
+import { getCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
 import { householdsRoute } from "@/app/_lib/households-route";
 
-export const { GET, POST, PATCH } = householdsRoute({
-  households,
-  getUserId: async () => (await auth.getSession())?.user.id ?? null,
-});
+export const { GET, POST, PATCH } = householdsRoute({ households, getCaller });

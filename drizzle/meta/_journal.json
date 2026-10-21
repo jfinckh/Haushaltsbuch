@@ -43,6 +43,34 @@
       "when": 1792510171112,
       "tag": "0005_household_invite_use_invited_at",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792568584767,
+      "tag": "0006_auth_session_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792568586315,
+      "tag": "0007_households_session_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792568756941,
+      "tag": "0008_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792568758812,
+      "tag": "0009_accounts_rls",
+      "breakpoints": true
     }
   ]
 }

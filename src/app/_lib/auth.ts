@@ -1,12 +1,7 @@
 import "server-only";
 import { createAuth } from "@/auth/server";
 import { db } from "@/db/server";
-
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is not set`);
-  return value;
-}
+import { requireEnv } from "./env";
 
 export const auth = createAuth({
   db,

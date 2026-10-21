@@ -4,21 +4,36 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { householdMembershipRoute, householdsRoute } from "@/app/_lib/households-route";
 import { createHouseholds } from "@/households/server";
+import type { Caller, RlsDatabase } from "@/shared/rls";
+import { createTestSession, endTestSessions } from "@/shared/test-sessions";
 
 let households: ReturnType<typeof createHouseholds>;
+let db: RlsDatabase;
+let callers: Map<string, Promise<Caller>>;
 
 beforeEach(async () => {
-  const db = drizzle({ client: new PGlite() });
-  await migrate(db, { migrationsFolder: new URL("../../../../drizzle", import.meta.url).pathname });
+  const pglite = drizzle({ client: new PGlite() });
+  await migrate(pglite, { migrationsFolder: new URL("../../../../drizzle", import.meta.url).pathname });
+  db = pglite;
   households = createHouseholds({ db });
+  callers = new Map();
 });
 
+/** The signed-in session of `userId` (one per user), or nobody for null. */
+function sessionOf(userId: string | null) {
+  return async () => {
+    if (userId === null) return null;
+    if (!callers.has(userId)) callers.set(userId, createTestSession(db, userId));
+    return callers.get(userId)!;
+  };
+}
+
 function routeAs(userId: string | null) {
-  return householdsRoute({ households, getUserId: async () => userId });
+  return householdsRoute({ households, getCaller: sessionOf(userId) });
 }
 
 function membershipAs(userId: string | null) {
-  return householdMembershipRoute({ households, getUserId: async () => userId });
+  return householdMembershipRoute({ households, getCaller: sessionOf(userId) });
 }
 
 function post(body: unknown) {
@@ -36,6 +51,13 @@ describe("/api/households", () => {
     expect((await route.POST(post({ name: "A" }))).status).toBe(401);
     expect((await route.PATCH(patch({ name: "A" }))).status).toBe(401);
     expect((await membershipAs(null).DELETE()).status).toBe(401);
+  });
+
+  it("answers 401 once the session has ended", async () => {
+    const route = routeAs("max");
+    await route.POST(post({ name: "A" }));
+    await endTestSessions(db, "max");
+    expect((await route.GET()).status).toBe(401);
   });
 
   it("creates the caller's household once", async () => {
@@ -69,7 +91,7 @@ describe("/api/households", () => {
     const res = await routeAs("max").PATCH(patch({ name: "Renamed", id: b.household.id }, `?id=${b.household.id}`));
     expect(res.status).toBe(200);
     expect((await res.json()).household).toMatchObject({ name: "Renamed", memberCount: 1 });
-    expect((await households.getHousehold("dora"))?.name).toBe("B");
+    expect((await households.getHousehold((await sessionOf("dora")())!))?.name).toBe("B");
   });
 
   it("rejects invalid renames and callers without a household", async () => {
@@ -82,7 +104,7 @@ describe("/api/households", () => {
 describe("/api/households/membership", () => {
   it("lets a member leave; the last one deletes the household", async () => {
     await routeAs("max").POST(post({ name: "A" }));
-    await households.joinInvitersHousehold("erika", { inviterId: "max", invitedAt: new Date() });
+    await households.joinInvitersHousehold((await sessionOf("erika")())!, { inviterId: "max", invitedAt: new Date() });
 
     const first = await membershipAs("erika").DELETE();
     expect(first.status).toBe(200);

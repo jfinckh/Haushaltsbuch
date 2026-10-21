@@ -1,56 +1,55 @@
 import "server-only";
 import type { createHouseholds } from "@/households/server";
+import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
 type Deps = {
   households: ReturnType<typeof createHouseholds>;
-  /** The signed-in user's id, or null. */
-  getUserId: () => Promise<string | null>;
+  /** The signed-in caller, or null. */
+  getCaller: GetCaller;
 };
 
 /** Handlers for /api/households. Every response is about the caller's own household only. */
-export function householdsRoute({ households, getUserId }: Deps) {
+export function householdsRoute({ households, getCaller }: Deps) {
   return {
     async GET() {
-      const userId = await getUserId();
-      if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
-      const household = await households.getHousehold(userId);
-      if (!household) return Response.json({ error: "Not found" }, { status: 404 });
-      return Response.json({ household });
+      return asCaller(getCaller, async (caller) => {
+        const household = await households.getHousehold(caller);
+        if (!household) return notFound();
+        return json({ household });
+      });
     },
 
     async POST(request: Request) {
-      const userId = await getUserId();
-      if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
-      const body = await request.json().catch(() => null);
-      const result = await households.createHousehold(userId, body);
-      if (result.ok) return Response.json({ household: result.household }, { status: 201 });
-      if (result.reason === "already-member") return Response.json({ error: "Already in a household" }, { status: 409 });
-      return Response.json({ error: "Invalid input" }, { status: 400 });
+      return asCaller(getCaller, async (caller) => {
+        const result = await households.createHousehold(caller, await readJson(request));
+        if (result.ok) return json({ household: result.household }, 201);
+        if (result.reason === "already-member") return json({ error: "Already in a household" }, 409);
+        return invalidInput();
+      });
     },
 
     /** Renames the caller's household. Any id in the request is ignored. */
     async PATCH(request: Request) {
-      const userId = await getUserId();
-      if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
-      const body = await request.json().catch(() => null);
-      const result = await households.renameHousehold(userId, body);
-      if (result.ok) return Response.json({ household: result.household });
-      if (result.reason === "no-household") return Response.json({ error: "Not found" }, { status: 404 });
-      return Response.json({ error: "Invalid input" }, { status: 400 });
+      return asCaller(getCaller, async (caller) => {
+        const result = await households.renameHousehold(caller, await readJson(request));
+        if (result.ok) return json({ household: result.household });
+        if (result.reason === "no-household") return notFound();
+        return invalidInput();
+      });
     },
   };
 }
 
 /** Handlers for /api/households/membership: the caller's own membership only. */
-export function householdMembershipRoute({ households, getUserId }: Deps) {
+export function householdMembershipRoute({ households, getCaller }: Deps) {
   return {
     /** Leaves the caller's household. The last member to leave deletes it. */
     async DELETE() {
-      const userId = await getUserId();
-      if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
-      const result = await households.leaveHousehold(userId);
-      if (!result.left) return Response.json({ error: "Not found" }, { status: 404 });
-      return Response.json({ householdDeleted: result.householdDeleted });
+      return asCaller(getCaller, async (caller) => {
+        const result = await households.leaveHousehold(caller);
+        if (!result.left) return notFound();
+        return json({ householdDeleted: result.householdDeleted });
+      });
     },
   };
 }

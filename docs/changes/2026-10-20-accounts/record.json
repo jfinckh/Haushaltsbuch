@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "slug": "accounts",
+  "description": "Accounts",
+  "plan": {
+    "path": "docs/plans/2026-10-20-accounts.md",
+    "sha256": "0ec139d72e1b812f2172f889e1906c2dfd8fabc961ac9cb9672c72c53d2d6cf8"
+  },
+  "status": "final",
+  "base": "b8f49cecaa5e4da4e67800828b2a2145c10ed1bc"
+}

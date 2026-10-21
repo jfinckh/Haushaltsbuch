@@ -11,5 +11,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // Many tests start an in-memory Postgres and run every migration; under parallel load that
+    // takes longer than the 5 s default.
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
   },
 });

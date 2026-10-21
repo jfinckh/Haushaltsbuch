@@ -1,0 +1,487 @@
+{
+  "version": 1,
+  "base": "b8f49cecaa5e4da4e67800828b2a2145c10ed1bc",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/shared/money.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/money.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/field-crypto.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/field-crypto.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/rls.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/test-sessions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".env.example",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0006_auth_session_identity.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0007_households_session_rls.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/scoped.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/leave-household-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/validation.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/iban.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/iban.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-actions.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0008_accounts.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0009_accounts_rls.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0006_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0007_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0008_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0009_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/env.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/caller.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/accounts.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/accounts-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/households-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/membership/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/accounts/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/accounts/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/accounts/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/accounts/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/accounts/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/household/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/api.ts",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "file",
+      "id": "vitest.config.mts",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "unit",
+      "id": "accounts",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "accounts->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "households->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->households",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "account",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "accounts:client:AccountForm",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "export",
+      "id": "accounts:client:AccountList",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "export",
+      "id": "accounts:client:AccountActions",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "export",
+      "id": "accounts:server:createAccounts",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "export",
+      "id": "accounts:server:Accounts",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "configKey",
+      "id": "FIELD_ENCRYPTION_KEYS",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "BLIND_INDEX_KEY",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "accounts",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "app",
+      "to": "accounts",
+      "state": "new"
+    },
+    {
+      "from": "app",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "households",
+      "to": "shared",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:accounts",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:accounts->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:households->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->accounts",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:account",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:database:session-check",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "config-key-new:FIELD_ENCRYPTION_KEYS",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:BLIND_INDEX_KEY",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:account:manage",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:household:switch",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-add:accounts:client:AccountForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:accounts:client:AccountList",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:accounts:client:AccountActions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:accounts:server:createAccounts",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:accounts:server:Accounts",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

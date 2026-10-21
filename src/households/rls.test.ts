@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { household, householdInviteUse, householdMember } from "./schema";
-import { asUser } from "./scoped";
+import { withSession } from "@/shared/rls";
 import { createTestHouseholds, invite } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestHouseholds>>;
@@ -11,16 +11,16 @@ let householdA: string;
 
 beforeEach(async () => {
   setup = await createTestHouseholds();
-  const a = await setup.households.createHousehold("max", { name: "A" });
-  await setup.households.joinInvitersHousehold("erika", invite("max"));
-  await setup.households.createHousehold("dora", { name: "B" });
+  const a = await setup.households.createHousehold(await setup.as("max"), { name: "A" });
+  await setup.households.joinInvitersHousehold(await setup.as("erika"), invite("max"));
+  await setup.households.createHousehold(await setup.as("dora"), { name: "B" });
   if (!a.ok) throw new Error("setup failed");
   householdA = a.household.id;
 });
 
 describe("row-level security", () => {
   it("returns only rows of the current user's household, even without a filter", async () => {
-    const rows = await asUser(setup.db, "max", async (tx) => ({
+    const rows = await withSession(setup.db, await setup.as("max"), async (tx) => ({
       households: await tx.select().from(household),
       members: await tx.select().from(householdMember),
     }));
@@ -39,18 +39,27 @@ describe("row-level security", () => {
     expect(rows).toEqual({ households: [], members: [] });
   });
 
+  it("ignores a user id set by the server code instead of a session", async () => {
+    const rows = await setup.db.transaction(async (tx) => {
+      await tx.execute(sql`SET LOCAL ROLE app_user`);
+      await tx.execute(sql`SELECT set_config('app.user_id', 'max', true)`);
+      return tx.select().from(household);
+    });
+    expect(rows).toEqual([]);
+  });
+
   it("blocks writing into another household", async () => {
     await expect(
-      asUser(setup.db, "dora", (tx) => tx.insert(householdMember).values({ householdId: householdA, userId: "intruder" })),
+      withSession(setup.db, await setup.as("dora"), (tx) => tx.insert(householdMember).values({ householdId: householdA, userId: "intruder" })),
     ).rejects.toThrow();
     await expect(
-      asUser(setup.db, "dora", (tx) => tx.update(household).set({ name: "hacked" }).where(sql`true`).returning()),
+      withSession(setup.db, await setup.as("dora"), (tx) => tx.update(household).set({ name: "hacked" }).where(sql`true`).returning()),
     ).resolves.toHaveLength(1); // only dora's own household is visible, so only it is updated
     const [a] = await setup.db.select().from(household).where(sql`${household.id} = ${householdA}`);
     expect(a.name).toBe("A");
   });
 
   it("keeps the restricted role away from used invites", async () => {
-    await expect(asUser(setup.db, "erika", (tx) => tx.select().from(householdInviteUse))).rejects.toThrow();
+    await expect(withSession(setup.db, await setup.as("erika"), (tx) => tx.select().from(householdInviteUse))).rejects.toThrow();
   });
 });
