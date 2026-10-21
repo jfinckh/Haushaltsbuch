@@ -29,7 +29,8 @@
     "status": "Status",
     "new": "Neu",
     "duplicate": "Vorhanden",
-    "done": "Import abgeschlossen: {count, plural, one {# neue Buchung} other {# neue Buchungen}}."
+    "done": "Import abgeschlossen: {count, plural, one {# neue Buchung} other {# neue Buchungen}}.",
+    "transfersFound": "{linked, plural, one {# Umbuchung verknüpft} other {# Umbuchungen verknüpft}}, {proposed} vorgeschlagen."
   },
   "errors": {
     "invalid-input": "Wähle ein Konto und eine Datei.",

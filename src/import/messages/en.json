@@ -29,7 +29,8 @@
     "status": "Status",
     "new": "New",
     "duplicate": "Already there",
-    "done": "Import finished: {count, plural, one {# new booking} other {# new bookings}}."
+    "done": "Import finished: {count, plural, one {# new booking} other {# new bookings}}.",
+    "transfersFound": "{linked, plural, one {# transfer linked} other {# transfers linked}}, {proposed} proposed."
   },
   "errors": {
     "invalid-input": "Choose an account and a file.",

@@ -1,9 +1,12 @@
 import "server-only";
 import type { Transactions } from "@/transactions/server";
+import type { Transfers } from "@/transfers/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
 type Deps = {
   transactions: Transactions;
+  /** Records a type changed in the booking form as a manual transfer decision. */
+  transfers?: Transfers;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
@@ -37,7 +40,7 @@ export function transactionsRoute({ transactions, getCaller }: Deps) {
 }
 
 /** Handlers for /api/transactions/[id]. */
-export function transactionRoute({ transactions, getCaller }: Deps) {
+export function transactionRoute({ transactions, transfers, getCaller }: Deps) {
   return {
     async GET(_request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
@@ -48,7 +51,15 @@ export function transactionRoute({ transactions, getCaller }: Deps) {
 
     async PATCH(request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
-        const result = await transactions.updateTransaction(caller, (await params).id, await readJson(request));
+        const { id } = await params;
+        const before = transfers && (await transactions.getTransaction(caller, id));
+        const result = await transactions.updateTransaction(caller, id, await readJson(request));
+        if (result.ok && transfers && before && before.kind !== result.transaction.kind) {
+          // A type changed by hand wins over matching, and expense or income dissolves a link.
+          await transfers.setKind(caller, id, result.transaction.kind);
+          const updated = await transactions.getTransaction(caller, id);
+          if (updated) return json({ transaction: updated });
+        }
         if (result.ok) return json({ transaction: result.transaction });
         return result.reason === "not-found" ? notFound() : invalidInput();
       });

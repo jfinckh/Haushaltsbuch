@@ -5,6 +5,7 @@ import { importMessages } from "@/import";
 import type { Locale } from "@/shared/i18n";
 import { messages as sharedMessages } from "@/shared/messages";
 import { transactionsMessages } from "@/transactions";
+import { transfersMessages } from "@/transfers";
 import de from "../messages/de.json";
 import en from "../messages/en.json";
 
@@ -19,6 +20,7 @@ function forLocale<L extends Locale>(locale: L) {
     accounts: accountsMessages[locale],
     transactions: transactionsMessages[locale],
     import: importMessages[locale],
+    transfers: transfersMessages[locale],
   };
 }
 

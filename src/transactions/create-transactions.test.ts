@@ -283,3 +283,41 @@ describe("bookings written inside another part's database transaction", () => {
     expect(await withSession(setup.db, max, (tx) => transactions.deleteBookings(tx, []))).toBe(0);
   });
 });
+
+describe("finding bookings and changing their type inside another part's database transaction", () => {
+  it("finds visible bookings by id, and by account, amount and date range", async () => {
+    const a = await create(max, { date: "2026-10-01", amount: "-50,00" });
+    const b = await create(max, { accountId: "home-shared", date: "2026-10-03", amount: "50,00", kind: "income", category: null });
+    await create(max, { accountId: "home-shared", date: "2026-10-30", amount: "50,00", kind: "income", category: null });
+    const byId = await withSession(setup.db, max, (tx, userId) => transactions.findBookings(tx, userId, { ids: [a.id, b.id] }));
+    expect(byId.map((view) => view.id).sort()).toEqual([a.id, b.id].sort());
+    expect(byId.find((view) => view.id === a.id)).toMatchObject({ counterparty: "Bäckerei Müller", createdByMe: true });
+
+    const opposite = await withSession(setup.db, max, (tx, userId) =>
+      transactions.findBookings(tx, userId, { amountCents: 5000, from: "2026-09-20", to: "2026-10-15" }),
+    );
+    expect(opposite.map((view) => view.id)).toEqual([b.id]);
+  });
+
+  it("never finds bookings the caller may not see", async () => {
+    const own = await create(max);
+    const found = await withSession(setup.db, erika, (tx, userId) => transactions.findBookings(tx, userId, { ids: [own.id] }));
+    expect(found).toEqual([]);
+    const byAmount = await withSession(setup.db, dora, (tx, userId) => transactions.findBookings(tx, userId, { amountCents: -350 }));
+    expect(byAmount).toEqual([]);
+  });
+
+  it("sets the type and drops a category that no longer fits", async () => {
+    const booking = await create(max);
+    const changed = await withSession(setup.db, max, (tx) => transactions.setKind(tx, [booking.id], "transfer"));
+    expect(changed).toBe(1);
+    expect(await storedRow(booking.id)).toMatchObject({ kind: "transfer", category: null });
+  });
+
+  it("does not change bookings the caller may not see", async () => {
+    const booking = await create(max);
+    const changed = await withSession(setup.db, erika, (tx) => transactions.setKind(tx, [booking.id], "transfer"));
+    expect(changed).toBe(0);
+    expect(await storedRow(booking.id)).toMatchObject({ kind: "expense" });
+  });
+});

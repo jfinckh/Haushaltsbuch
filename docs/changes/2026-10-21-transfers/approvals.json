@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:transfers",
+      "itemHash": "sha256:3f0419c1ba95580d8b5497d8214ae6ce9f6640d5bd500df480808d66d94dcc41",
+      "decision": "approve",
+      "at": "2026-10-21T14:58:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:transfers->shared",
+      "itemHash": "sha256:62221a3ab3f81a25006114b35be2d81e8798c26dfc1deb5f4cb33f274e62a315",
+      "decision": "approve",
+      "at": "2026-10-21T14:58:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:transfers->transactions",
+      "itemHash": "sha256:1df0124c0cdca36e114762c66253b265f9ca9aa2c02a3af8ba21cf10dfea3852",
+      "decision": "approve",
+      "at": "2026-10-21T14:58:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->transfers",
+      "itemHash": "sha256:e0eb461df777daa6ea48cd2e1b21784776eb854f641a227840ed97cbec677b9c",
+      "decision": "approve",
+      "at": "2026-10-21T14:58:56Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:transferPair",
+      "itemHash": "sha256:b85b7398cd86752f4369310da5e4839ae3da4e3d934aa7f390df73ff7c62c986",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:07Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:transferBooking",
+      "itemHash": "sha256:07780d05313d493f26ec4e89a00a0d4e848ba0ffa4d815ad85fb186f11379442",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:07Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:household-accounts",
+      "itemHash": "sha256:44c812c65b9796d0a9272c163eb9758348cfd6de6461d114ad0a6c0a6f0e9710",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:07Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:household-members",
+      "itemHash": "sha256:a55a9281a1d27a981eb8f5d97a91f2329eeb5545765799a97bb4b2cf1455cab9",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:07Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:transfer-matching",
+      "itemHash": "sha256:65dd58f9ff8d271337347df72063c88990af5f102043c7af38cdeeaf5d93af2b",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:transfer:manage",
+      "itemHash": "sha256:881d1c75d8ce82994134ff063e1031e8b8b6bbd07dc6dea88e8cb8bbf8594ddc",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transfers:client:TransferPanel",
+      "itemHash": "sha256:19f37771d08dbf85556e9c769d511c20679a34d364f1910765b22aee5f844db9",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transfers:client:TransferInbox",
+      "itemHash": "sha256:0e877a5902a4a8b96af8b2240a885a19bfee32f7dfef1af383e0a096d662dc7e",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transfers:client:transfersMessages",
+      "itemHash": "sha256:49d39352781a2eab83d622967236fed755844a9fa216d4a582a064c6b10e45a2",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transfers:server:createTransfers",
+      "itemHash": "sha256:ceaa081cc62c24cb3ec294189976c6d297effd356ea4753d8ffbcee446a0f654",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transfers:server:Transfers",
+      "itemHash": "sha256:9931765f84b4486425b8955ee80ca8502301be70e4369678f3644590f7beda60",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:42Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:TransactionView",
+      "itemHash": "sha256:4d1202eb78177caf3ac1b090083ff8fa98a488f514ad15a3ed95a808f7103663",
+      "decision": "approve",
+      "at": "2026-10-21T14:59:42Z",
+      "source": "hook"
+    }
+  ]
+}

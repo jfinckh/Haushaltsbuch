@@ -1,0 +1,50 @@
+{
+  "title": "Umbuchung",
+  "kinds": {
+    "expense": "Ausgabe",
+    "income": "Einnahme",
+    "transfer": "Umbuchung",
+    "saving": "Sparen"
+  },
+  "status": {
+    "linkedTo": "Umbuchung an {account}",
+    "linkedFrom": "Umbuchung von {account}",
+    "hiddenTo": "Umbuchung an {name} (privat)",
+    "hiddenFrom": "Umbuchung von {name} (privat)",
+    "aMember": "einem Mitglied",
+    "manual": "von Hand",
+    "automatic": "automatisch",
+    "open": "Offene Umbuchung: Die Gegenbuchung fehlt noch.",
+    "overdue": "Seit über 14 Tagen offen. Fehlt ein Import, oder war es doch eine Ausgabe?",
+    "external": "Umbuchung ohne Gegenbuchung: externes eigenes Konto",
+    "toAccount": "Umbuchung ohne Gegenbuchung: {account}",
+    "anotherAccount": "anderes Konto",
+    "kindByHand": "Art von Hand gesetzt: {kind}",
+    "none": "Keine Umbuchung."
+  },
+  "proposals": {
+    "title": "Vorgeschlagene Gegenbuchungen",
+    "accept": "Übernehmen",
+    "reject": "Ablehnen"
+  },
+  "actions": {
+    "correct": "Korrigieren",
+    "unlink": "Verknüpfung lösen",
+    "chooseCandidate": "Gegenbuchung wählen",
+    "noCandidates": "Keine passende Gegenbuchung auf deinen Konten (gleicher Betrag, ± 14 Tage).",
+    "link": "Verknüpfen",
+    "changeKind": "Art ändern",
+    "apply": "Ändern",
+    "withoutPartner": "Umbuchung ohne Gegenbuchung",
+    "externalAccount": "Externes eigenes Konto",
+    "mark": "Markieren",
+    "failed": "Das hat nicht geklappt. Bitte versuche es noch einmal.",
+    "taken": "Diese Buchung ist inzwischen schon verknüpft."
+  },
+  "inbox": {
+    "open": "Offene Umbuchungen",
+    "overdue": "über 14 Tage",
+    "proposals": "Vorgeschlagene Umbuchungen",
+    "proposalWith": "mit {partner}"
+  }
+}

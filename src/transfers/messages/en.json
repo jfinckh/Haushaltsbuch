@@ -1,0 +1,50 @@
+{
+  "title": "Transfer",
+  "kinds": {
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer",
+    "saving": "Saving"
+  },
+  "status": {
+    "linkedTo": "Transfer to {account}",
+    "linkedFrom": "Transfer from {account}",
+    "hiddenTo": "Transfer to {name} (private)",
+    "hiddenFrom": "Transfer from {name} (private)",
+    "aMember": "a member",
+    "manual": "by hand",
+    "automatic": "automatic",
+    "open": "Open transfer: the counter-booking is still missing.",
+    "overdue": "Open for more than 14 days. Is an import missing, or was it an expense after all?",
+    "external": "Transfer without counter-booking: external own account",
+    "toAccount": "Transfer without counter-booking: {account}",
+    "anotherAccount": "another account",
+    "kindByHand": "Type set by hand: {kind}",
+    "none": "Not a transfer."
+  },
+  "proposals": {
+    "title": "Proposed counter-bookings",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
+  "actions": {
+    "correct": "Correct",
+    "unlink": "Unlink",
+    "chooseCandidate": "Choose counter-booking",
+    "noCandidates": "No matching counter-booking on your accounts (same amount, ± 14 days).",
+    "link": "Link",
+    "changeKind": "Change type",
+    "apply": "Change",
+    "withoutPartner": "Transfer without counter-booking",
+    "externalAccount": "External own account",
+    "mark": "Mark",
+    "failed": "That did not work. Please try again.",
+    "taken": "This booking has been linked in the meantime."
+  },
+  "inbox": {
+    "open": "Open transfers",
+    "overdue": "over 14 days",
+    "proposals": "Proposed transfers",
+    "proposalWith": "with {partner}"
+  }
+}

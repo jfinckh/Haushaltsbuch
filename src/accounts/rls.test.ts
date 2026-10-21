@@ -117,3 +117,42 @@ describe("accounts_visible_account_ids (accounts' database contract)", () => {
     expect(await visibleIds("max")).toEqual(["max-private", "max-shared"]);
   });
 });
+
+describe("accounts_household_accounts (accounts' contract for database functions)", () => {
+  /** Calls it like a SECURITY DEFINER function of another part would: as the owner, with the session set. */
+  async function householdAccounts(userId: string) {
+    const caller = await setup.as(userId);
+    return setup.db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT set_config('app.session_token', ${caller.sessionToken}, true)`);
+      const result = (await tx.execute(sql`SELECT id, visible FROM accounts_household_accounts() ORDER BY id`)) as unknown as {
+        rows: { id: string; visible: boolean }[];
+      };
+      return result.rows;
+    });
+  }
+
+  it("lists the household's shared accounts and its members' private accounts, with visibility", async () => {
+    expect(await householdAccounts("max")).toEqual([
+      { id: "erika-private", visible: false },
+      { id: "max-private", visible: true },
+      { id: "max-shared", visible: true },
+    ]);
+    expect(await householdAccounts("dora")).toEqual([{ id: "dora-shared", visible: true }]);
+    expect(await householdAccounts("lone")).toEqual([]);
+  });
+
+  it("says visible for exactly the accounts accounts_visible_account_ids gives", async () => {
+    for (const userId of ["max", "erika", "dora"]) {
+      const visible = (await householdAccounts(userId)).filter((a) => a.visible).map((a) => a.id);
+      const viaContract = await asUser(userId, async (tx) => {
+        const result = (await tx.execute(sql`SELECT accounts_visible_account_ids() AS id`)) as unknown as { rows: { id: string }[] };
+        return result.rows.map((r) => r.id).sort();
+      });
+      expect(visible).toEqual(viaContract);
+    }
+  });
+
+  it("cannot be called by app_user", async () => {
+    await expect(asUser("max", (tx) => tx.execute(sql`SELECT * FROM accounts_household_accounts()`))).rejects.toThrow();
+  });
+});

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-21",
+  "slug": "transfers",
+  "description": "Transfers",
+  "plan": {
+    "path": "docs/plans/2026-10-21-transfers.md",
+    "sha256": "c9c2691e8e85a9a2329b7ff847cfd3ad9db949446224f9a4d207152498bdb5e3"
+  },
+  "status": "final",
+  "base": "ac6af6e28ff0302d727a60d845b98e20fe3d59ab"
+}

@@ -131,6 +131,12 @@ describe("confirm", () => {
     const bookings = await setup.bookingsOf("max-private");
     expect(bookings).toHaveLength(29);
     expect(bookings.reduce((sum, b) => sum + Number(b.amount_cents), 0)).toBe(-109674);
+    expect([...result.bookingIds].sort()).toEqual(bookings.map((b) => b.id).sort());
+  });
+
+  it("returns no booking ids when nothing is new", async () => {
+    await confirm(max, upload("max-private"));
+    expect((await confirm(max, upload("max-private"))).bookingIds).toEqual([]);
   });
 
   it("creates nothing when the same file is imported twice", async () => {

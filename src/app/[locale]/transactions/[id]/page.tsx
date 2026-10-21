@@ -5,7 +5,9 @@ import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
 import { transactions } from "@/app/_lib/transactions";
+import { householdMembers, transfers } from "@/app/_lib/transfers";
 import { DeleteTransactionButton, TransactionForm } from "@/transactions";
+import { TransferPanel } from "@/transfers";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -28,7 +30,11 @@ async function EditTransaction({ params }: Params) {
   // A booking of another member's private account does not exist for this caller.
   const transaction = await transactions.getTransaction(caller, (await params).id);
   if (!transaction) notFound();
-  const visible = await accounts.listAccounts(caller);
+  const [visible, transferStatus, members] = await Promise.all([
+    accounts.listAccounts(caller),
+    transfers.statusOf(caller, transaction.id),
+    householdMembers(caller),
+  ]);
   // Active accounts, plus the booking's own account even if it is archived.
   const bookable = visible
     .filter((a) => !a.archived || a.id === transaction.accountId)
@@ -44,6 +50,16 @@ async function EditTransaction({ params }: Params) {
         </Link>
       </div>
       <TransactionForm accounts={bookable} transaction={transaction} />
+      {transferStatus && (
+        <>
+          <div className="divider my-0" />
+          <TransferPanel
+            status={transferStatus}
+            accounts={visible.filter((a) => !a.archived || a.id === transaction.accountId).map(({ id, name }) => ({ id, name }))}
+            memberNames={Object.fromEntries(members.map((m) => [m.userId, m.name]))}
+          />
+        </>
+      )}
       <div className="divider my-0" />
       <DeleteTransactionButton id={transaction.id} redirectTo={accountHref} />
     </>

@@ -139,6 +139,43 @@ describe("acceptance: ING test file", () => {
   });
 });
 
+describe("after a confirmed import", () => {
+  it("starts the transfer matching with the ids of the new bookings and returns its counts", async () => {
+    const calls: string[][] = [];
+    const body = new FormData();
+    body.set("accountId", maxPrivate);
+    body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
+    const route = importsRoute({
+      ...deps("max"),
+      afterImport: async (_caller, bookingIds) => {
+        calls.push(bookingIds);
+        return { linked: 2, proposed: 1 };
+      },
+    });
+    const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
+    expect(response.status).toBe(201);
+    expect((await response.json()).transfers).toEqual({ linked: 2, proposed: 1 });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toHaveLength(29);
+  });
+
+  it("keeps the import when the matching fails", async () => {
+    const body = new FormData();
+    body.set("accountId", maxPrivate);
+    body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
+    const route = importsRoute({
+      ...deps("max"),
+      afterImport: async () => {
+        throw new Error("boom");
+      },
+    });
+    const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
+    expect(response.status).toBe(201);
+    expect((await response.json()).transfers).toBeNull();
+    expect(await balanceOf("max", maxPrivate)).toBe(70326);
+  });
+});
+
 describe("/api/imports", () => {
   it("needs a session", async () => {
     expect((await previewAs(null, maxPrivate)).status).toBe(401);

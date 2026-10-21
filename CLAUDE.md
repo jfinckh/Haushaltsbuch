@@ -32,8 +32,8 @@ src/auth/           login, sessions, invite links, auth UI   → nothing (db is 
 src/households/     households, members, account visibility  → nothing (db is injected via createHouseholds)
 src/accounts/       accounts, role (everyday/savings)        → shared, households
 src/transactions/   bookings, categories, rules              → shared (account access via accounts' SQL function accounts_visible_account_ids)
-src/transfers/      transfer matching, manual linking        → transactions
-src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank and sets the opening balance)
+src/transfers/      transfer matching, manual linking        → shared, transactions (matching across the household in its own SECURITY DEFINER SQL functions, via accounts' accounts_household_accounts(); the app starts it after each import)
+src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank, sets the opening balance and starts transfer matching)
 src/budgets/        budgets per account                      → transactions
 src/insights/       dashboard figures, combined view         → transactions, budgets, accounts
 ```

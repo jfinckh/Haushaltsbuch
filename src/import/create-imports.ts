@@ -67,7 +67,15 @@ export type ImportFailure = {
   line?: number;
 };
 export type PreviewResult = { ok: true; preview: ImportPreview } | ImportFailure;
-export type ConfirmResult = { ok: true; import: ImportView; openingBalanceFromFileCents: number | null } | ImportFailure;
+export type ConfirmResult =
+  | {
+      ok: true;
+      import: ImportView;
+      openingBalanceFromFileCents: number | null;
+      /** The bookings this import created (e.g. for transfer matching). */
+      bookingIds: string[];
+    }
+  | ImportFailure;
 
 const CONTEXT = {
   file: "import.file",
@@ -256,7 +264,7 @@ export function createImports({ db, crypto: fieldCrypto, transactions }: Imports
         }
 
         const [view] = await views(tx, userId, eq(importBatch.id, importId));
-        return { ok: true, import: view, openingBalanceFromFileCents };
+        return { ok: true, import: view, openingBalanceFromFileCents, bookingIds };
       });
     },
 

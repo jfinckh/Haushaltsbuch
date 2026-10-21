@@ -11,6 +11,11 @@ type Deps = {
   imports: Imports;
   accounts: Accounts;
   transactions: Transactions;
+  /**
+   * Runs after a confirmed import with the ids of its new bookings, e.g. transfer matching. Its own
+   * database transaction: if it fails, the import stays.
+   */
+  afterImport?: (caller: Caller, bookingIds: string[]) => Promise<{ linked: number; proposed: number }>;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
@@ -88,7 +93,16 @@ export function importsRoute(deps: Deps) {
           });
           if (updated.ok) openingBalanceCents = updated.account.openingBalanceCents;
         }
-        return json({ import: result.import, openingBalanceCents }, 201);
+        let transfers: { linked: number; proposed: number } | null = null;
+        if (deps.afterImport) {
+          try {
+            transfers = await deps.afterImport(caller, result.bookingIds);
+          } catch (error) {
+            // The import is done; matching can be redone by hand. Log no booking data.
+            console.error("Transfer matching after import failed", error instanceof Error ? error.name : "unknown");
+          }
+        }
+        return json({ import: result.import, openingBalanceCents, transfers }, 201);
       });
     },
   };

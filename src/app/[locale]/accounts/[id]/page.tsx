@@ -6,8 +6,10 @@ import { accounts } from "@/app/_lib/accounts";
 import { currentBalances } from "@/app/_lib/balances";
 import { requireCaller } from "@/app/_lib/caller";
 import { transactions } from "@/app/_lib/transactions";
+import { householdMembers, transfers } from "@/app/_lib/transfers";
 import { formatEuro } from "@/shared/money";
 import { TransactionFilters, TransactionList } from "@/transactions";
+import { TransferInbox } from "@/transfers";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -38,9 +40,12 @@ async function AccountBookings({ params, searchParams }: Props) {
   if (!account) notFound();
   const query = await searchParams;
   const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
-  const [listed, sums] = await Promise.all([
+  const [listed, sums, transferOverview, visible, members] = await Promise.all([
     transactions.listTransactions(caller, { accountId: id, ...filters }),
     transactions.balances(caller),
+    transfers.accountOverview(caller, id),
+    accounts.listAccounts(caller),
+    householdMembers(caller),
   ]);
   if (!listed.ok && listed.reason === "not-found") notFound();
   const balance = currentBalances([account], sums)[account.id];
@@ -78,6 +83,13 @@ async function AccountBookings({ params, searchParams }: Props) {
           </Link>
         )}
       </div>
+      {transferOverview && (
+        <TransferInbox
+          overview={transferOverview}
+          accounts={visible.map(({ id, name }) => ({ id, name }))}
+          memberNames={Object.fromEntries(members.map((m) => [m.userId, m.name]))}
+        />
+      )}
       <div className="divider my-0" />
       <TransactionFilters values={filters} />
       {listed.ok ? (

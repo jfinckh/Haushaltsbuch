@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, like, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, like, lte, or, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
@@ -35,6 +35,16 @@ export type TransactionView = {
   counterpartyIban: string | null;
   reference: string | null;
   createdByMe: boolean;
+};
+
+/** Which bookings findBookings returns; all given criteria must hold. */
+export type FindBookingsCriteria = {
+  ids?: string[];
+  accountId?: string;
+  amountCents?: number;
+  /** Booking dates, YYYY-MM-DD, inclusive. */
+  from?: string;
+  to?: string;
 };
 
 export type ListTransactionsResult =
@@ -247,6 +257,48 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         .where(and(inArray(transaction.id, ids), visible))
         .returning({ id: transaction.id });
       return deleted.length;
+    },
+
+    /**
+     * Visible bookings inside a database transaction another part opened with withSession: by ids,
+     * and/or by account, exact amount and date range. Oldest first. Row-level security applies.
+     */
+    async findBookings(tx: RlsTransaction, userId: string, criteria: FindBookingsCriteria): Promise<TransactionView[]> {
+      if (criteria.ids?.length === 0) return [];
+      const filters = [
+        visible,
+        criteria.ids && inArray(transaction.id, criteria.ids),
+        criteria.accountId && eq(transaction.accountId, criteria.accountId),
+        criteria.amountCents !== undefined && eq(transaction.amountCents, criteria.amountCents),
+        criteria.from && gte(transaction.bookingDate, criteria.from),
+        criteria.to && lte(transaction.bookingDate, criteria.to),
+      ].filter((filter): filter is SQL => Boolean(filter));
+      const rows = await tx
+        .select()
+        .from(transaction)
+        .where(and(...filters))
+        .orderBy(asc(transaction.bookingDate), asc(transaction.createdAt));
+      return rows.map((row) => toView(row, userId));
+    },
+
+    /**
+     * Sets the type of the visible bookings among `ids` inside a given database transaction; a
+     * category that does not fit the new type is cleared. Returns how many changed.
+     */
+    async setKind(tx: RlsTransaction, ids: string[], kind: TransactionKind): Promise<number> {
+      if (ids.length === 0) return 0;
+      const rows = await tx
+        .select({ id: transaction.id, category: transaction.category })
+        .from(transaction)
+        .where(and(inArray(transaction.id, ids), visible));
+      for (const row of rows) {
+        const category = row.category && isCategoryFor(kind, row.category) ? row.category : null;
+        await tx
+          .update(transaction)
+          .set({ kind, category, updatedAt: new Date() })
+          .where(and(eq(transaction.id, row.id), visible));
+      }
+      return rows.length;
     },
 
     /** Sum of the bookings per visible account that has any (cents). The app adds the opening balance. */

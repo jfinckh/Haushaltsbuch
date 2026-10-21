@@ -63,3 +63,19 @@ describe("row-level security", () => {
     await expect(withSession(setup.db, await setup.as("erika"), (tx) => tx.select().from(householdInviteUse))).rejects.toThrow();
   });
 });
+
+describe("households_current_user_member_ids (households' database contract)", () => {
+  const memberIds = async (userId: string) =>
+    withSession(setup.db, await setup.as(userId), async (tx) => {
+      const result = (await tx.execute(sql`SELECT households_current_user_member_ids() AS id`)) as unknown as {
+        rows: { id: string }[];
+      };
+      return result.rows.map((row) => row.id).sort();
+    });
+
+  it("lists the members of the session user's household only", async () => {
+    expect(await memberIds("max")).toEqual(["erika", "max"]);
+    expect(await memberIds("dora")).toEqual(["dora"]);
+    expect(await memberIds("lone")).toEqual([]);
+  });
+});
