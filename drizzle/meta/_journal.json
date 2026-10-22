@@ -120,6 +120,20 @@
       "when": 1792594872486,
       "tag": "0016_transfers_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792645903530,
+      "tag": "0017_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792645905074,
+      "tag": "0018_rules_functions",
+      "breakpoints": true
     }
   ]
 }

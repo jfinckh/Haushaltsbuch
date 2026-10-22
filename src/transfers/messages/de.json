@@ -20,7 +20,8 @@
     "toAccount": "Umbuchung ohne Gegenbuchung: {account}",
     "anotherAccount": "anderes Konto",
     "kindByHand": "Art von Hand gesetzt: {kind}",
-    "none": "Keine Umbuchung."
+    "none": "Keine Umbuchung.",
+    "externalByRule": "Umbuchung ohne Gegenbuchung: externes eigenes Konto (per Regel). Taucht die Gegenbuchung auf, wird sie verknüpft."
   },
   "proposals": {
     "title": "Vorgeschlagene Gegenbuchungen",
@@ -39,7 +40,10 @@
     "externalAccount": "Externes eigenes Konto",
     "mark": "Markieren",
     "failed": "Das hat nicht geklappt. Bitte versuche es noch einmal.",
-    "taken": "Diese Buchung ist inzwischen schon verknüpft."
+    "taken": "Diese Buchung ist inzwischen schon verknüpft.",
+    "learnRule": "Künftig immer so (Regel für dieses Konto)",
+    "ruleCounterparty": "Gegenpartei enthält diesen Text",
+    "ruleReference": "Verwendungszweck enthält diesen Text"
   },
   "inbox": {
     "open": "Offene Umbuchungen",

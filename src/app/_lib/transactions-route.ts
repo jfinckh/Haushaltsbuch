@@ -1,4 +1,5 @@
 import "server-only";
+import type { Rules } from "@/rules/server";
 import type { Transactions } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
@@ -7,6 +8,8 @@ type Deps = {
   transactions: Transactions;
   /** Records a type changed in the booking form as a manual transfer decision. */
   transfers?: Transfers;
+  /** Creates a rule from the booking when the form asks for it ("Künftig immer so"). */
+  rules?: Rules;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
@@ -40,7 +43,7 @@ export function transactionsRoute({ transactions, getCaller }: Deps) {
 }
 
 /** Handlers for /api/transactions/[id]. */
-export function transactionRoute({ transactions, transfers, getCaller }: Deps) {
+export function transactionRoute({ transactions, transfers, rules, getCaller }: Deps) {
   return {
     async GET(_request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
@@ -49,19 +52,26 @@ export function transactionRoute({ transactions, transfers, getCaller }: Deps) {
       });
     },
 
+    /** Body: the changed fields; optionally `rule: { field, pattern }` to remember the change as a rule. */
     async PATCH(request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
         const { id } = await params;
+        const body = await readJson(request);
         const before = transfers && (await transactions.getTransaction(caller, id));
-        const result = await transactions.updateTransaction(caller, id, await readJson(request));
-        if (result.ok && transfers && before && before.kind !== result.transaction.kind) {
+        const result = await transactions.updateTransaction(caller, id, body);
+        if (!result.ok) return result.reason === "not-found" ? notFound() : invalidInput();
+        let transaction = result.transaction;
+        if (transfers && before && before.kind !== transaction.kind) {
           // A type changed by hand wins over matching, and expense or income dissolves a link.
-          await transfers.setKind(caller, id, result.transaction.kind);
-          const updated = await transactions.getTransaction(caller, id);
-          if (updated) return json({ transaction: updated });
+          await transfers.setKind(caller, id, transaction.kind);
+          transaction = (await transactions.getTransaction(caller, id)) ?? transaction;
         }
-        if (result.ok) return json({ transaction: result.transaction });
-        return result.reason === "not-found" ? notFound() : invalidInput();
+        const learn = body && typeof body === "object" && "rule" in body ? body.rule : undefined;
+        if (rules && learn !== undefined) {
+          const created = await rules.createFromBooking(caller, id, learn);
+          return json({ transaction, rule: { created: created.ok } });
+        }
+        return json({ transaction });
       });
     },
 

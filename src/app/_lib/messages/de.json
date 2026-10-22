@@ -13,7 +13,8 @@
     "shareText": "Komm in unser Haushaltsbuch:",
     "leaveNoteLastMember": "Seine gemeinsamen Konten werden mit gelöscht. Deine privaten Konten bleiben bei dir.",
     "leaveNoteOthers": "Deine privaten Konten bleiben bei dir. Gemeinsame Konten bleiben im Haushalt.",
-    "importCsv": "CSV importieren"
+    "importCsv": "CSV importieren",
+    "rules": "Regeln"
   },
   "members": {
     "you": "Du",
@@ -41,5 +42,13 @@
     "title": "CSV importieren",
     "back": "Zurück",
     "past": "Bisherige Importe"
+  },
+  "rules": {
+    "title": "Regeln",
+    "back": "Zurück",
+    "add": "Neue Regel",
+    "intro": "Regeln ordnen Buchungen beim Import automatisch zu. Was jemand von Hand setzt, ändern sie nie.",
+    "newTitle": "Neue Regel",
+    "editTitle": "Regel bearbeiten"
   }
 }

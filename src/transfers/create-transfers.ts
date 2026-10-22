@@ -1,4 +1,4 @@
-import { inArray, sql, type SQL } from "drizzle-orm";
+import { inArray, isNull, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { Transactions, TransactionView } from "@/transactions/server";
@@ -42,6 +42,9 @@ type PairRow = {
 };
 
 type BookingRow = typeof transferBooking.$inferSelect;
+
+/** A booking a rule typed as transfer or saving; target external: from or to an external own account. */
+export type RuleTransfer = { id: string; target: "external" | null };
 
 function localToday(): string {
   const now = new Date();
@@ -121,7 +124,9 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
     return views;
   }
 
-  const isOpen = (row: BookingRow | undefined, linked: boolean) => Boolean(row?.expectsPartner) && !linked && !blocks(row);
+  /** Waits for a partner: a rule's external own account does not (but may still be linked). */
+  const isOpen = (row: BookingRow | undefined, linked: boolean) =>
+    Boolean(row?.expectsPartner) && !linked && !blocks(row) && !row?.ruleTarget;
   const isOverdue = (date: string) => date < addDays(today(), -OVERDUE_DAYS);
 
   async function findOne(tx: RlsTransaction, userId: string, id: string) {
@@ -146,6 +151,7 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       decidedKind: null,
       target: null,
       targetAccountId: null,
+      ruleTarget: null,
       ...values,
       decidedByUserId: userId,
       decidedAt: new Date(),
@@ -158,21 +164,40 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
 
   const api = {
     /**
-     * After an import: stores the transfer hints of the new bookings (read in the caller's session)
-     * and matches them across all accounts of the household. Returns only counts.
+     * After an import (or after rules were applied): stores the transfer hints of the bookings (read
+     * in the caller's session) and matches them across all accounts of the household. Bookings a
+     * rule typed as transfer or saving (`ruleTransfers`) wait for a partner; with target external
+     * they are not listed as open. Manual decisions stay. Returns only counts.
      */
     async matchAfterImport(
       caller: Caller,
-      { bookingIds, members }: { bookingIds: string[]; members: readonly Member[] },
+      {
+        bookingIds,
+        members,
+        ruleTransfers = [],
+      }: { bookingIds: string[]; members: readonly Member[]; ruleTransfers?: readonly RuleTransfer[] },
     ): Promise<{ linked: number; proposed: number }> {
       if (bookingIds.length === 0) return { linked: 0, proposed: 0 };
       return withSession(db, caller, async (tx, userId) => {
         const bookings = await transactions.findBookings(tx, userId, { ids: bookingIds });
+        const byRule = new Map(ruleTransfers.map((item) => [item.id, item.target]));
         const hinted = bookings.flatMap((booking) => {
           const signals = transferSignals(booking, members, (iban) => fieldCrypto.blindIndex(iban, ACCOUNT_IBAN_CONTEXT));
-          return signals ? [{ transactionId: booking.id, ...signals }] : [];
+          return signals && !byRule.has(booking.id) ? [{ transactionId: booking.id, ...signals }] : [];
         });
         if (hinted.length > 0) await tx.insert(transferBooking).values(hinted).onConflictDoNothing();
+        for (const booking of bookings.filter((b) => byRule.has(b.id))) {
+          const signals = transferSignals(booking, members, (iban) => fieldCrypto.blindIndex(iban, ACCOUNT_IBAN_CONTEXT));
+          const ruleTarget = byRule.get(booking.id) ?? null;
+          await tx
+            .insert(transferBooking)
+            .values({ transactionId: booking.id, ...signals, expectsPartner: true, ruleTarget })
+            .onConflictDoUpdate({
+              target: transferBooking.transactionId,
+              set: { expectsPartner: true, ruleTarget },
+              setWhere: isNull(transferBooking.decision),
+            });
+        }
         const [result] = await rows<{ linked: number; proposed: number }>(
           tx,
           sql`SELECT * FROM transfers_match(${textArray(bookings.map((b) => b.id))})`,
@@ -212,6 +237,7 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
           link,
           proposals,
           decision: decisionOf(row),
+          ruleTarget: row?.ruleTarget ?? null,
           open,
           overdue: open && isOverdue(booking.date),
           candidates,

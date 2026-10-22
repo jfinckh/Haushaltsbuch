@@ -1,9 +1,12 @@
 import "server-only";
+import type { Rules } from "@/rules/server";
 import type { Transfers } from "@/transfers/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
 type Deps = {
   transfers: Transfers;
+  /** Creates a rule when a transfer to an external own account is marked "Künftig immer so". */
+  rules?: Rules;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
@@ -29,8 +32,15 @@ export function transfersRoute({ transfers, getCaller }: Deps) {
   };
 }
 
+/** A "no partner, external own account" action that asks to be remembered as a rule. */
+function isExternalWithRule(body: unknown): body is { rule: unknown } {
+  if (!body || typeof body !== "object" || !("rule" in body)) return false;
+  const { action, target } = body as { action?: unknown; target?: { type?: unknown } };
+  return action === "no-partner" && target?.type === "external";
+}
+
 /** Handlers for /api/transfers/[id] (id: a booking). */
-export function transferRoute({ transfers, getCaller }: Deps) {
+export function transferRoute({ transfers, rules, getCaller }: Deps) {
   return {
     async GET(_request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
@@ -39,14 +49,24 @@ export function transferRoute({ transfers, getCaller }: Deps) {
       });
     },
 
-    /** Body: { action: "link", partnerId } | { action: "unlink" } | { action: "set-kind", kind } | { action: "no-partner", target }. */
+    /**
+     * Body: { action: "link", partnerId } | { action: "unlink" } | { action: "set-kind", kind } |
+     * { action: "no-partner", target }. With target external, `rule: { field, pattern }` also
+     * creates a rule from the booking ("Künftig immer so").
+     */
     async POST(request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
         const { id } = await params;
-        const result = await transfers.applyAction(caller, id, await readJson(request));
+        const body = await readJson(request);
+        const result = await transfers.applyAction(caller, id, body);
         if (result === "not-found") return notFound();
         if (result !== "ok") return invalidInput();
-        return json({ status: await transfers.statusOf(caller, id) });
+        const status = await transfers.statusOf(caller, id);
+        if (rules && isExternalWithRule(body)) {
+          const created = await rules.createFromBooking(caller, id, body.rule, "external");
+          return json({ status, rule: { created: created.ok } });
+        }
+        return json({ status });
       });
     },
   };

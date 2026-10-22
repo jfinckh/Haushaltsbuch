@@ -1,0 +1,68 @@
+{
+  "list": {
+    "empty": "No rules yet. Create one, or choose “Always do this” on a booking.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Really delete?",
+    "deleteFailed": "The rule could not be deleted.",
+    "byOther": "by another member"
+  },
+  "scope": {
+    "account": "Only {account}",
+    "shared": "All shared accounts",
+    "private": "All my private accounts",
+    "unknownAccount": "Account"
+  },
+  "condition": {
+    "counterparty": "Counterparty contains “{text}”",
+    "reference": "Reference contains “{text}”",
+    "negative": "money out only",
+    "positive": "money in only",
+    "and": " and "
+  },
+  "result": {
+    "external": "from/to an external own account"
+  },
+  "kinds": {
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer",
+    "saving": "Saving"
+  },
+  "form": {
+    "scope": "Applies to",
+    "scopeHint": "Everyone in the household sees and edits rules of shared accounts. Only you see rules of private accounts.",
+    "condition": "If",
+    "counterparty": "Counterparty contains",
+    "reference": "Reference contains",
+    "patternHint": "Case and spaces do not matter. With PayPal, the merchant is in the reference.",
+    "amountSign": "Amount",
+    "anySign": "Any",
+    "negative": "Money out (minus)",
+    "positive": "Money in (plus)",
+    "result": "Then",
+    "kind": "Type",
+    "category": "Category",
+    "noCategory": "No category",
+    "external": "From or to an external own account (not in the app)",
+    "create": "Create rule",
+    "save": "Save",
+    "notFound": "The account or rule does not exist (any more).",
+    "noHousehold": "Shared rules need a household.",
+    "saveFailed": "The rule could not be saved."
+  },
+  "apply": {
+    "title": "Apply to existing bookings",
+    "text": "Sorts an account's bookings without category by the rules. What someone set by hand stays.",
+    "account": "Account",
+    "submit": "Apply rules",
+    "result": "{count, plural, =0 {No booking sorted.} one {One booking sorted.} other {# bookings sorted.}}",
+    "failed": "That did not work. Please try again."
+  },
+  "validation": {
+    "patternRequired": "Enter a text for the counterparty or the reference.",
+    "patternTooLong": "At most 200 characters.",
+    "categoryNotForKind": "This category does not fit the type.",
+    "targetNotForKind": "An external account only exists for transfers and saving."
+  }
+}

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { bigint, check, date, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { TRANSACTION_KINDS } from "./kinds";
+import { CLASSIFIED_BY, TRANSACTION_KINDS } from "./kinds";
 
 // Table of the transactions part: one row per booking. account_id is plain text in this file, so
 // the part stays independent of accounts; the foreign key to account (cascade on delete), the grants
@@ -23,6 +23,9 @@ export const transaction = pgTable(
     counterpartyIbanEncrypted: text("counterparty_iban_encrypted"),
     counterpartyIbanIndex: text("counterparty_iban_index"),
     referenceEncrypted: text("reference_encrypted"),
+    // Who set kind and category: the import or transfer matching (auto), a rule, or a person
+    // (manual). Rules never change a manual classification.
+    classifiedBy: text("classified_by", { enum: CLASSIFIED_BY }).notNull().default("auto"),
     createdByUserId: text("created_by_user_id").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -36,6 +39,7 @@ export const transaction = pgTable(
       "transaction_category_check",
       sql`${table.category} IS NULL OR ${table.kind} IN ('expense', 'income')`,
     ),
+    check("transaction_classified_by_check", sql`${table.classifiedBy} IN ('auto', 'rule', 'manual')`),
     check(
       "transaction_iban_pair_check",
       sql`(${table.counterpartyIbanEncrypted} IS NULL) = (${table.counterpartyIbanIndex} IS NULL)`,

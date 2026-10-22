@@ -258,4 +258,5 @@ Zum Prüfen von Duplikaten: dieselbe Datei zweimal importieren (0 neu) oder eine
 - [x] Welche ING-Konten importieren wir: nur Giro oder auch Extra-Konto und Depot? → Nur Girokonto und Gemeinschaftskonto (gleicher Parser). Extra-Konto und Depot vorerst nicht.
 - [ ] Deployment auf Hetzner: Setup, Domain, Backups (später, zunächst lokal).
 - [x] Von welchem eigenen Konto kommen die +500 €? In der App anlegen oder als extern markieren? → Vom eigenen ING Extra-Konto. Es kommt vorerst nicht in die App; die Buchung zählt später als Umbuchung von „Externes eigenes Konto“.
-- [ ] Importiert Erika ihr Privatkonto auch (welche Bank)?
+- [x] Importiert Erika ihr Privatkonto auch? → Ja. Ihre Überweisungen aufs Gemeinschaftskonto werden dann wie ING ↔ Trade Republic über die Gegenbuchung verknüpft. Einen Parser für ihre Bank gibt es erst mit „Weitere Banken“; bis dahin hilft eine Regel („Absender Erika Mustermann auf dem Gemeinschaftskonto = Umbuchung“).
+- [ ] Bei welcher Bank ist Erikas Privatkonto? (Entscheidet, ob ein neuer Parser nötig ist.)

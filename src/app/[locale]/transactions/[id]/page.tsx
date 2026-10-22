@@ -49,7 +49,7 @@ async function EditTransaction({ params }: Params) {
           {t("back")}
         </Link>
       </div>
-      <TransactionForm accounts={bookable} transaction={transaction} />
+      <TransactionForm accounts={bookable} transaction={transaction} offerRule />
       {transferStatus && (
         <>
           <div className="divider my-0" />
@@ -57,6 +57,7 @@ async function EditTransaction({ params }: Params) {
             status={transferStatus}
             accounts={visible.filter((a) => !a.archived || a.id === transaction.accountId).map(({ id, name }) => ({ id, name }))}
             memberNames={Object.fromEntries(members.map((m) => [m.userId, m.name]))}
+            offerRule
           />
         </>
       )}

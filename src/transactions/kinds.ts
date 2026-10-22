@@ -8,3 +8,8 @@ export type TransactionKind = (typeof TRANSACTION_KINDS)[number];
 export function proposedKind(amountCents: number): TransactionKind {
   return amountCents < 0 ? "expense" : "income";
 }
+
+/** Who set a booking's kind and category: import or matching (auto), a rule, or a person (manual). */
+export const CLASSIFIED_BY = ["auto", "rule", "manual"] as const;
+
+export type ClassifiedBy = (typeof CLASSIFIED_BY)[number];

@@ -156,3 +156,24 @@ describe("accounts_household_accounts (accounts' contract for database functions
     await expect(asUser("max", (tx) => tx.execute(sql`SELECT * FROM accounts_household_accounts()`))).rejects.toThrow();
   });
 });
+
+describe("accounts_visible_account_scopes (accounts' database contract)", () => {
+  async function scopes(userId: string) {
+    const result = (await asUser(userId, (tx) =>
+      tx.execute(sql`SELECT account_id, household_id FROM accounts_visible_account_scopes() ORDER BY account_id`),
+    )) as unknown as { rows: { account_id: string; household_id: string | null }[] };
+    return result.rows;
+  }
+
+  it("lists the visible accounts with their household, none for private accounts", async () => {
+    expect(await scopes("max")).toEqual([
+      { account_id: "max-private", household_id: null },
+      { account_id: "max-shared", household_id: "home" },
+    ]);
+    expect(await scopes("erika")).toEqual([
+      { account_id: "erika-private", household_id: null },
+      { account_id: "max-shared", household_id: "home" },
+    ]);
+    expect(await scopes("lone")).toEqual([]);
+  });
+});

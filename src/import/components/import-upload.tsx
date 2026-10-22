@@ -38,7 +38,11 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewResponse | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
-  const [done, setDone] = useState<{ count: number; transfers: { linked: number; proposed: number } | null } | null>(null);
+  const [done, setDone] = useState<{
+    count: number;
+    transfers: { linked: number; proposed: number } | null;
+    rules: { applied: number } | null;
+  } | null>(null);
   const [pending, setPending] = useState(false);
 
   const date = (iso: string) =>
@@ -88,8 +92,9 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     const body = (await response.json()) as {
       import: { newCount: number };
       transfers?: { linked: number; proposed: number } | null;
+      rules?: { applied: number } | null;
     };
-    setDone({ count: body.import.newCount, transfers: body.transfers ?? null });
+    setDone({ count: body.import.newCount, transfers: body.transfers ?? null, rules: body.rules ?? null });
     setPreview(null);
     setFile(null);
     (document.getElementById("import-file") as HTMLInputElement | null)?.form?.reset();
@@ -143,6 +148,7 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
         {done !== null && (
           <div role="status" className="alert alert-success">
             {t("done", { count: done.count })}
+            {done.rules && done.rules.applied > 0 && <> {t("rulesApplied", done.rules)}</>}
             {done.transfers && done.transfers.linked + done.transfers.proposed > 0 && (
               <> {t("transfersFound", done.transfers)}</>
             )}

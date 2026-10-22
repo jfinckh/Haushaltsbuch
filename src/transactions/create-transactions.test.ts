@@ -321,3 +321,82 @@ describe("finding bookings and changing their type inside another part's databas
     expect(await storedRow(booking.id)).toMatchObject({ kind: "expense" });
   });
 });
+
+describe("who set a booking's type and category", () => {
+  const values = (overrides: Partial<TransactionValues> = {}): TransactionValues => ({
+    accountId: "max-private",
+    bookingDate: "2026-10-08",
+    amountCents: -350,
+    kind: "expense",
+    category: null,
+    counterparty: "REWE",
+    counterpartyIban: null,
+    reference: null,
+    ...overrides,
+  });
+  const imported = (overrides: Partial<TransactionValues> = {}) =>
+    withSession(setup.db, max, (tx, userId) => transactions.insertBookings(tx, userId, [values(overrides)])).then(([id]) => id);
+
+  it("marks imported bookings as auto, and a booking entered with a category as manual", async () => {
+    const id = await imported();
+    expect((await transactions.getTransaction(max, id))?.classifiedBy).toBe("auto");
+    expect((await create(max)).classifiedBy).toBe("manual");
+    expect((await create(max, { category: "" })).classifiedBy).toBe("auto");
+  });
+
+  it("marks a booking as manual when its type or category is changed by hand, not for other fields", async () => {
+    const id = await imported();
+    const texts = await transactions.updateTransaction(max, id, { reference: "Einkauf", kind: "expense", category: "" });
+    expect(texts.ok && texts.transaction.classifiedBy).toBe("auto");
+    const category = await transactions.updateTransaction(max, id, { category: "groceries.supermarket" });
+    expect(category.ok && category.transaction.classifiedBy).toBe("manual");
+  });
+
+  it("marks a type set through setKind as manual (transfers' manual actions)", async () => {
+    const id = await imported();
+    await withSession(setup.db, max, (tx) => transactions.setKind(tx, [id], "transfer"));
+    expect(await storedRow(id)).toMatchObject({ kind: "transfer", classifiedBy: "manual" });
+  });
+
+  it("lets rules set type and category, but never on a manual booking", async () => {
+    const auto = await imported();
+    const manual = (await create(max, { category: "shopping" })).id;
+    const changed = await withSession(setup.db, max, (tx) =>
+      transactions.classifyBookings(tx, [
+        { id: auto, kind: "expense", category: "groceries.supermarket" },
+        { id: manual, kind: "expense", category: "groceries.supermarket" },
+      ]),
+    );
+    expect(changed).toEqual([auto]);
+    expect(await storedRow(auto)).toMatchObject({ category: "groceries.supermarket", classifiedBy: "rule" });
+    expect(await storedRow(manual)).toMatchObject({ category: "shopping", classifiedBy: "manual" });
+  });
+
+  it("refuses a rule category that does not fit the type, and bookings the caller may not see", async () => {
+    const id = await imported();
+    await expect(
+      withSession(setup.db, max, (tx) => transactions.classifyBookings(tx, [{ id, kind: "transfer", category: "groceries" }])),
+    ).rejects.toThrow();
+    const changed = await withSession(setup.db, erika, (tx) =>
+      transactions.classifyBookings(tx, [{ id, kind: "income", category: null }]),
+    );
+    expect(changed).toEqual([]);
+    expect(await storedRow(id)).toMatchObject({ kind: "expense", classifiedBy: "auto" });
+  });
+
+  it("finds an account's uncategorized expenses and income that nobody classified by hand", async () => {
+    const open = await imported();
+    await imported({ category: "groceries" });
+    await imported({ kind: "transfer" });
+    await create(max, { category: "" });
+    const manualId = (await create(max, { category: "" })).id;
+    await transactions.updateTransaction(max, manualId, { kind: "income" });
+    const found = await withSession(setup.db, max, (tx, userId) =>
+      transactions.findBookings(tx, userId, { accountId: "max-private", uncategorized: true }),
+    );
+    expect(found.map((b) => b.id)).toContain(open);
+    expect(found.map((b) => b.id)).not.toContain(manualId);
+    expect(found.every((b) => b.category === null && (b.kind === "expense" || b.kind === "income"))).toBe(true);
+    expect(found).toHaveLength(2);
+  });
+});

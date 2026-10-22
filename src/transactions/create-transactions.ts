@@ -1,9 +1,9 @@
-import { and, asc, desc, eq, gte, inArray, like, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, like, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { isCategoryFor } from "./categories";
-import type { TransactionKind } from "./kinds";
+import type { ClassifiedBy, TransactionKind } from "./kinds";
 import { monthOf, monthRange, today as localToday } from "./months";
 import { transaction } from "./schema";
 import {
@@ -35,6 +35,8 @@ export type TransactionView = {
   counterpartyIban: string | null;
   reference: string | null;
   createdByMe: boolean;
+  /** Who set kind and category: the import or matching (auto), a rule, or a person (manual). */
+  classifiedBy: ClassifiedBy;
 };
 
 /** Which bookings findBookings returns; all given criteria must hold. */
@@ -45,7 +47,12 @@ export type FindBookingsCriteria = {
   /** Booking dates, YYYY-MM-DD, inclusive. */
   from?: string;
   to?: string;
+  /** Only expenses and income without category that nobody classified by hand. */
+  uncategorized?: boolean;
 };
+
+/** What a rule sets on a booking. */
+export type Classification = { id: string; kind: TransactionKind; category: string | null };
 
 export type ListTransactionsResult =
   | { ok: true; transactions: TransactionView[] }
@@ -91,6 +98,7 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
       counterpartyIban: iban && formatIban(iban),
       reference: decrypt(row.referenceEncrypted, CONTEXT.reference),
       createdByMe: row.createdByUserId === userId,
+      classifiedBy: row.classifiedBy,
     };
   }
 
@@ -186,7 +194,13 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         if (!(await accountIsVisible(tx, parsed.data.accountId))) return { ok: false, reason: "not-found" };
         const [row] = await tx
           .insert(transaction)
-          .values({ ...toColumns(parsed.data), id: crypto.randomUUID(), createdByUserId: userId })
+          .values({
+            ...toColumns(parsed.data),
+            id: crypto.randomUUID(),
+            createdByUserId: userId,
+            // A quick entry without category may still be sorted by a rule.
+            classifiedBy: parsed.data.category ? "manual" : "auto",
+          })
           .returning();
         return { ok: true, transaction: toView(row, userId) };
       });
@@ -213,9 +227,10 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         if (checked.data.accountId !== row.accountId && !(await accountIsVisible(tx, checked.data.accountId))) {
           return { ok: false, reason: "not-found" };
         }
+        const classifiedByHand = checked.data.kind !== row.kind || checked.data.category !== row.category;
         const [updated] = await tx
           .update(transaction)
-          .set({ ...toColumns(checked.data), updatedAt: new Date() })
+          .set({ ...toColumns(checked.data), updatedAt: new Date(), ...(classifiedByHand ? { classifiedBy: "manual" as const } : {}) })
           .where(and(eq(transaction.id, id), visible))
           .returning();
         return { ok: true, transaction: toView(updated, userId) };
@@ -272,6 +287,8 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         criteria.amountCents !== undefined && eq(transaction.amountCents, criteria.amountCents),
         criteria.from && gte(transaction.bookingDate, criteria.from),
         criteria.to && lte(transaction.bookingDate, criteria.to),
+        criteria.uncategorized &&
+          and(inArray(transaction.kind, ["expense", "income"]), isNull(transaction.category), ne(transaction.classifiedBy, "manual")),
       ].filter((filter): filter is SQL => Boolean(filter));
       const rows = await tx
         .select()
@@ -283,7 +300,8 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
 
     /**
      * Sets the type of the visible bookings among `ids` inside a given database transaction; a
-     * category that does not fit the new type is cleared. Returns how many changed.
+     * category that does not fit the new type is cleared. Only for decisions made by a person
+     * (transfers' manual actions), so the bookings count as classified by hand. Returns how many changed.
      */
     async setKind(tx: RlsTransaction, ids: string[], kind: TransactionKind): Promise<number> {
       if (ids.length === 0) return 0;
@@ -295,10 +313,29 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         const category = row.category && isCategoryFor(kind, row.category) ? row.category : null;
         await tx
           .update(transaction)
-          .set({ kind, category, updatedAt: new Date() })
+          .set({ kind, category, classifiedBy: "manual", updatedAt: new Date() })
           .where(and(eq(transaction.id, row.id), visible));
       }
       return rows.length;
+    },
+
+    /**
+     * Sets type and category as a rule decided, inside a given database transaction: only visible
+     * bookings that nobody classified by hand; they are marked as classified by rule. A category
+     * that does not fit its type throws. Returns the ids that changed.
+     */
+    async classifyBookings(tx: RlsTransaction, items: Classification[]): Promise<string[]> {
+      const changed: string[] = [];
+      for (const { id, kind, category } of items) {
+        if (category !== null && !isCategoryFor(kind, category)) throw new Error("Category does not fit the type");
+        const rows = await tx
+          .update(transaction)
+          .set({ kind, category, classifiedBy: "rule", updatedAt: new Date() })
+          .where(and(eq(transaction.id, id), visible, ne(transaction.classifiedBy, "manual")))
+          .returning({ id: transaction.id });
+        changed.push(...rows.map((row) => row.id));
+      }
+      return changed;
     },
 
     /** Sum of the bookings per visible account that has any (cents). The app adds the opening balance. */

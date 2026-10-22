@@ -13,7 +13,8 @@
     "shareText": "Join our Haushaltsbuch:",
     "leaveNoteLastMember": "Its shared accounts are deleted with it. Your private accounts stay with you.",
     "leaveNoteOthers": "Your private accounts stay with you. Shared accounts stay with the household.",
-    "importCsv": "Import CSV"
+    "importCsv": "Import CSV",
+    "rules": "Rules"
   },
   "members": {
     "you": "You",
@@ -41,5 +42,13 @@
     "title": "Import CSV",
     "back": "Back",
     "past": "Past imports"
+  },
+  "rules": {
+    "title": "Rules",
+    "back": "Back",
+    "add": "New rule",
+    "intro": "Rules sort bookings automatically on import. They never change what someone set by hand.",
+    "newTitle": "New rule",
+    "editTitle": "Edit rule"
   }
 }

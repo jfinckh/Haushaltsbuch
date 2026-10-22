@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:rules",
+      "itemHash": "sha256:f4bf1bc46f3c4891e857e7d727c3bc49a04431410ee985f790b817957fa1a02b",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:rules->shared",
+      "itemHash": "sha256:040c807912f1fbad2da2e2493595bc85ff8f953c719befc4fe2df1cb61e8063a",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:rules->transactions",
+      "itemHash": "sha256:7241fff5ab0d05f251dc81f17fe68343bd6eb7b295c11982b2c127ae25947bf5",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->rules",
+      "itemHash": "sha256:6f66eadc0ebf32e43e73746436594f22dcf1a1a1ba3ef2a7b6b7bbac746fbe5d",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:bookingRule",
+      "itemHash": "sha256:87c344ea5463f3b7a5d363ac70590d04de72812706557c0a6bdf09f85b008923",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:rule:manage",
+      "itemHash": "sha256:015971484763d43865c261e8960a8330a45308ebdf65b581d339a2fc09e786fe",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database:account-scopes",
+      "itemHash": "sha256:b5fe99b8f65cb9eaa3b55a6404672bc30f80b3a6cfc74e463e70774ae1bd0325",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:booking:classification-source",
+      "itemHash": "sha256:3036eca2efa4271b2bbfc260959dd433f6ae75bf2fb196c80f3a53e7327d6117",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:client:RuleList",
+      "itemHash": "sha256:d4f0bb320b2590e1fd41908a4dc84e6f15cd5f9718fa9044d43f8e38ade2b231",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:client:RuleForm",
+      "itemHash": "sha256:d417b0fd9f74c9b5284b42d83ad169f202a984c64317cdc079777cdd36bd6585",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:client:ApplyRulesForm",
+      "itemHash": "sha256:53f92694d8a7b39424e8f5f869917b8f9b370acae961fd2e587aca9f13770a50",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:client:rulesMessages",
+      "itemHash": "sha256:824e8eb9455c1b84a74fa37bbacb66d640209ce3b77c61608d6873e98c8f5fb5",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:server:createRules",
+      "itemHash": "sha256:6dd98aac66670071676c5c84b5639ac829a0415407ffcbd7e66cbedef5205ccb",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:server:Rules",
+      "itemHash": "sha256:6c15e263f8047833bf2e296b39b505922ee2b91f705ca161a079f45917e7862b",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:CategorySelect",
+      "itemHash": "sha256:53cfaa8f81ed1888a7dab31dd96109e4f5cfa6434c133e4f64c6a5357f101b32",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:useCategoryName",
+      "itemHash": "sha256:143e725ec2dbfc4ccbd9529275ac30457d9d8656993c2bdbdac003d221790144",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:isCategoryFor",
+      "itemHash": "sha256:3af32863a77af04d1ed1fe680dcc245ffdc785fc9e4a7bca85a5ca49756786bc",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TRANSACTION_KINDS",
+      "itemHash": "sha256:1f865a7f052dfb5fe5b8ef95e72516f7a6c9f0ac71557b567633d3f337191611",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionKind",
+      "itemHash": "sha256:55803aa6426889939538f26728ccb6159a8884454b1fd78143c1e1d6efd35d56",
+      "decision": "approve",
+      "at": "2026-10-22T05:11:11Z",
+      "source": "hook"
+    }
+  ]
+}

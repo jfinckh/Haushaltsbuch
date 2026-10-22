@@ -3,6 +3,7 @@ import { authMessages } from "@/auth";
 import { householdsMessages } from "@/households";
 import { importMessages } from "@/import";
 import type { Locale } from "@/shared/i18n";
+import { rulesMessages } from "@/rules";
 import { messages as sharedMessages } from "@/shared/messages";
 import { transactionsMessages } from "@/transactions";
 import { transfersMessages } from "@/transfers";
@@ -21,6 +22,7 @@ function forLocale<L extends Locale>(locale: L) {
     transactions: transactionsMessages[locale],
     import: importMessages[locale],
     transfers: transfersMessages[locale],
+    rules: rulesMessages[locale],
   };
 }
 

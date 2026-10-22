@@ -57,6 +57,9 @@ export const transferBooking = pgTable(
     target: text("target", { enum: ["external", "account"] }),
     targetAccountId: text("target_account_id"),
     decidedByUserId: text("decided_by_user_id"),
+    // A rule said: transfer from or to an external own account. Not open, but unlike a manual
+    // no-partner decision it does not block matching: a later counter-booking is still linked.
+    ruleTarget: text("rule_target", { enum: ["external"] }),
     decidedAt: timestamp("decided_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
@@ -64,6 +67,7 @@ export const transferBooking = pgTable(
     index("transfer_booking_iban_idx").on(table.mentionedIbanIndex),
     check("transfer_booking_decision_check", sql`${table.decision} IS NULL OR ${table.decision} IN ('kind', 'no-partner')`),
     check("transfer_booking_kind_check", sql`(${table.decision} = 'kind') = (${table.decidedKind} IS NOT NULL)`),
+    check("transfer_booking_rule_target_check", sql`${table.ruleTarget} IS NULL OR ${table.ruleTarget} = 'external'`),
     check("transfer_booking_target_check", sql`(${table.decision} = 'no-partner') = (${table.target} IS NOT NULL)`),
   ],
 );

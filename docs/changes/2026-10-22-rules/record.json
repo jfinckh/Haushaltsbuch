@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "rules",
+  "description": "Rules and auto-categorization",
+  "plan": {
+    "path": "docs/plans/2026-10-22-rules.md",
+    "sha256": "4782cd626eb20de477a2028b86459ab34aef8564069c7416834337404383210b"
+  },
+  "status": "final",
+  "base": "e19bf9ccb74d9ec56532f05bec308825ac43ea1f"
+}

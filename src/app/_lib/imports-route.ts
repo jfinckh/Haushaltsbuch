@@ -12,15 +12,27 @@ type Deps = {
   accounts: Accounts;
   transactions: Transactions;
   /**
-   * Runs after a confirmed import with the ids of its new bookings, e.g. transfer matching. Its own
-   * database transaction: if it fails, the import stays.
+   * Runs first after a confirmed import with the ids of its new bookings: the rules. Returns how many
+   * bookings they sorted and which ones became transfers. Its own database transaction: if it
+   * fails, the import stays.
    */
-  afterImport?: (caller: Caller, bookingIds: string[]) => Promise<{ linked: number; proposed: number }>;
+  applyRules?: (caller: Caller, bookingIds: string[]) => Promise<RulesApplied>;
+  /**
+   * Runs after the rules with the ids of the new bookings and the rules' transfers: transfer
+   * matching. Its own database transaction: if it fails, the import stays.
+   */
+  afterImport?: (
+    caller: Caller,
+    bookingIds: string[],
+    ruleTransfers: RulesApplied["transfers"],
+  ) => Promise<{ linked: number; proposed: number }>;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
 
 type IdContext = { params: Promise<{ id: string }> };
+
+type RulesApplied = { applied: number; transfers: { id: string; target: "external" | null }[] };
 
 /** Larger uploads are refused before they are read; the import part has its own, smaller limit. */
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -93,16 +105,30 @@ export function importsRoute(deps: Deps) {
           });
           if (updated.ok) openingBalanceCents = updated.account.openingBalanceCents;
         }
+        // Rules first, then matching: matching may still link a booking a rule typed, but never
+        // overrides a rule with its weaker "looks like a transfer" hint.
+        let rules: RulesApplied | null = null;
+        if (deps.applyRules) {
+          try {
+            rules = await deps.applyRules(caller, result.bookingIds);
+          } catch (error) {
+            // The import is done; rules can be applied again on the rules page. Log no booking data.
+            console.error("Applying rules after import failed", error instanceof Error ? error.name : "unknown");
+          }
+        }
         let transfers: { linked: number; proposed: number } | null = null;
         if (deps.afterImport) {
           try {
-            transfers = await deps.afterImport(caller, result.bookingIds);
+            transfers = await deps.afterImport(caller, result.bookingIds, rules?.transfers ?? []);
           } catch (error) {
             // The import is done; matching can be redone by hand. Log no booking data.
             console.error("Transfer matching after import failed", error instanceof Error ? error.name : "unknown");
           }
         }
-        return json({ import: result.import, openingBalanceCents, transfers }, 201);
+        return json(
+          { import: result.import, openingBalanceCents, transfers, rules: rules && { applied: rules.applied } },
+          201,
+        );
       });
     },
   };

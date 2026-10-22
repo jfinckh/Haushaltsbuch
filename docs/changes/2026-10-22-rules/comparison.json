@@ -1,0 +1,592 @@
+{
+  "version": 1,
+  "base": "e19bf9ccb74d9ec56532f05bec308825ac43ea1f",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0017_rules.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0018_rules_functions.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0017_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0018_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/create-transfers.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/create-transfers.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/types.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/components/transfer-panel.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-upload.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/types.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/matching.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/matching.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/apply-rules-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/messages/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/rules.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/rules-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/apply/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/transactions-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transactions/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/transfers-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transfers/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/rules/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/rules/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/rules/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/transactions/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/i18n/messages.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/use-rule-texts.ts",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/kinds.ts",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/test-utils.ts",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "unit",
+      "id": "rules",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "rules->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "rules->transactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->rules",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transfers",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->import",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->households",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "bookingRule",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:client:RuleList",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:client:RuleForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:client:ApplyRulesForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:client:rulesMessages",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:server:createRules",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:server:Rules",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:CategorySelect",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:useCategoryName",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:isCategoryFor",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:TRANSACTION_KINDS",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:client:TransactionKind",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "rules",
+      "state": "new"
+    },
+    {
+      "from": "rules",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "rules",
+      "to": "transactions",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:rules",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:rules->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:rules->transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->rules",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:bookingRule",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:rule:manage",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:database:account-scopes",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:booking:classification-source",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-add:rules:client:RuleList",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:client:RuleForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:client:ApplyRulesForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:client:rulesMessages",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:server:createRules",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:server:Rules",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:CategorySelect",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:useCategoryName",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:isCategoryFor",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TRANSACTION_KINDS",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:client:TransactionKind",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

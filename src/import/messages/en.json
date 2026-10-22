@@ -30,6 +30,7 @@
     "new": "New",
     "duplicate": "Already there",
     "done": "Import finished: {count, plural, one {# new booking} other {# new bookings}}.",
+    "rulesApplied": "{applied, plural, one {# booking sorted by a rule.} other {# bookings sorted by rules.}}",
     "transfersFound": "{linked, plural, one {# transfer linked} other {# transfers linked}}, {proposed} proposed."
   },
   "errors": {

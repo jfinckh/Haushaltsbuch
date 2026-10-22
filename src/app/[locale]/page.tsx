@@ -80,6 +80,9 @@ async function Welcome() {
             <Link href="/imports" className="btn btn-ghost btn-sm">
               {t("home.importCsv")}
             </Link>
+            <Link href="/rules" className="btn btn-ghost btn-sm">
+              {t("home.rules")}
+            </Link>
             <Link href="/accounts/new" className="btn btn-primary btn-sm">
               {t("home.addAccount")}
             </Link>

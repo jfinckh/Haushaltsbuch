@@ -328,3 +328,56 @@ describe("manual decisions win", () => {
     expect(await setup.transfers.statusOf(max, ing("2026-10-14", -100000))).toMatchObject({ link: null, open: true });
   });
 });
+
+describe("rule results", () => {
+  const index = (date: string, cents: number) => ING_ROWS.findIndex((row) => row.date === date && row.amountCents === cents);
+
+  it("keeps a booking a rule made income as income, not an open transfer", async () => {
+    const erikaRow = index("2026-10-05", 15000);
+    const { ids } = await setup.importWithRules("max", "ing", ING_ROWS, (i) =>
+      i === erikaRow ? { kind: "income", category: "otherIncome" } : null,
+    );
+    expect(await setup.kindOf(ids[erikaRow])).toBe("income");
+    expect(await setup.classifiedByOf(ids[erikaRow])).toBe("rule");
+    const status = await setup.transfers.statusOf(max, ids[erikaRow]);
+    expect(status).toMatchObject({ open: false, isTransfer: false, ruleTarget: null });
+  });
+
+  it("makes a rule transfer wait for its partner, and links it when the partner arrives", async () => {
+    const rent = index("2026-10-01", -120000);
+    const { ids } = await setup.importWithRules("max", "ing", ING_ROWS, (i) =>
+      ING_ROWS[i].reference === "Miete und co" ? { kind: "transfer" } : null,
+    );
+    expect(await setup.transfers.statusOf(max, ids[rent])).toMatchObject({ open: true, isTransfer: true });
+    await setup.importBookings("erika", "shared", [{ date: "2026-10-02", amountCents: 120000, counterparty: "Max Mustermann" }]);
+    const status = await setup.transfers.statusOf(max, ids[rent]);
+    expect(status?.link?.status).toBe("linked");
+    expect(status?.open).toBe(false);
+  });
+
+  it("does not list a rule's external own account as open, and still links a later counter-booking", async () => {
+    const own = index("2026-09-15", 50000);
+    const { ids } = await setup.importWithRules("max", "ing", ING_ROWS, (i) =>
+      i === own ? { kind: "transfer", target: "external" } : null,
+    );
+    const status = await setup.transfers.statusOf(max, ids[own]);
+    expect(status).toMatchObject({ open: false, overdue: false, isTransfer: true, ruleTarget: "external", decision: null });
+    const overview = await setup.transfers.accountOverview(max, "ing");
+    expect(overview?.open.map((b) => b.id)).not.toContain(ids[own]);
+
+    await setup.addAccount("extra", "max");
+    await setup.importBookings("max", "extra", [{ date: "2026-09-15", amountCents: -50000, counterparty: "Max Mustermann" }]);
+    expect((await setup.transfers.statusOf(max, ids[own]))?.link?.status).toBe("linked");
+  });
+
+  it("replaces a rule's target with a manual decision", async () => {
+    const own = index("2026-09-15", 50000);
+    const { ids } = await setup.importWithRules("max", "ing", ING_ROWS, (i) =>
+      i === own ? { kind: "transfer", target: "external" } : null,
+    );
+    await setup.transfers.setKind(max, ids[own], "income");
+    expect(await setup.transfers.statusOf(max, ids[own])).toMatchObject({ ruleTarget: null, decision: { type: "kind", kind: "income" } });
+    expect(await setup.classifiedByOf(ids[own])).toBe("manual");
+  });
+
+});

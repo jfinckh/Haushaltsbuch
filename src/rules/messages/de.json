@@ -1,0 +1,68 @@
+{
+  "list": {
+    "empty": "Noch keine Regeln. Lege eine an oder wähle bei einer Buchung „Künftig immer so“.",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirmDelete": "Wirklich löschen?",
+    "deleteFailed": "Die Regel konnte nicht gelöscht werden.",
+    "byOther": "von einem anderen Mitglied"
+  },
+  "scope": {
+    "account": "Nur {account}",
+    "shared": "Alle gemeinsamen Konten",
+    "private": "Alle meine privaten Konten",
+    "unknownAccount": "Konto"
+  },
+  "condition": {
+    "counterparty": "Gegenpartei enthält „{text}“",
+    "reference": "Verwendungszweck enthält „{text}“",
+    "negative": "nur Geldausgang",
+    "positive": "nur Geldeingang",
+    "and": " und "
+  },
+  "result": {
+    "external": "von/zu externem eigenem Konto"
+  },
+  "kinds": {
+    "expense": "Ausgabe",
+    "income": "Einnahme",
+    "transfer": "Umbuchung",
+    "saving": "Sparen"
+  },
+  "form": {
+    "scope": "Gilt für",
+    "scopeHint": "Regeln gemeinsamer Konten sehen und ändern alle im Haushalt. Regeln privater Konten siehst nur du.",
+    "condition": "Wenn",
+    "counterparty": "Gegenpartei enthält",
+    "reference": "Verwendungszweck enthält",
+    "patternHint": "Groß- und Kleinschreibung und Leerzeichen spielen keine Rolle. Bei PayPal steht der Händler im Verwendungszweck.",
+    "amountSign": "Betrag",
+    "anySign": "Egal",
+    "negative": "Geldausgang (minus)",
+    "positive": "Geldeingang (plus)",
+    "result": "Dann",
+    "kind": "Art",
+    "category": "Kategorie",
+    "noCategory": "Ohne Kategorie",
+    "external": "Von oder zu einem externen eigenen Konto (nicht in der App)",
+    "create": "Regel anlegen",
+    "save": "Speichern",
+    "notFound": "Das Konto oder die Regel gibt es nicht (mehr).",
+    "noHousehold": "Für gemeinsame Regeln brauchst du einen Haushalt.",
+    "saveFailed": "Die Regel konnte nicht gespeichert werden."
+  },
+  "apply": {
+    "title": "Auf vorhandene Buchungen anwenden",
+    "text": "Ordnet die Buchungen ohne Kategorie eines Kontos nach den Regeln zu. Was jemand von Hand gesetzt hat, bleibt.",
+    "account": "Konto",
+    "submit": "Regeln anwenden",
+    "result": "{count, plural, =0 {Keine Buchung zugeordnet.} one {Eine Buchung zugeordnet.} other {# Buchungen zugeordnet.}}",
+    "failed": "Das hat nicht geklappt. Bitte versuche es noch einmal."
+  },
+  "validation": {
+    "patternRequired": "Gib einen Text für die Gegenpartei oder den Verwendungszweck an.",
+    "patternTooLong": "Höchstens 200 Zeichen.",
+    "categoryNotForKind": "Diese Kategorie passt nicht zur Art.",
+    "targetNotForKind": "Ein externes Konto gibt es nur bei Umbuchung und Sparen."
+  }
+}

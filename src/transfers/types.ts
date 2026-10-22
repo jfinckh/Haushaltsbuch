@@ -38,6 +38,8 @@ export type TransferStatus = {
   link: TransferPairView | null;
   proposals: TransferPairView[];
   decision: TransferDecision | null;
+  /** A rule said: from or to an external own account. A later counter-booking is still linked. */
+  ruleTarget: "external" | null;
   /** A transfer still waiting for its partner. */
   open: boolean;
   /** Open for more than 14 days (by booking date). */

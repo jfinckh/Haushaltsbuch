@@ -23,7 +23,16 @@ type Props = {
   action?: string;
   /** Where to go after saving: the booking's account page. Default: /accounts */
   accountsHref?: string;
+  /**
+   * Offer "Künftig immer so" when the type or category of an edited booking changes: the PATCH then
+   * carries `rule: { field, pattern }`, and the app creates a rule from the booking.
+   */
+  offerRule?: boolean;
 };
+
+type RuleField = "counterparty" | "reference";
+
+const normalize = (text: string) => text.trim().replace(/\s+/g, " ").toLocaleLowerCase("de");
 
 /** Message keys per field, translated when shown. */
 type Errors = Record<string, string>;
@@ -35,7 +44,14 @@ function firstErrors(issues: { path: PropertyKey[]; message: string }[]): Errors
 }
 
 /** Adds or edits a booking. The type follows the amount's sign until it is chosen by hand. */
-export function TransactionForm({ accounts, transaction, accountId, action = "/api/transactions", accountsHref = "/accounts" }: Props) {
+export function TransactionForm({
+  accounts,
+  transaction,
+  accountId,
+  action = "/api/transactions",
+  accountsHref = "/accounts",
+  offerRule = false,
+}: Props) {
   const t = useTranslations("transactions.form");
   const tKinds = useTranslations("transactions.kinds");
   const tk = useTranslateKey();
@@ -47,6 +63,17 @@ export function TransactionForm({ accounts, transaction, accountId, action = "/a
   const [category, setCategory] = useState(transaction?.category ?? "");
   const [errors, setErrors] = useState<Errors>({});
   const [pending, setPending] = useState(false);
+  const ruleFields = (["counterparty", "reference"] as const).filter((field) => transaction?.[field]);
+  const [learn, setLearn] = useState(false);
+  const [ruleField, setRuleField] = useState<RuleField>(ruleFields[0] ?? "counterparty");
+  const [rulePattern, setRulePattern] = useState(transaction?.[ruleFields[0] ?? "counterparty"] ?? "");
+  const classificationChanged = Boolean(transaction) && (kind !== transaction?.kind || category !== (transaction?.category ?? ""));
+  const canLearn = offerRule && classificationChanged && ruleFields.length > 0;
+
+  function chooseRuleField(field: RuleField) {
+    setRuleField(field);
+    setRulePattern(transaction?.[field] ?? "");
+  }
 
   function chooseKind(next: TransactionKind) {
     setKind(next);
@@ -75,17 +102,28 @@ export function TransactionForm({ accounts, transaction, accountId, action = "/a
     // The form always sends every field, so a new and an edited booking follow the same rules.
     const checked = createTransactionSchema.safeParse(body);
     if (!checked.success) return setErrors(firstErrors(checked.error.issues));
+    const rule = canLearn && learn ? { field: ruleField, pattern: rulePattern } : undefined;
+    if (rule && (!normalize(rule.pattern) || !normalize(transaction?.[ruleField] ?? "").includes(normalize(rule.pattern)))) {
+      return setErrors({ rule: "transactions.form.rulePatternNotInText" });
+    }
 
     setPending(true);
     setErrors({});
     const response = await fetch(transaction ? `${action}/${transaction.id}` : action, {
       method: transaction ? "PATCH" : "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(rule ? { ...body, rule } : body),
     });
     setPending(false);
     if (!response.ok) {
       return setErrors({ form: response.status === 404 ? "transactions.form.notFound" : "transactions.form.saveFailed" });
+    }
+    if (rule) {
+      const saved = (await response.json().catch(() => ({}))) as { rule?: { created: boolean } };
+      if (!saved.rule?.created) {
+        router.refresh();
+        return setErrors({ rule: "transactions.form.ruleFailed" });
+      }
     }
     router.push(`${accountsHref}/${account}`);
     router.refresh();
@@ -155,6 +193,45 @@ export function TransactionForm({ accounts, transaction, accountId, action = "/a
           </fieldset>
         )}
       </div>
+
+      {transaction?.classifiedBy === "rule" && !classificationChanged && (
+        <p className="text-base-content/70 text-sm">{t("classifiedByRule")}</p>
+      )}
+
+      {canLearn && (
+        <div className="bg-base-200 rounded-box flex flex-col gap-2 p-3">
+          <label className="label cursor-pointer justify-start gap-2 whitespace-normal">
+            <input type="checkbox" className="checkbox checkbox-sm" checked={learn} onChange={(e) => setLearn(e.target.checked)} />
+            <span className="text-base-content font-medium">{t("learnRule")}</span>
+          </label>
+          {learn && (
+            <div className="grid gap-2 sm:grid-cols-[auto_1fr]">
+              <select
+                aria-label={t("ruleField")}
+                className="select select-sm"
+                value={ruleField}
+                onChange={(e) => chooseRuleField(e.target.value as RuleField)}
+              >
+                {ruleFields.map((field) => (
+                  <option key={field} value={field}>
+                    {t(field === "counterparty" ? "ruleFieldCounterparty" : "ruleFieldReference")}
+                  </option>
+                ))}
+              </select>
+              <input
+                aria-label={t("rulePattern")}
+                type="text"
+                className="input input-sm w-full"
+                value={rulePattern}
+                maxLength={200}
+                onChange={(e) => setRulePattern(e.target.value)}
+              />
+              <p className="text-base-content/70 text-xs sm:col-span-2">{t("learnRuleHint")}</p>
+            </div>
+          )}
+          {error("rule")}
+        </div>
+      )}
 
       <fieldset className="fieldset">
         <label className="fieldset-legend" htmlFor="transaction-counterparty">{t("counterparty")}</label>

@@ -21,6 +21,13 @@ export type TestBooking = {
   kind?: "expense" | "income" | "transfer" | "saving";
 };
 
+/** What a rule decided for a booking. */
+export type RuleResult = {
+  kind: "expense" | "income" | "transfer" | "saving";
+  category?: string | null;
+  target?: "external" | null;
+};
+
 export const MEMBERS: Member[] = [
   { userId: "max", name: "Max Mustermann" },
   { userId: "erika", name: "Erika Mustermann" },
@@ -77,9 +84,34 @@ export async function createTestDatabase({ today = "2026-10-21" }: { today?: str
   }
 
   /** Creates bookings in `userId`'s session, like an import, and runs the matching for them. */
-  async function importBookings(userId: string, accountId: string, bookings: TestBooking[], members = MEMBERS) {
+  /**
+   * Like importBookings, but first sets type and category as rules would (index → result), and hands
+   * the rule transfers to the matching, as the app does after an import.
+   */
+  async function importWithRules(
+    userId: string,
+    accountId: string,
+    bookings: TestBooking[],
+    ruleFor: (index: number) => RuleResult | null,
+  ) {
     const caller = await as(userId);
-    const ids = await withSession(db, caller, (tx, sessionUserId) =>
+    const ids = await insert(caller, accountId, bookings);
+    const results = ids.flatMap((id, index) => {
+      const result = ruleFor(index);
+      return result ? [{ id, ...result }] : [];
+    });
+    await withSession(db, caller, (tx) =>
+      transactions.classifyBookings(tx, results.map(({ id, kind, category = null }) => ({ id, kind, category }))),
+    );
+    const ruleTransfers = results
+      .filter((r) => r.kind === "transfer" || r.kind === "saving")
+      .map((r) => ({ id: r.id, target: r.target ?? null }));
+    const result = await transfers.matchAfterImport(caller, { bookingIds: ids, members: MEMBERS, ruleTransfers });
+    return { ids, result };
+  }
+
+  async function insert(caller: Caller, accountId: string, bookings: TestBooking[]) {
+    return withSession(db, caller, (tx, sessionUserId) =>
       transactions.insertBookings(
         tx,
         sessionUserId,
@@ -95,6 +127,11 @@ export async function createTestDatabase({ today = "2026-10-21" }: { today?: str
         })),
       ),
     );
+  }
+
+  async function importBookings(userId: string, accountId: string, bookings: TestBooking[], members = MEMBERS) {
+    const caller = await as(userId);
+    const ids = await insert(caller, accountId, bookings);
     const result = await transfers.matchAfterImport(caller, { bookingIds: ids, members });
     return { ids, result };
   }
@@ -105,6 +142,14 @@ export async function createTestDatabase({ today = "2026-10-21" }: { today?: str
       rows: { kind: string; category: string | null }[];
     };
     return result.rows[0]?.kind;
+  }
+
+  /** A booking's stored classification source, straight from the table. */
+  async function classifiedByOf(id: string) {
+    const result = (await db.execute(sql`SELECT classified_by FROM "transaction" WHERE id = ${id}`)) as unknown as {
+      rows: { classified_by: string }[];
+    };
+    return result.rows[0]?.classified_by;
   }
 
   /** All pairs, straight from the table. */
@@ -119,7 +164,7 @@ export async function createTestDatabase({ today = "2026-10-21" }: { today?: str
     await db.execute(sql`DELETE FROM "transaction" WHERE id = ${id}`);
   }
 
-  return { db, crypto, transactions, transfers, as, householdOf, addAccount, importBookings, kindOf, pairs, deleteBooking };
+  return { db, crypto, transactions, transfers, as, householdOf, addAccount, importBookings, importWithRules, kindOf, classifiedByOf, pairs, deleteBooking };
 }
 
 export const ING_IBAN = "DE94123456781111111111";

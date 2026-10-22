@@ -159,6 +159,51 @@ describe("after a confirmed import", () => {
     expect(calls[0]).toHaveLength(29);
   });
 
+  it("applies the rules first and hands their transfers to the matching", async () => {
+    const order: string[] = [];
+    const body = new FormData();
+    body.set("accountId", maxPrivate);
+    body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
+    const route = importsRoute({
+      ...deps("max"),
+      applyRules: async (_caller, bookingIds) => {
+        order.push("rules");
+        return { applied: 2, transfers: [{ id: bookingIds[0], target: "external" as const }] };
+      },
+      afterImport: async (_caller, bookingIds, ruleTransfers) => {
+        order.push("matching");
+        expect(ruleTransfers).toEqual([{ id: bookingIds[0], target: "external" }]);
+        return { linked: 0, proposed: 0 };
+      },
+    });
+    const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
+    expect(response.status).toBe(201);
+    expect((await response.json()).rules).toEqual({ applied: 2 });
+    expect(order).toEqual(["rules", "matching"]);
+  });
+
+  it("keeps the import and still matches when the rules fail", async () => {
+    let matched = false;
+    const body = new FormData();
+    body.set("accountId", maxPrivate);
+    body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
+    const route = importsRoute({
+      ...deps("max"),
+      applyRules: async () => {
+        throw new Error("boom");
+      },
+      afterImport: async (_caller, _ids, ruleTransfers) => {
+        matched = ruleTransfers.length === 0;
+        return { linked: 0, proposed: 0 };
+      },
+    });
+    const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
+    expect(response.status).toBe(201);
+    expect((await response.json()).rules).toBeNull();
+    expect(matched).toBe(true);
+    expect(await balanceOf("max", maxPrivate)).toBe(70326);
+  });
+
   it("keeps the import when the matching fails", async () => {
     const body = new FormData();
     body.set("accountId", maxPrivate);

@@ -45,7 +45,16 @@
     "add": "Add booking",
     "save": "Save",
     "saveFailed": "Could not save the booking. Please try again.",
-    "notFound": "This account or booking no longer exists."
+    "notFound": "This account or booking no longer exists.",
+    "classifiedByRule": "Sorted by a rule.",
+    "learnRule": "Always do this",
+    "ruleField": "What the rule looks at",
+    "ruleFieldCounterparty": "Counterparty contains",
+    "ruleFieldReference": "Reference contains",
+    "rulePattern": "Text the rule looks for",
+    "learnRuleHint": "Creates a rule for this account. Shorten the text to what matters, e.g. “Spotify”.",
+    "rulePatternNotInText": "The text must occur in the booking.",
+    "ruleFailed": "Saved, but the rule could not be created."
   },
   "actions": {
     "delete": "Delete booking",

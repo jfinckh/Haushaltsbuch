@@ -20,7 +20,8 @@
     "toAccount": "Transfer without counter-booking: {account}",
     "anotherAccount": "another account",
     "kindByHand": "Type set by hand: {kind}",
-    "none": "Not a transfer."
+    "none": "Not a transfer.",
+    "externalByRule": "Transfer without counter-booking: external own account (by rule). If the counter-booking turns up, it is linked."
   },
   "proposals": {
     "title": "Proposed counter-bookings",
@@ -39,7 +40,10 @@
     "externalAccount": "External own account",
     "mark": "Mark",
     "failed": "That did not work. Please try again.",
-    "taken": "This booking has been linked in the meantime."
+    "taken": "This booking has been linked in the meantime.",
+    "learnRule": "Always do this (rule for this account)",
+    "ruleCounterparty": "Counterparty contains this text",
+    "ruleReference": "Reference contains this text"
   },
   "inbox": {
     "open": "Open transfers",

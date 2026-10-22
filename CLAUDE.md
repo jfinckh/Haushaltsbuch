@@ -31,9 +31,10 @@ src/db/             Postgres connection (server only)        → nothing
 src/auth/           login, sessions, invite links, auth UI   → nothing (db is injected via createAuth)
 src/households/     households, members, account visibility  → nothing (db is injected via createHouseholds)
 src/accounts/       accounts, role (everyday/savings)        → shared, households
-src/transactions/   bookings, categories, rules              → shared (account access via accounts' SQL function accounts_visible_account_ids)
+src/transactions/   bookings, categories, who classified     → shared (account access via accounts' SQL function accounts_visible_account_ids)
 src/transfers/      transfer matching, manual linking        → shared, transactions (matching across the household in its own SECURITY DEFINER SQL functions, via accounts' accounts_household_accounts(); the app starts it after each import)
 src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank, sets the opening balance and starts transfer matching)
+src/rules/          rules, auto-categorization, learning     → shared, transactions (scope via accounts' SQL function accounts_visible_account_scopes; the app applies rules after each import, before transfer matching)
 src/budgets/        budgets per account                      → transactions
 src/insights/       dashboard figures, combined view         → transactions, budgets, accounts
 ```
@@ -48,6 +49,7 @@ src/insights/       dashboard figures, combined view         → transactions, b
 - **Encryption:** IBANs, counterparty names, references (Verwendungszweck), raw import rows and uploaded files are encrypted at field level. IBAN lookups and dedup fingerprints use an HMAC blind index. Keys come from the environment, never the database. Amounts, dates, categories and IDs stay unencrypted.
 - **Logging:** never log booking data, IBANs, names or amounts, including in error messages.
 - **Transfers:** a transfer is two linked bookings with type "Umbuchung"; it is neither income nor expense. Manual decisions (link, unlink, type) always win over automatic matching and are never overwritten by later imports.
+- **Rules:** a booking records who set its type and category (`classified_by`: auto, rule, manual). Rules never change a manual classification; matching may link a rule-typed booking but never overrides a rule with its own hints. Rule patterns are encrypted like counterparty names. A rule's scope is one account, the household's shared accounts, or the owner's private accounts.
 - **Savings:** money moving from an everyday account to a savings account (e.g. Trade Republic depot) counts as saving.
 
 ## Tests

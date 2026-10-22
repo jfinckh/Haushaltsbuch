@@ -45,7 +45,16 @@
     "add": "Buchung hinzufügen",
     "save": "Speichern",
     "saveFailed": "Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.",
-    "notFound": "Dieses Konto oder diese Buchung gibt es nicht mehr."
+    "notFound": "Dieses Konto oder diese Buchung gibt es nicht mehr.",
+    "classifiedByRule": "Per Regel zugeordnet.",
+    "learnRule": "Künftig immer so",
+    "ruleField": "Worauf die Regel achtet",
+    "ruleFieldCounterparty": "Gegenpartei enthält",
+    "ruleFieldReference": "Verwendungszweck enthält",
+    "rulePattern": "Text, den die Regel sucht",
+    "learnRuleHint": "Legt eine Regel für dieses Konto an. Kürze den Text auf das Wesentliche, z. B. „Spotify“.",
+    "rulePatternNotInText": "Der Text muss in der Buchung vorkommen.",
+    "ruleFailed": "Gespeichert, aber die Regel konnte nicht angelegt werden."
   },
   "actions": {
     "delete": "Buchung löschen",

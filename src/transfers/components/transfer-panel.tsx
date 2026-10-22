@@ -14,12 +14,17 @@ type Props = {
   memberNames: Record<string, string>;
   /** Endpoint of the transfers API. Default: /api/transfers */
   endpoint?: string;
+  /**
+   * Offer "Künftig immer so" when marking a transfer from or to an external own account: the action
+   * then carries `rule: { field, pattern }`, and the app creates a rule from the booking.
+   */
+  offerRule?: boolean;
 };
 
 const KINDS: TransferKind[] = ["transfer", "saving", "expense", "income"];
 
 /** The transfer box on the booking page: link, proposals, open state and the corrections. */
-export function TransferPanel({ status, accounts, memberNames, endpoint }: Props) {
+export function TransferPanel({ status, accounts, memberNames, endpoint, offerRule = false }: Props) {
   const t = useTranslations("transfers");
   const names = { accounts: Object.fromEntries(accounts.map((a) => [a.id, a.name])), members: memberNames };
   const texts = useTransferTexts(names);
@@ -29,6 +34,10 @@ export function TransferPanel({ status, accounts, memberNames, endpoint }: Props
   const [kind, setKind] = useState<TransferKind>(booking.kind);
   const targets = accounts.filter((a) => a.id !== booking.accountId);
   const [target, setTarget] = useState("external");
+  const ruleField = booking.counterparty ? "counterparty" : booking.reference ? "reference" : null;
+  const [learn, setLearn] = useState(false);
+  const [rulePattern, setRulePattern] = useState((ruleField && booking[ruleField]) ?? "");
+  const canLearn = offerRule && target === "external" && ruleField !== null;
 
   const act = (body: unknown) => run(booking.id, body);
 
@@ -64,6 +73,7 @@ export function TransferPanel({ status, accounts, memberNames, endpoint }: Props
             : t("status.toAccount", { account: (decision.accountId && names.accounts[decision.accountId]) || t("status.anotherAccount") })}
         </p>
       )}
+      {status.ruleTarget === "external" && !link && !decision && <p className="text-sm">{t("status.externalByRule")}</p>}
       {decision?.type === "kind" && !link && (
         <p className="text-sm opacity-70">{t("status.kindByHand", { kind: t(`kinds.${decision.kind}`) })}</p>
       )}
@@ -190,12 +200,36 @@ export function TransferPanel({ status, accounts, memberNames, endpoint }: Props
                   act({
                     action: "no-partner",
                     target: target === "external" ? { type: "external" } : { type: "account", accountId: target },
+                    ...(canLearn && learn && rulePattern.trim() ? { rule: { field: ruleField, pattern: rulePattern } } : {}),
                   })
                 }
               >
                 {t("actions.mark")}
               </button>
             </div>
+            {canLearn && (
+              <div className="flex flex-col gap-1">
+                <label className="label cursor-pointer justify-start gap-2 whitespace-normal">
+                  <input type="checkbox" className="checkbox checkbox-sm" checked={learn} onChange={(e) => setLearn(e.target.checked)} />
+                  <span className="text-base-content">{t("actions.learnRule")}</span>
+                </label>
+                {learn && (
+                  <>
+                    <input
+                      aria-label={t(ruleField === "counterparty" ? "actions.ruleCounterparty" : "actions.ruleReference")}
+                      type="text"
+                      className="input input-sm w-full"
+                      value={rulePattern}
+                      maxLength={200}
+                      onChange={(e) => setRulePattern(e.target.value)}
+                    />
+                    <p className="text-xs opacity-70">
+                      {t(ruleField === "counterparty" ? "actions.ruleCounterparty" : "actions.ruleReference")}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </details>
