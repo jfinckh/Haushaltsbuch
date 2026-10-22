@@ -354,6 +354,82 @@ describe("latest bookings of one account (dashboard)", () => {
   });
 });
 
+describe("all of the caller's own private accounts together (dashboard)", () => {
+  const OWN = { ownPrivate: true } as const;
+
+  beforeEach(async () => {
+    await setup.addAccount("max-tr", "max");
+    await setup.addAccount("erika-private", "erika");
+    await create(max, { date: "2026-10-01", amount: "2.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-02", amount: "-30,00", category: "groceries" });
+    await create(max, { accountId: "max-tr", date: "2026-10-03", amount: "-20,00", category: "groceries.supermarket" });
+    await create(max, { accountId: "max-tr", date: "2026-10-04", amount: "-250,00", kind: "saving", category: null });
+    await create(max, { date: "2026-10-05", amount: "-500,00", kind: "transfer", category: null });
+    await create(max, { accountId: "max-tr", date: "2026-10-06", amount: "500,00", kind: "transfer", category: null });
+    await create(max, { accountId: "max-tr", date: "2026-09-30", amount: "-99,00", category: "groceries" });
+    await create(max, { accountId: "home-shared", date: "2026-10-07", amount: "-70,00", category: "housing" });
+    await create(erika, { accountId: "erika-private", date: "2026-10-08", amount: "-40,00", category: "shopping" });
+    await create(erika, { accountId: "erika-private", date: "2026-10-09", amount: "900,00", kind: "income", category: "salary" });
+  });
+
+  it("sums the month over all own private accounts; shared accounts and transfers never count", async () => {
+    expect(await transactions.monthSummary(max, OWN, "2026-10")).toEqual({
+      ok: true,
+      month: "2026-10",
+      incomeCents: 200000,
+      expenseCents: -5000,
+      savingCents: -25000,
+      availableCents: 170000,
+    });
+  });
+
+  it("sums the spending by category over all own private accounts", async () => {
+    expect(await transactions.categorySpending(max, OWN, "2026-10")).toEqual({
+      ok: true,
+      month: "2026-10",
+      totalCents: 5000,
+      groups: [{ group: "groceries", cents: 5000 }],
+    });
+  });
+
+  it("lists the newest bookings of all own private accounts only", async () => {
+    const result = await transactions.latestTransactions(max, OWN, 3);
+    expect(result.ok && result.transactions.map((t) => [t.date, t.accountId])).toEqual([
+      ["2026-10-06", "max-tr"],
+      ["2026-10-05", "max-private"],
+      ["2026-10-04", "max-tr"],
+    ]);
+    const all = await transactions.latestTransactions(max, OWN, 50);
+    expect(all.ok && new Set(all.transactions.map((t) => t.accountId))).toEqual(new Set(["max-private", "max-tr"]));
+  });
+
+  it("never mixes in another member's private accounts, either way", async () => {
+    expect(await transactions.monthSummary(erika, OWN, "2026-10")).toMatchObject({ incomeCents: 90000, expenseCents: -4000, savingCents: 0 });
+    expect(await transactions.categorySpending(erika, OWN, "2026-10")).toMatchObject({ groups: [{ group: "shopping", cents: 4000 }] });
+    const latest = await transactions.latestTransactions(erika, OWN, 50);
+    expect(latest.ok && latest.transactions.map((t) => t.accountId)).toEqual(["erika-private", "erika-private"]);
+  });
+
+  it("gives zeros to a member without private accounts", async () => {
+    expect(await transactions.monthSummary(dora, OWN)).toEqual({
+      ok: true,
+      month: "2026-10",
+      incomeCents: 0,
+      expenseCents: 0,
+      savingCents: 0,
+      availableCents: 0,
+    });
+    expect(await transactions.categorySpending(dora, OWN)).toEqual({ ok: true, month: "2026-10", totalCents: 0, groups: [] });
+    expect(await transactions.latestTransactions(dora, OWN, 8)).toEqual({ ok: true, transactions: [] });
+  });
+
+  it("rejects an invalid month or limit", async () => {
+    expect(await transactions.monthSummary(max, OWN, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await transactions.categorySpending(max, OWN, "x")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await transactions.latestTransactions(max, OWN, 0)).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
 describe("monthly expense totals inside another part's database transaction", () => {
   const totals = (caller: Caller, accountId: string, month?: string) =>
     withSession(setup.db, caller, (tx) => transactions.expenseTotals(tx, accountId, month));

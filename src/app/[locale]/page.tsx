@@ -9,8 +9,9 @@ import { auth } from "@/app/_lib/auth";
 import { budgets } from "@/app/_lib/budgets";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
-import { selectAccount } from "@/app/_lib/select-account";
+import { ALL_MINE, offersAllMine, selectAccount } from "@/app/_lib/select-account";
 import { transactions } from "@/app/_lib/transactions";
+import { transfers } from "@/app/_lib/transfers";
 import { formatEuro } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
 import { CategorySpending, TransactionList } from "@/transactions";
@@ -32,7 +33,10 @@ export default function Home(props: Props) {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-/** One account at a time (?account=<id>): available this month, budgets, spending by category, newest bookings. */
+/**
+ * One account at a time (?account=<id>), or all own private accounts together (?account=all):
+ * available this month, budgets (single account only), spending by category, newest bookings.
+ */
 async function Dashboard({ searchParams }: Props) {
   const { user, caller } = await requireCaller("/sign-in");
   const inviter = await auth.getInviter(user.id);
@@ -45,6 +49,7 @@ async function Dashboard({ searchParams }: Props) {
   // Only accounts the caller may see; any other id falls back to the first active account.
   const visibleAccounts = await accounts.listAccounts(caller);
   const selected = selectAccount(visibleAccounts, first((await searchParams).account));
+  const selectedId = selected === ALL_MINE ? ALL_MINE : selected?.id;
   const t = await getTranslations("app.home");
 
   return (
@@ -72,22 +77,30 @@ async function Dashboard({ searchParams }: Props) {
           <>
             <nav aria-label={t("switcher")} className="overflow-x-auto">
               <div role="tablist" className="tabs tabs-box w-max">
-                {visibleAccounts
-                  .filter((a) => !a.archived)
-                  .map((a) => (
-                    <Link
-                      key={a.id}
-                      href={`/?account=${a.id}`}
-                      role="tab"
-                      aria-current={a.id === selected.id ? "page" : undefined}
-                      className={`tab whitespace-nowrap ${a.id === selected.id ? "tab-active" : ""}`}
-                    >
-                      {a.name}
-                    </Link>
-                  ))}
+                {[
+                  ...(offersAllMine(visibleAccounts) ? [{ id: ALL_MINE, name: t("allMine") }] : []),
+                  ...visibleAccounts.filter((a) => !a.archived),
+                ].map((a) => (
+                  <Link
+                    key={a.id}
+                    href={`/?account=${a.id}`}
+                    role="tab"
+                    aria-current={a.id === selectedId ? "page" : undefined}
+                    className={`tab whitespace-nowrap ${a.id === selectedId ? "tab-active" : ""}`}
+                  >
+                    {a.name}
+                  </Link>
+                ))}
               </div>
             </nav>
-            <AccountDashboard caller={caller} accountId={selected.id} />
+            {selected === ALL_MINE ? (
+              <CombinedDashboard
+                caller={caller}
+                accountNames={Object.fromEntries(visibleAccounts.filter((a) => a.visibility === "private").map((a) => [a.id, a.name]))}
+              />
+            ) : (
+              <AccountDashboard caller={caller} accountId={selected.id} />
+            )}
           </>
         ) : (
           <div className="flex flex-col items-start gap-3">
@@ -114,26 +127,14 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
   return (
     <>
       {summary.ok && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-sm opacity-70">{t("available")}</h2>
-          <p className={`text-4xl font-semibold tabular-nums ${summary.availableCents < 0 ? "text-error" : ""}`}>
-            {formatEuro(summary.availableCents)}
-          </p>
-          <dl className="grid grid-cols-3 gap-2 text-sm">
-            {(
-              [
-                ["income", summary.incomeCents],
-                ["expenses", summary.expenseCents],
-                ["saving", summary.savingCents],
-              ] as const
-            ).map(([key, cents]) => (
-              <div key={key}>
-                <dt className="opacity-70">{t(key)}</dt>
-                <dd className="tabular-nums">{formatEuro(cents)}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+        <MonthFigures
+          availableCents={summary.availableCents}
+          figures={[
+            ["income", summary.incomeCents],
+            ["expenses", summary.expenseCents],
+            ["saving", summary.savingCents],
+          ]}
+        />
       )}
       {budgetList.ok && (
         <>
@@ -159,6 +160,70 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
             <Link href={`/accounts/${accountId}`} className="btn btn-ghost btn-sm self-end">
               {t("allBookings")}
             </Link>
+          </section>
+        </>
+      )}
+    </>
+  );
+}
+
+type FigureKey = "income" | "expenses" | "saving" | "contribution";
+
+/** The big available amount and the figures below it (cents, signed as booked). */
+async function MonthFigures({ availableCents, figures }: { availableCents: number; figures: [FigureKey, number][] }) {
+  const t = await getTranslations("app.home");
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className="text-sm opacity-70">{t("available")}</h2>
+      <p className={`text-4xl font-semibold tabular-nums ${availableCents < 0 ? "text-error" : ""}`}>{formatEuro(availableCents)}</p>
+      <dl className={`grid gap-2 text-sm ${figures.length > 3 ? "grid-cols-2" : "grid-cols-3"}`}>
+        {figures.map(([key, cents]) => (
+          <div key={key}>
+            <dt className="opacity-70">{t(key)}</dt>
+            <dd className="tabular-nums">{formatEuro(cents)}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+/** The caller's own private accounts together. The contribution to shared accounts lowers what is available. */
+async function CombinedDashboard({ caller, accountNames }: { caller: Caller; accountNames: Record<string, string> }) {
+  const mine = { ownPrivate: true } as const;
+  const [summary, spending, latest] = await Promise.all([
+    transactions.monthSummary(caller, mine),
+    transactions.categorySpending(caller, mine),
+    transactions.latestTransactions(caller, mine, LATEST),
+  ]);
+  const contribution = summary.ok ? await transfers.sharedContribution(caller, summary.month) : null;
+  const t = await getTranslations("app.home");
+
+  return (
+    <>
+      {summary.ok && contribution?.ok && (
+        <MonthFigures
+          availableCents={summary.availableCents + contribution.cents}
+          figures={[
+            ["income", summary.incomeCents],
+            ["expenses", summary.expenseCents],
+            ["saving", summary.savingCents],
+            ["contribution", contribution.cents],
+          ]}
+        />
+      )}
+      {spending.ok && (
+        <>
+          <div className="divider my-0" />
+          <CategorySpending month={spending.month} totalCents={spending.totalCents} groups={spending.groups} />
+        </>
+      )}
+      {latest.ok && (
+        <>
+          <div className="divider my-0" />
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">{t("latest")}</h2>
+            <TransactionList transactions={latest.transactions} accountNames={accountNames} />
           </section>
         </>
       )}

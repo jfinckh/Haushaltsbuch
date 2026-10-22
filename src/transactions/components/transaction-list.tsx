@@ -8,6 +8,8 @@ type Props = {
   transactions: TransactionView[];
   /** Link to one booking: `${href}/${id}`. Default: /transactions */
   href?: string;
+  /** Names of the bookings' accounts; with it, each row shows its account (several accounts in one list). */
+  accountNames?: Record<string, string>;
 };
 
 function byDate(transactions: TransactionView[]): [string, TransactionView[]][] {
@@ -16,7 +18,7 @@ function byDate(transactions: TransactionView[]): [string, TransactionView[]][] 
   return [...groups];
 }
 
-function Row({ transaction, href }: { transaction: TransactionView; href: string }) {
+function Row({ transaction, href, accountName }: { transaction: TransactionView; href: string; accountName?: string }) {
   const t = useTranslations("transactions");
   const categoryName = useCategoryName();
   const categorized = transaction.kind === "transfer" || transaction.kind === "saving" || transaction.category !== null;
@@ -27,6 +29,7 @@ function Row({ transaction, href }: { transaction: TransactionView; href: string
           <p className="truncate font-medium">{transaction.counterparty ?? transaction.reference ?? t("list.noText")}</p>
           <p className="flex flex-wrap items-center gap-1 text-sm opacity-70">
             {transaction.category ? categoryName(transaction.category) : t(`kinds.${transaction.kind}`)}
+            {accountName && <span>· {accountName}</span>}
             {!categorized && <span className="badge badge-warning badge-sm">{t("list.uncategorized")}</span>}
           </p>
         </div>
@@ -39,7 +42,7 @@ function Row({ transaction, href }: { transaction: TransactionView; href: string
 }
 
 /** Bookings grouped by date, newest first; uncategorized expenses and income are marked. */
-export function TransactionList({ transactions, href = "/transactions" }: Props) {
+export function TransactionList({ transactions, href = "/transactions", accountNames }: Props) {
   const t = useTranslations("transactions.list");
   const format = useFormatter();
   if (transactions.length === 0) return <p className="opacity-70">{t("empty")}</p>;
@@ -52,7 +55,7 @@ export function TransactionList({ transactions, href = "/transactions" }: Props)
           </h3>
           <ul className="flex flex-col">
             {items.map((transaction) => (
-              <Row key={transaction.id} transaction={transaction} href={href} />
+              <Row key={transaction.id} transaction={transaction} href={href} accountName={accountNames?.[transaction.accountId]} />
             ))}
           </ul>
         </section>

@@ -24,7 +24,9 @@
     "latest": "Letzte Buchungen",
     "allBookings": "Alle Buchungen",
     "editBudgets": "Budgets ändern",
-    "noAccounts": "Noch kein Konto. Lege eins an, um loszulegen."
+    "noAccounts": "Noch kein Konto. Lege eins an, um loszulegen.",
+    "allMine": "Alle meine Konten",
+    "contribution": "Beitrag Gemeinschaftskonto"
   },
   "members": {
     "you": "Du",

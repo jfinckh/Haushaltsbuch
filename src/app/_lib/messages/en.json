@@ -24,7 +24,9 @@
     "latest": "Latest bookings",
     "allBookings": "All bookings",
     "editBudgets": "Change budgets",
-    "noAccounts": "No account yet. Add one to get started."
+    "noAccounts": "No account yet. Add one to get started.",
+    "allMine": "All my accounts",
+    "contribution": "Shared account contribution"
   },
   "members": {
     "you": "You",

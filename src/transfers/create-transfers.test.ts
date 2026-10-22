@@ -381,3 +381,59 @@ describe("rule results", () => {
   });
 
 });
+
+describe("contribution to shared accounts (dashboard, all own private accounts)", () => {
+  const contribution = async (caller: Caller, month = "2026-10") => setup.transfers.sharedContribution(caller, month);
+
+  /** The shared account's counter-bookings of Max's rent, imported by Erika; both months link. */
+  const importRentOnShared = () =>
+    setup.importBookings("erika", "shared", [
+      { date: "2026-09-01", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
+      { date: "2026-10-02", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
+    ]);
+
+  it("is zero for transfers between own private accounts and for open transfers", async () => {
+    await importTestData();
+    expect(await contribution(max)).toEqual({ ok: true, month: "2026-10", cents: 0 });
+  });
+
+  it("counts a linked transfer into the shared account, in its own month only", async () => {
+    await importTestData();
+    await importRentOnShared();
+    expect(await contribution(max)).toEqual({ ok: true, month: "2026-10", cents: -120000 });
+    expect(await contribution(max, "2026-09")).toEqual({ ok: true, month: "2026-09", cents: -120000 });
+    expect(await contribution(max, "2026-08")).toEqual({ ok: true, month: "2026-08", cents: 0 });
+  });
+
+  it("is lowered by a transfer from the shared account back to a private account", async () => {
+    await importTestData();
+    await importRentOnShared();
+    const back = await setup.importBookings("erika", "shared", [{ date: "2026-10-20", amountCents: -30000, counterparty: "Max Mustermann" }]);
+    const received = await setup.importBookings("max", "ing", [{ date: "2026-10-20", amountCents: 30000, counterparty: "Gemeinschaftskonto" }]);
+    expect(await setup.transfers.link(max, received.ids[0], back.ids[0])).toBe("ok");
+    expect(await contribution(max)).toMatchObject({ cents: -90000 });
+  });
+
+  it("counts a transfer without partner to a shared account, not one to an external own account", async () => {
+    const { ing } = await importTestData();
+    expect(await setup.transfers.markWithoutPartner(max, ing("2026-10-15", -20000), { type: "account", accountId: "shared" })).toBe("ok");
+    expect(await setup.transfers.markWithoutPartner(max, ing("2026-10-05", 15000), { type: "external" })).toBe("ok");
+    expect(await contribution(max)).toMatchObject({ cents: -20000 });
+  });
+
+  it("counts only the caller's own private bookings, never another member's", async () => {
+    await importTestData();
+    await importRentOnShared();
+    await setup.importBookings("erika", "erika-ing", [{ date: "2026-10-03", amountCents: -50000, counterparty: "Gemeinschaftskonto" }]);
+    const fromErika = await setup.importBookings("erika", "shared", [{ date: "2026-10-03", amountCents: 50000, counterparty: "Erika Mustermann" }]);
+    expect(fromErika.result.linked).toBe(1);
+    expect(await contribution(max)).toMatchObject({ cents: -120000 });
+    expect(await contribution(erika)).toMatchObject({ cents: -50000 });
+    expect(await contribution(dora)).toEqual({ ok: true, month: "2026-10", cents: 0 });
+  });
+
+  it("rejects an invalid month", async () => {
+    expect(await contribution(max, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await contribution(max, "oct")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});

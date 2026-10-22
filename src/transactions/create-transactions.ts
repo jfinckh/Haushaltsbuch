@@ -81,6 +81,21 @@ type TransactionRow = typeof transaction.$inferSelect;
 /** Bookings of accounts the session's user may see (accounts' database contract). RLS applies the same rule. */
 const visible: SQL = sql`${transaction.accountId} IN (SELECT accounts_visible_account_ids())`;
 
+/** One visible account, or all of the caller's own private accounts together (dashboard). */
+type AccountTarget = string | { ownPrivate: true };
+
+/**
+ * The caller's own private accounts (accounts' database contract: a private account has no household
+ * and is visible to its owner only), never shared ones.
+ */
+const ownPrivate: SQL = sql`${transaction.accountId} IN (SELECT account_id FROM accounts_visible_account_scopes() WHERE household_id IS NULL)`;
+
+/** The bookings condition for a target, or null if it is a single account the caller cannot see. */
+async function targetFilter(tx: RlsTransaction, target: AccountTarget): Promise<SQL | null> {
+  if (typeof target !== "string") return ownPrivate;
+  return (await accountIsVisible(tx, target)) ? eq(transaction.accountId, target) : null;
+}
+
 async function accountIsVisible(tx: RlsTransaction, accountId: string): Promise<boolean> {
   const result = (await tx.execute(
     sql`SELECT 1 AS found WHERE ${accountId} IN (SELECT accounts_visible_account_ids())`,
@@ -374,20 +389,22 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
     /**
      * Income, expenses and saving of a visible account in a calendar month (cents, signed as booked:
      * money out is negative), and what is available: their sum, i.e. income − expenses − saving.
-     * Refunds lower the expenses; transfers never count. Without a month, the current one.
+     * Refunds lower the expenses; transfers never count. Without a month, the current one. With
+     * `{ ownPrivate: true }`, over all of the caller's own private accounts together.
      */
-    async monthSummary(caller: Caller, accountId: string, month: string = monthOf(today())): Promise<MonthSummaryResult> {
+    async monthSummary(caller: Caller, target: AccountTarget, month: string = monthOf(today())): Promise<MonthSummaryResult> {
       if (!isMonth(month)) return { ok: false, reason: "invalid-input" };
       const { from, to } = monthRange(month);
       return withSession(db, caller, async (tx): Promise<MonthSummaryResult> => {
-        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        const accounts = await targetFilter(tx, target);
+        if (!accounts) return { ok: false, reason: "not-found" };
         const rows = await tx
           .select({ kind: transaction.kind, sum: sql<string>`sum(${transaction.amountCents})` })
           .from(transaction)
           .where(
             and(
               visible,
-              eq(transaction.accountId, accountId),
+              accounts,
               inArray(transaction.kind, ["income", "expense", "saving"]),
               gte(transaction.bookingDate, from),
               lte(transaction.bookingDate, to),
@@ -403,20 +420,22 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
     /**
      * What a visible account spent in a calendar month per category group (positive cents), largest
      * first; `group: null` is expenses without category. Only expenses count; refunds lower their
-     * group, and a group at zero or below is left out. Without a month, the current one.
+     * group, and a group at zero or below is left out. Without a month, the current one. With
+     * `{ ownPrivate: true }`, over all of the caller's own private accounts together.
      */
-    async categorySpending(caller: Caller, accountId: string, month: string = monthOf(today())): Promise<CategorySpendingResult> {
+    async categorySpending(caller: Caller, target: AccountTarget, month: string = monthOf(today())): Promise<CategorySpendingResult> {
       if (!isMonth(month)) return { ok: false, reason: "invalid-input" };
       const { from, to } = monthRange(month);
       return withSession(db, caller, async (tx): Promise<CategorySpendingResult> => {
-        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        const accounts = await targetFilter(tx, target);
+        if (!accounts) return { ok: false, reason: "not-found" };
         const rows = await tx
           .select({ category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
           .from(transaction)
           .where(
             and(
               visible,
-              eq(transaction.accountId, accountId),
+              accounts,
               eq(transaction.kind, "expense"),
               gte(transaction.bookingDate, from),
               lte(transaction.bookingDate, to),
@@ -427,15 +446,19 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
       });
     },
 
-    /** The newest bookings of a visible account, any month, at most `limit` (1–50). */
-    async latestTransactions(caller: Caller, accountId: string, limit: number): Promise<ListTransactionsResult> {
+    /**
+     * The newest bookings of a visible account, any month, at most `limit` (1–50). With
+     * `{ ownPrivate: true }`, of all of the caller's own private accounts together.
+     */
+    async latestTransactions(caller: Caller, target: AccountTarget, limit: number): Promise<ListTransactionsResult> {
       if (!Number.isInteger(limit) || limit < 1 || limit > 50) return { ok: false, reason: "invalid-input" };
       return withSession(db, caller, async (tx, userId): Promise<ListTransactionsResult> => {
-        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        const accounts = await targetFilter(tx, target);
+        if (!accounts) return { ok: false, reason: "not-found" };
         const rows = await tx
           .select()
           .from(transaction)
-          .where(and(eq(transaction.accountId, accountId), visible))
+          .where(and(accounts, visible))
           .orderBy(desc(transaction.bookingDate), desc(transaction.createdAt))
           .limit(limit);
         return { ok: true, transactions: rows.map((row) => toView(row, userId)) };

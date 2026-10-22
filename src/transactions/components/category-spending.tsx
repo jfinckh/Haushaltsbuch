@@ -5,7 +5,8 @@ import type { GroupSpending } from "../categories";
 import { useCategoryName } from "./use-category-name";
 
 type Props = {
-  accountId: string;
+  /** The rows link to this account's bookings; without it (several accounts) they are not links. */
+  accountId?: string;
   /** The calendar month of the figures, YYYY-MM. */
   month: string;
   /** Sum of the rows (cents). */
@@ -14,7 +15,7 @@ type Props = {
   groups: GroupSpending[];
 };
 
-/** A month's expenses of one account per category group: a bar per group, each linking to its bookings. */
+/** A month's expenses per category group: a bar per group, each linking to the account's bookings if one is given. */
 export function CategorySpending({ accountId, month, totalCents, groups }: Props) {
   const t = useTranslations("transactions.spending");
   const categoryName = useCategoryName();
@@ -30,17 +31,26 @@ export function CategorySpending({ accountId, month, totalCents, groups }: Props
             if (group) params.set("category", group);
             const name = group ? categoryName(group) : t("uncategorized");
             const percent = Math.round((cents * 100) / totalCents);
+            const content = (
+              <>
+                <span className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate font-medium">{name}</span>
+                  <span className="shrink-0 tabular-nums">
+                    {formatEuro(cents)} <span className="opacity-70">· {t("share", { percent })}</span>
+                  </span>
+                </span>
+                <progress className="progress progress-primary w-full" value={cents} max={totalCents} aria-label={name} />
+              </>
+            );
             return (
               <li key={group ?? ""}>
-                <Link href={`/accounts/${accountId}?${params}`} className="flex flex-col gap-1 rounded-box p-2 hover:bg-base-200">
-                  <span className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="min-w-0 truncate font-medium">{name}</span>
-                    <span className="shrink-0 tabular-nums">
-                      {formatEuro(cents)} <span className="opacity-70">· {t("share", { percent })}</span>
-                    </span>
-                  </span>
-                  <progress className="progress progress-primary w-full" value={cents} max={totalCents} aria-label={name} />
-                </Link>
+                {accountId ? (
+                  <Link href={`/accounts/${accountId}?${params}`} className="flex flex-col gap-1 rounded-box p-2 hover:bg-base-200">
+                    {content}
+                  </Link>
+                ) : (
+                  <div className="flex flex-col gap-1 p-2">{content}</div>
+                )}
               </li>
             );
           })}

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "base": "b19d16434f559089800d9cc6743484cc22436ea3",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/category-spending.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/create-transfers.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/create-transfers.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/select-account.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/select-account.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transfers",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

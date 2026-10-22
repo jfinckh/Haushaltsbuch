@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "dashboard-combined",
+  "description": "Dashboard \"Alle meine Konten\"",
+  "plan": {
+    "path": "docs/plans/2026-10-22-dashboard-combined.md",
+    "sha256": "5ba9c3aa9142e70628e71aca1d61ee6b0ebab3d2a71be782a87c542399dc2cc5"
+  },
+  "status": "final",
+  "base": "b19d16434f559089800d9cc6743484cc22436ea3"
+}

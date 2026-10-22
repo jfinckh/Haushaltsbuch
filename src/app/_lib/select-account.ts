@@ -1,8 +1,25 @@
+type SwitcherAccount = { id: string; archived: boolean; visibility: "private" | "shared" };
+
+/** The address value of the combined view "Alle meine Konten". */
+export const ALL_MINE = "all";
+
 /**
- * The dashboard's account: the active one named in the address, else the first active one. The list
- * holds only accounts the caller may see, so another member's private id falls back silently.
+ * Whether the switcher offers "Alle meine Konten": only with two or more active private accounts.
+ * The list holds only accounts the caller may see, so every private one is the caller's own.
  */
-export function selectAccount<T extends { id: string; archived: boolean }>(accounts: T[], id: string | undefined): T | null {
+export function offersAllMine(accounts: SwitcherAccount[]): boolean {
+  return accounts.filter((a) => !a.archived && a.visibility === "private").length >= 2;
+}
+
+/**
+ * The dashboard's choice: "all" (Alle meine Konten) or the active account named in the address.
+ * Otherwise "all" when it is offered, else the first active account. Another member's private id is
+ * not in the list, so it falls back silently.
+ */
+export function selectAccount<T extends SwitcherAccount>(accounts: T[], id: string | undefined): T | typeof ALL_MINE | null {
   const active = accounts.filter((a) => !a.archived);
-  return active.find((a) => a.id === id) ?? active[0] ?? null;
+  const named = active.find((a) => a.id === id);
+  if (named) return named;
+  if (offersAllMine(accounts)) return ALL_MINE;
+  return active[0] ?? null;
 }
