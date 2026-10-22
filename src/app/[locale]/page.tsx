@@ -75,8 +75,8 @@ async function Dashboard({ searchParams }: Props) {
         )}
         {selected ? (
           <>
-            <nav aria-label={t("switcher")} className="overflow-x-auto">
-              <div role="tablist" className="tabs tabs-box w-max">
+            <nav aria-label={t("switcher")}>
+              <div role="tablist" className="tabs tabs-box flex-wrap">
                 {[
                   ...(offersAllMine(visibleAccounts) ? [{ id: ALL_MINE, name: t("allMine") }] : []),
                   ...visibleAccounts.filter((a) => !a.archived),
