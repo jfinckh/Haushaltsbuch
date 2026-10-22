@@ -432,6 +432,46 @@ describe("contribution to shared accounts (dashboard, all own private accounts)"
     expect(await contribution(dora)).toEqual({ ok: true, month: "2026-10", cents: 0 });
   });
 
+  it("gives the contribution of a series of months, newest first", async () => {
+    await importTestData();
+    await importRentOnShared();
+    expect(await setup.transfers.sharedContributions(max, "2026-08", "2026-10")).toEqual({
+      ok: true,
+      months: [
+        { month: "2026-10", cents: -120000 },
+        { month: "2026-09", cents: -120000 },
+        { month: "2026-08", cents: 0 },
+      ],
+    });
+    expect(await setup.transfers.sharedContributions(max, "2025-12", "2026-01")).toEqual({
+      ok: true,
+      months: [
+        { month: "2026-01", cents: 0 },
+        { month: "2025-12", cents: 0 },
+      ],
+    });
+  });
+
+  it("never mixes members in a series of months", async () => {
+    await importTestData();
+    await importRentOnShared();
+    await setup.importBookings("erika", "erika-ing", [{ date: "2026-09-03", amountCents: -50000, counterparty: "Gemeinschaftskonto" }]);
+    await setup.importBookings("erika", "shared", [{ date: "2026-09-03", amountCents: 50000, counterparty: "Erika Mustermann" }]);
+    const series = async (caller: Caller) => {
+      const result = await setup.transfers.sharedContributions(caller, "2026-09", "2026-10");
+      return result.ok && result.months.map((m) => m.cents);
+    };
+    expect(await series(max)).toEqual([-120000, -120000]);
+    expect(await series(erika)).toEqual([0, -50000]);
+    expect(await series(dora)).toEqual([0, 0]);
+  });
+
+  it("rejects an invalid series of months", async () => {
+    expect(await setup.transfers.sharedContributions(max, "2026-10", "2026-09")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await setup.transfers.sharedContributions(max, "2024-09", "2026-10")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await setup.transfers.sharedContributions(max, "2026-00", "2026-10")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+
   it("rejects an invalid month", async () => {
     expect(await contribution(max, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
     expect(await contribution(max, "oct")).toEqual({ ok: false, reason: "invalid-input" });

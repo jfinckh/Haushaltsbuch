@@ -4,12 +4,13 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { SignOutButton } from "@/auth";
 import { BudgetSection } from "@/budgets";
+import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
 import { budgets } from "@/app/_lib/budgets";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
-import { ALL_MINE, offersAllMine, selectAccount } from "@/app/_lib/select-account";
+import { ALL_MINE, selectAccount } from "@/app/_lib/select-account";
 import { transactions } from "@/app/_lib/transactions";
 import { transfers } from "@/app/_lib/transfers";
 import { formatEuro } from "@/shared/money";
@@ -49,7 +50,7 @@ async function Dashboard({ searchParams }: Props) {
   // Only accounts the caller may see; any other id falls back to the first active account.
   const visibleAccounts = await accounts.listAccounts(caller);
   const selected = selectAccount(visibleAccounts, first((await searchParams).account));
-  const selectedId = selected === ALL_MINE ? ALL_MINE : selected?.id;
+  const selectedId = selected === ALL_MINE ? ALL_MINE : (selected?.id ?? "");
   const t = await getTranslations("app.home");
 
   return (
@@ -75,24 +76,10 @@ async function Dashboard({ searchParams }: Props) {
         )}
         {selected ? (
           <>
-            <nav aria-label={t("switcher")}>
-              <div role="tablist" className="tabs tabs-box flex-wrap">
-                {[
-                  ...(offersAllMine(visibleAccounts) ? [{ id: ALL_MINE, name: t("allMine") }] : []),
-                  ...visibleAccounts.filter((a) => !a.archived),
-                ].map((a) => (
-                  <Link
-                    key={a.id}
-                    href={`/?account=${a.id}`}
-                    role="tab"
-                    aria-current={a.id === selectedId ? "page" : undefined}
-                    className={`tab whitespace-nowrap ${a.id === selectedId ? "tab-active" : ""}`}
-                  >
-                    {a.name}
-                  </Link>
-                ))}
-              </div>
-            </nav>
+            <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/" />
+            <Link href={`/statistics?account=${selectedId}`} className="link link-hover self-end text-sm">
+              {t("statistics")}
+            </Link>
             {selected === ALL_MINE ? (
               <CombinedDashboard
                 caller={caller}

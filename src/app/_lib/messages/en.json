@@ -26,6 +26,25 @@
     "editBudgets": "Change budgets",
     "noAccounts": "No account yet. Add one to get started.",
     "allMine": "All my accounts",
+    "contribution": "Shared account contribution",
+    "statistics": "Statistics"
+  },
+  "statistics": {
+    "title": "Statistics",
+    "back": "Back to overview",
+    "noAccounts": "No account yet. Add one to get started.",
+    "comparison": "This month compared",
+    "expensesMore": "{amount} more spent than in {month}",
+    "expensesLess": "{amount} less spent than in {month}",
+    "expensesSame": "Spent the same as in {month}",
+    "rateUp": "Savings rate {points} percentage points higher than in {month}",
+    "rateDown": "Savings rate {points} percentage points lower than in {month}",
+    "rateSame": "Savings rate as in {month}",
+    "income": "Income",
+    "expenses": "Expenses",
+    "saved": "Saved",
+    "savingsRate": "Savings rate",
+    "noRate": "–",
     "contribution": "Shared account contribution"
   },
   "members": {

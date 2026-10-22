@@ -280,6 +280,82 @@ describe("month summary of one account (dashboard)", () => {
   });
 });
 
+describe("month summaries over a series of months (statistics)", () => {
+  const OWN = { ownPrivate: true } as const;
+  const zero = (month: string) => ({ month, incomeCents: 0, expenseCents: 0, savingCents: 0, availableCents: 0 });
+
+  it("gives each month of the series newest first, with the same figures as the month summary", async () => {
+    await create(max, { date: "2026-10-01", amount: "2.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-02", amount: "-300,00", category: "groceries" });
+    await create(max, { date: "2026-10-03", amount: "20,00", category: "groceries" });
+    await create(max, { date: "2026-10-05", amount: "-250,00", kind: "saving", category: null });
+    await create(max, { date: "2026-10-06", amount: "-500,00", kind: "transfer", category: null });
+    await create(max, { date: "2026-08-31", amount: "-99,00", category: "groceries" });
+    await create(max, { date: "2026-07-31", amount: "-11,00", category: "groceries" });
+    await create(max, { date: "2026-11-01", amount: "-11,00", category: "groceries" });
+
+    const result = await transactions.monthSummaries(max, "max-private", 3, "2026-10");
+    expect(result).toEqual({
+      ok: true,
+      months: [
+        { month: "2026-10", incomeCents: 200000, expenseCents: -28000, savingCents: -25000, availableCents: 147000 },
+        zero("2026-09"),
+        { ...zero("2026-08"), expenseCents: -9900, availableCents: -9900 },
+      ],
+    });
+    const { ok, ...october } = (await transactions.monthSummary(max, "max-private", "2026-10")) as { ok: true };
+    expect(ok).toBe(true);
+    expect(result.ok && result.months[0]).toEqual(october);
+  });
+
+  it("ends with the current month by default and crosses the year boundary", async () => {
+    await create(max, { date: "2025-12-24", amount: "-40,00", category: "shopping" });
+    const byDefault = await transactions.monthSummaries(max, "max-private", 2);
+    expect(byDefault.ok && byDefault.months.map((m) => m.month)).toEqual(["2026-10", "2026-09"]);
+    const overNewYear = await transactions.monthSummaries(max, "max-private", 3, "2026-01");
+    expect(overNewYear.ok && overNewYear.months.map((m) => [m.month, m.expenseCents])).toEqual([
+      ["2026-01", 0],
+      ["2025-12", -4000],
+      ["2025-11", 0],
+    ]);
+  });
+
+  it("sums all own private accounts per month, never shared ones or another member's", async () => {
+    await setup.addAccount("max-tr", "max");
+    await setup.addAccount("erika-private", "erika");
+    await create(max, { date: "2026-10-01", amount: "1.000,00", kind: "income", category: "salary" });
+    await create(max, { accountId: "max-tr", date: "2026-09-04", amount: "-250,00", kind: "saving", category: null });
+    await create(max, { accountId: "home-shared", date: "2026-10-07", amount: "-70,00", category: "housing" });
+    await create(erika, { accountId: "erika-private", date: "2026-09-08", amount: "-40,00", category: "shopping" });
+
+    expect(await transactions.monthSummaries(max, OWN, 2, "2026-10")).toEqual({
+      ok: true,
+      months: [
+        { ...zero("2026-10"), incomeCents: 100000, availableCents: 100000 },
+        { ...zero("2026-09"), savingCents: -25000, availableCents: -25000 },
+      ],
+    });
+    expect(await transactions.monthSummaries(erika, OWN, 2, "2026-10")).toEqual({
+      ok: true,
+      months: [zero("2026-10"), { ...zero("2026-09"), expenseCents: -4000, availableCents: -4000 }],
+    });
+    expect(await transactions.monthSummaries(dora, OWN, 1)).toEqual({ ok: true, months: [zero("2026-10")] });
+  });
+
+  it("never sums another member's private account, as if it did not exist", async () => {
+    await create(max, { date: "2026-10-08", amount: "-4,00" });
+    expect(await transactions.monthSummaries(erika, "max-private", 12)).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.monthSummaries(dora, "home-shared", 12)).toEqual({ ok: false, reason: "not-found" });
+  });
+
+  it("rejects an invalid count or month", async () => {
+    for (const count of [0, 25, 1.5]) {
+      expect(await transactions.monthSummaries(max, "max-private", count)).toEqual({ ok: false, reason: "invalid-input" });
+    }
+    expect(await transactions.monthSummaries(max, "max-private", 12, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
 describe("spending by category of one account (dashboard)", () => {
   it("sums only the month's expenses per group; refunds lower them, uncategorized is its own row", async () => {
     await create(max, { date: "2026-10-01", amount: "-50,00", category: "groceries.supermarket" });

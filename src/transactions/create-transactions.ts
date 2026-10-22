@@ -4,7 +4,7 @@ import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { isCategoryFor, spendingByGroup, type GroupSpending } from "./categories";
 import type { ClassifiedBy, TransactionKind } from "./kinds";
-import { isMonth, monthOf, monthRange, today as localToday } from "./months";
+import { isMonth, monthOf, monthRange, shiftMonth, today as localToday } from "./months";
 import { transaction } from "./schema";
 import {
   createTransactionSchema,
@@ -58,9 +58,15 @@ export type ListTransactionsResult =
   | { ok: true; transactions: TransactionView[] }
   | { ok: false; reason: "invalid-input" | "not-found" };
 
-export type MonthSummaryResult =
-  | { ok: true; month: string; incomeCents: number; expenseCents: number; savingCents: number; availableCents: number }
-  | { ok: false; reason: "invalid-input" | "not-found" };
+/** Income, expenses and saving of one calendar month (cents, signed as booked), and what is available. */
+export type MonthSummary = { month: string; incomeCents: number; expenseCents: number; savingCents: number; availableCents: number };
+
+export type MonthSummaryResult = ({ ok: true } & MonthSummary) | { ok: false; reason: "invalid-input" | "not-found" };
+
+export type MonthSummariesResult = { ok: true; months: MonthSummary[] } | { ok: false; reason: "invalid-input" | "not-found" };
+
+/** The longest series of months monthSummaries computes at once. */
+const MAX_MONTHS = 24;
 
 export type CategorySpendingResult =
   | { ok: true; month: string; totalCents: number; groups: GroupSpending[] }
@@ -147,6 +153,45 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
       counterpartyIbanIndex: counterpartyIban && fieldCrypto.blindIndex(counterpartyIban, CONTEXT.counterpartyIban),
       referenceEncrypted: encrypt(reference, CONTEXT.reference),
     };
+  }
+
+  /** The month series behind monthSummary and monthSummaries (documented on the latter). */
+  async function monthSummaries(
+    caller: Caller,
+    target: AccountTarget,
+    count: number,
+    until: string = monthOf(today()),
+  ): Promise<MonthSummariesResult> {
+    if (!isMonth(until) || !Number.isInteger(count) || count < 1 || count > MAX_MONTHS) return { ok: false, reason: "invalid-input" };
+    const months = Array.from({ length: count }, (_, i) => shiftMonth(until, -i));
+    const from = monthRange(months[count - 1]).from;
+    const to = monthRange(until).to;
+    return withSession(db, caller, async (tx): Promise<MonthSummariesResult> => {
+      const accounts = await targetFilter(tx, target);
+      if (!accounts) return { ok: false, reason: "not-found" };
+      const month = sql<string>`to_char(${transaction.bookingDate}, 'YYYY-MM')`;
+      const rows = await tx
+        .select({ month, kind: transaction.kind, sum: sql<string>`sum(${transaction.amountCents})` })
+        .from(transaction)
+        .where(
+          and(
+            visible,
+            accounts,
+            inArray(transaction.kind, ["income", "expense", "saving"]),
+            gte(transaction.bookingDate, from),
+            lte(transaction.bookingDate, to),
+          ),
+        )
+        .groupBy(month, transaction.kind);
+      const sumOf = (m: string, kind: TransactionKind) => Number(rows.find((row) => row.month === m && row.kind === kind)?.sum ?? 0);
+      return {
+        ok: true,
+        months: months.map((m) => {
+          const [incomeCents, expenseCents, savingCents] = [sumOf(m, "income"), sumOf(m, "expense"), sumOf(m, "saving")];
+          return { month: m, incomeCents, expenseCents, savingCents, availableCents: incomeCents + expenseCents + savingCents };
+        }),
+      };
+    });
   }
 
   async function findVisible(tx: RlsTransaction, id: string, lock = false) {
@@ -393,29 +438,15 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
      * `{ ownPrivate: true }`, over all of the caller's own private accounts together.
      */
     async monthSummary(caller: Caller, target: AccountTarget, month: string = monthOf(today())): Promise<MonthSummaryResult> {
-      if (!isMonth(month)) return { ok: false, reason: "invalid-input" };
-      const { from, to } = monthRange(month);
-      return withSession(db, caller, async (tx): Promise<MonthSummaryResult> => {
-        const accounts = await targetFilter(tx, target);
-        if (!accounts) return { ok: false, reason: "not-found" };
-        const rows = await tx
-          .select({ kind: transaction.kind, sum: sql<string>`sum(${transaction.amountCents})` })
-          .from(transaction)
-          .where(
-            and(
-              visible,
-              accounts,
-              inArray(transaction.kind, ["income", "expense", "saving"]),
-              gte(transaction.bookingDate, from),
-              lte(transaction.bookingDate, to),
-            ),
-          )
-          .groupBy(transaction.kind);
-        const sumOf = (kind: TransactionKind) => Number(rows.find((row) => row.kind === kind)?.sum ?? 0);
-        const [incomeCents, expenseCents, savingCents] = [sumOf("income"), sumOf("expense"), sumOf("saving")];
-        return { ok: true, month, incomeCents, expenseCents, savingCents, availableCents: incomeCents + expenseCents + savingCents };
-      });
+      const result = await monthSummaries(caller, target, 1, month);
+      return result.ok ? { ok: true, ...result.months[0] } : result;
     },
+
+    /**
+     * The month summaries (as monthSummary) of `count` (1–24) calendar months ending with `until`
+     * (default: the current month), newest first; a month without bookings gives zeros.
+     */
+    monthSummaries,
 
     /**
      * What a visible account spent in a calendar month per category group (positive cents), largest

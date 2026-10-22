@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "statistics",
+  "description": "Statistics page, first slice",
+  "plan": {
+    "path": "docs/plans/2026-10-22-statistics.md",
+    "sha256": "1c84df4c3dab5cef710f6f21f3be1dd08cbd47980ab2e193367ba579446760cc"
+  },
+  "status": "final",
+  "base": "b385109a5798d94d081996ff447a8ec5f75a0845"
+}

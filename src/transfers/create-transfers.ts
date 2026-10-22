@@ -45,6 +45,11 @@ type BookingRow = typeof transferBooking.$inferSelect;
 
 export type SharedContributionResult = { ok: true; month: string; cents: number } | { ok: false; reason: "invalid-input" };
 
+export type SharedContributionsResult = { ok: true; months: { month: string; cents: number }[] } | { ok: false; reason: "invalid-input" };
+
+/** The longest series of months sharedContributions computes at once. */
+const MAX_MONTHS = 24;
+
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /** First and last day of a calendar month (YYYY-MM). */
@@ -52,6 +57,19 @@ function monthRange(month: string): { from: string; to: string } {
   const [year, number] = month.split("-").map(Number);
   const last = new Date(Date.UTC(year, number, 0)).getUTCDate();
   return { from: `${month}-01`, to: `${month}-${String(last).padStart(2, "0")}` };
+}
+
+/** The calendar months from `from` to `to` (YYYY-MM), newest first; empty if `from` is after `to`. */
+function monthsBetween(from: string, to: string): string[] {
+  const index = (month: string) => {
+    const [year, number] = month.split("-").map(Number);
+    return year * 12 + number - 1;
+  };
+  const months: string[] = [];
+  for (let i = index(to); i >= index(from); i--) {
+    months.push(`${String(Math.floor(i / 12)).padStart(4, "0")}-${String((i % 12) + 1).padStart(2, "0")}`);
+  }
+  return months;
 }
 
 /** A booking a rule typed as transfer or saving; target external: from or to an external own account. */
@@ -171,6 +189,48 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       .insert(transferBooking)
       .values({ transactionId: id, ...decided })
       .onConflictDoUpdate({ target: transferBooking.transactionId, set: decided });
+  }
+
+  /** The contribution series behind sharedContribution and sharedContributions (documented there). */
+  async function sharedContributions(caller: Caller, from: string, to: string): Promise<SharedContributionsResult> {
+    if (!MONTH.test(from) || !MONTH.test(to)) return { ok: false, reason: "invalid-input" };
+    const months = monthsBetween(from, to);
+    if (months.length < 1 || months.length > MAX_MONTHS) return { ok: false, reason: "invalid-input" };
+    return withSession(db, caller, async (tx, userId): Promise<SharedContributionsResult> => {
+      // accounts' contract: household_id is null for a private account, which is always the caller's own.
+      const scopes = await rows<{ account_id: string; household_id: string | null }>(
+        tx,
+        sql`SELECT account_id, household_id FROM accounts_visible_account_scopes()`,
+      );
+      const ownPrivate = new Set(scopes.filter((s) => s.household_id === null).map((s) => s.account_id));
+      const shared = new Set(scopes.filter((s) => s.household_id !== null).map((s) => s.account_id));
+      const range = { from: monthRange(months.at(-1)!).from, to: monthRange(months[0]).to };
+      const bookings = (await transactions.findBookings(tx, userId, range)).filter(
+        (b) => b.kind === "transfer" && ownPrivate.has(b.accountId),
+      );
+      const ids = bookings.map((b) => b.id);
+      const links = (await pairsOf(tx, ids)).filter((pair) => pair.status === "linked");
+      const partnerIds = links.map((pair) => pair.partner_transaction_id).filter((id): id is string => id !== null);
+      const partnerAccounts = new Map(
+        (await transactions.findBookings(tx, userId, { ids: partnerIds })).map((view) => [view.id, view.accountId]),
+      );
+      const linkedTo = new Map(
+        links.map((pair) => [pair.transaction_id, pair.partner_transaction_id && partnerAccounts.get(pair.partner_transaction_id)]),
+      );
+      const facts = await bookingRows(tx, ids);
+      const otherSide = (id: string) => {
+        if (linkedTo.has(id)) return linkedTo.get(id);
+        const row = facts.get(id);
+        return row?.decision === "no-partner" ? row.targetAccountId : null;
+      };
+      const cents = new Map(months.map((month) => [month, 0]));
+      for (const b of bookings) {
+        const target = otherSide(b.id);
+        const month = b.date.slice(0, 7);
+        if (target && shared.has(target)) cents.set(month, cents.get(month)! + b.amountCents);
+      }
+      return { ok: true, months: months.map((month) => ({ month, cents: cents.get(month)! })) };
+    });
   }
 
   const api = {
@@ -358,41 +418,15 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
      * still open do not count. Only the caller's own private bookings are read.
      */
     async sharedContribution(caller: Caller, month: string): Promise<SharedContributionResult> {
-      if (!MONTH.test(month)) return { ok: false, reason: "invalid-input" };
-      const { from, to } = monthRange(month);
-      return withSession(db, caller, async (tx, userId): Promise<SharedContributionResult> => {
-        // accounts' contract: household_id is null for a private account, which is always the caller's own.
-        const scopes = await rows<{ account_id: string; household_id: string | null }>(
-          tx,
-          sql`SELECT account_id, household_id FROM accounts_visible_account_scopes()`,
-        );
-        const ownPrivate = new Set(scopes.filter((s) => s.household_id === null).map((s) => s.account_id));
-        const shared = new Set(scopes.filter((s) => s.household_id !== null).map((s) => s.account_id));
-        const bookings = (await transactions.findBookings(tx, userId, { from, to })).filter(
-          (b) => b.kind === "transfer" && ownPrivate.has(b.accountId),
-        );
-        const ids = bookings.map((b) => b.id);
-        const links = (await pairsOf(tx, ids)).filter((pair) => pair.status === "linked");
-        const partnerIds = links.map((pair) => pair.partner_transaction_id).filter((id): id is string => id !== null);
-        const partnerAccounts = new Map(
-          (await transactions.findBookings(tx, userId, { ids: partnerIds })).map((view) => [view.id, view.accountId]),
-        );
-        const linkedTo = new Map(
-          links.map((pair) => [pair.transaction_id, pair.partner_transaction_id && partnerAccounts.get(pair.partner_transaction_id)]),
-        );
-        const facts = await bookingRows(tx, ids);
-        const otherSide = (id: string) => {
-          if (linkedTo.has(id)) return linkedTo.get(id);
-          const row = facts.get(id);
-          return row?.decision === "no-partner" ? row.targetAccountId : null;
-        };
-        const cents = bookings.reduce((sum, b) => {
-          const target = otherSide(b.id);
-          return target && shared.has(target) ? sum + b.amountCents : sum;
-        }, 0);
-        return { ok: true, month, cents };
-      });
+      const result = await sharedContributions(caller, month, month);
+      return result.ok ? { ok: true, ...result.months[0] } : result;
     },
+
+    /**
+     * The net contribution (as sharedContribution) of each calendar month from `from` to `to`
+     * (YYYY-MM, at most 24 months), newest first.
+     */
+    sharedContributions,
 
     /** A manual action on a booking, from the API (input checked here). */
     async applyAction(caller: Caller, id: string, input: unknown): Promise<"ok" | "not-found" | "invalid" | "invalid-input"> {

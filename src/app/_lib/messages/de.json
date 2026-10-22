@@ -26,6 +26,25 @@
     "editBudgets": "Budgets ändern",
     "noAccounts": "Noch kein Konto. Lege eins an, um loszulegen.",
     "allMine": "Alle meine Konten",
+    "contribution": "Beitrag Gemeinschaftskonto",
+    "statistics": "Statistik"
+  },
+  "statistics": {
+    "title": "Statistik",
+    "back": "Zur Übersicht",
+    "noAccounts": "Noch kein Konto. Lege eins an, um loszulegen.",
+    "comparison": "Dieser Monat im Vergleich",
+    "expensesMore": "{amount} mehr Ausgaben als im {month}",
+    "expensesLess": "{amount} weniger Ausgaben als im {month}",
+    "expensesSame": "Gleich viel ausgegeben wie im {month}",
+    "rateUp": "Sparquote {points} Prozentpunkte höher als im {month}",
+    "rateDown": "Sparquote {points} Prozentpunkte niedriger als im {month}",
+    "rateSame": "Sparquote wie im {month}",
+    "income": "Einnahmen",
+    "expenses": "Ausgaben",
+    "saved": "Gespart",
+    "savingsRate": "Sparquote",
+    "noRate": "–",
     "contribution": "Beitrag Gemeinschaftskonto"
   },
   "members": {
