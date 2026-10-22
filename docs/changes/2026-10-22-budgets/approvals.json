@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:budgets",
+      "itemHash": "sha256:c9b2453afb9c4e4be20d31ed7d92da076b8ba9dffb2bad86f577314752c8492f",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:budgets->shared",
+      "itemHash": "sha256:6db326aef40b391fc76c9be48eff720f37d26d10c1f7b8153bc46a5efa5367f7",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:budgets->transactions",
+      "itemHash": "sha256:2cf830374fd74838b735ce3dd700211e6d4b93c5c6f9387c3bb9dadb7a3c3abe",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->budgets",
+      "itemHash": "sha256:6f1b2e99f1fd5ecadca3f468ae0a29d16c4aa0cd0fbe031bfa2426d11410c468",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:budget",
+      "itemHash": "sha256:dd396e3da3b82913da8d4d275d3d590fe033ee527597b767b478a673c456f1ea",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:budget:manage",
+      "itemHash": "sha256:85b6ef897854240587de4ebc48c41a15de5fc0171e1bf899799ddaa35d8d46a7",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:budgets:client:BudgetSection",
+      "itemHash": "sha256:ad1ba41a07bb045b667dca03cb57d09b46c7d6b3ee06f3f55935bf8ad2869f40",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:budgets:client:budgetsMessages",
+      "itemHash": "sha256:cc328675c9436fa6865f98eeb86232227480353e1c3dd90a588cef53e0d73628",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:budgets:server:createBudgets",
+      "itemHash": "sha256:f4365851b70fe240ebb09239b05c1b06ba983b70054da20c1d59eab063f4f95e",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:budgets:server:Budgets",
+      "itemHash": "sha256:5cf31e5beefdadee3df2961e9d109e5fe596d30b791c821d753e6d8b403bc10f",
+      "decision": "approve",
+      "at": "2026-10-22T05:55:49Z",
+      "source": "hook"
+    }
+  ]
+}

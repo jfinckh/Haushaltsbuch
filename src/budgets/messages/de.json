@@ -1,0 +1,27 @@
+{
+  "section": {
+    "title": "Budgets {month}",
+    "empty": "Noch keine Budgets für dieses Konto.",
+    "spentOf": "{spent} von {limit}",
+    "percent": "{percent} %",
+    "edit": "Ändern",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "confirmDelete": "Wirklich löschen?",
+    "limitLabel": "Monatslimit für {category}",
+    "failed": "Das hat nicht geklappt. Bitte noch einmal versuchen."
+  },
+  "add": {
+    "title": "Budget hinzufügen",
+    "category": "Kategorie",
+    "chooseCategory": "Kategorie wählen",
+    "limit": "Monatslimit (€)",
+    "submit": "Hinzufügen",
+    "duplicate": "Für diese Kategorie gibt es schon ein Budget."
+  },
+  "validation": {
+    "categoryRequired": "Bitte eine Ausgabenkategorie wählen.",
+    "limitPositive": "Das Limit muss größer als 0 sein."
+  }
+}

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, like, lte, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, like, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
@@ -336,6 +336,31 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         changed.push(...rows.map((row) => row.id));
       }
       return changed;
+    },
+
+    /**
+     * Net sum (cents) of a visible account's expenses per category key in a calendar month, inside a
+     * given database transaction (budgets). Negative means money spent; refunds booked as positive
+     * expenses lower it. Expenses without category, income, transfers and saving are left out. Without
+     * a month, the current one. An account the caller cannot see gives no totals.
+     */
+    async expenseTotals(tx: RlsTransaction, accountId: string, month = monthOf(today())): Promise<{ month: string; totals: Record<string, number> }> {
+      const { from, to } = monthRange(month);
+      const rows = await tx
+        .select({ category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
+        .from(transaction)
+        .where(
+          and(
+            visible,
+            eq(transaction.accountId, accountId),
+            eq(transaction.kind, "expense"),
+            isNotNull(transaction.category),
+            gte(transaction.bookingDate, from),
+            lte(transaction.bookingDate, to),
+          ),
+        )
+        .groupBy(transaction.category);
+      return { month, totals: Object.fromEntries(rows.map((row) => [row.category!, Number(row.sum)])) };
     },
 
     /** Sum of the bookings per visible account that has any (cents). The app adds the opening balance. */

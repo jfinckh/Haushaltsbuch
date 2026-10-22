@@ -167,21 +167,20 @@ npx change-map review --plan <plan> --open
 npx change-map signoff start --plan <plan>
 ```
 
-It prints `{ "record", "questions": [[…], …], "approved", "total" }`.
+It prints `{ "record", "questions": […], "approved", "total" }`. `questions` holds one question: "Do you approve all N decisions for "<title>"?", with the answers **Approve all** and **Not yet**. The user reads and clicks through the decisions in the map; don't list them again in the chat.
 
-1. Tell the user in one line: how many items, where the map is, and that "Other" takes a comment (e.g. `reject: too broad`).
-2. For each batch in `questions`, call `AskUserQuestion` with **exactly** that `questions` array. The questions are already in plain words (no item keys); a hook recognises them by their three options. Never reword, reorder, merge or pre-fill anything. A hook denies anything else. If it does, run `signoff start` again and use its new output.
-3. **After each call** a hook adds a line to your context: `change-map sign-off, <record>: recorded <item> <decision> ("<comment>"); …. Not approved yet: …. Record status: …`. A `NOT recorded: …` line lists answers to ask again.
-   - **No such line = the answers were NOT recorded.** Hooks aren't installed, or change-map can't run. Don't treat the chat answer as approval and never write `approvals.json`. Tell the user, run `npx change-map doctor` to show why, and stop.
-   - If an answer was recorded differently from what the user meant (e.g. free text taken as "changes requested"), tell them. `signoff start` asks every item that isn't approved again.
+1. Tell the user in one line: how many decisions, where the map is, and that they can look at each one there before answering.
+2. Call `AskUserQuestion` with **exactly** that `questions` array. A hook recognises the question by its two options. Never reword, split it into one question per decision, or pre-fill anything. A hook denies anything else. If it does, run `signoff start` again and use its new output.
+3. **After the call** a hook adds a line to your context: `change-map sign-off, <record>: recorded approve for <items>. Not approved yet: …. Record status: …`, or `…: not approved, nothing recorded. The user answered …`. A `NOT recorded: …` line means: ask again.
+   - **No such line = the answer was NOT recorded.** Hooks aren't installed, or change-map can't run. Don't treat the chat answer as approval and never write `approvals.json`. Tell the user, run `npx change-map doctor` to show why, and stop.
 
 **`Record status: approved`** → step 5.
 
-**Rejected or changes requested** → revise:
-1. Read each comment in the `recorded` line. A "Request changes" without a comment: ask in the chat what should change (a plain question, not `AskUserQuestion`).
-2. Revise the plan **and** the manifest together. Remove or change a rejected item together with the design behind it. Never ask it again unchanged, unless the user wants to reconsider.
+**Not approved** ("Not yet" or free text) → talk, then revise:
+1. Ask in the chat what the user wants to change (a plain question, not `AskUserQuestion`), unless their answer already says it. Talk it through until it is clear which decisions change and how.
+2. Revise the plan **and** the manifest together. Remove or change a decision together with the design behind it. Never ask the same plan again unchanged, unless the user wants to reconsider.
 3. Run step 2 until clean, then step 3. **Run `review` before `signoff start`**: the record still holds the previous round, so the map highlights what changed since then. `signoff start` replaces it with the new round.
-4. Run `signoff start` again. It asks only what isn't approved: new, changed and still-rejected items. Earlier answers, rejections included, stay in the record.
+4. Run `signoff start` again and ask its one question. Decisions approved in an earlier round aren't asked again.
 
 Nothing is built until the record status is `approved`.
 
@@ -216,7 +215,7 @@ Then:
    ```
 
 3. Run `npx change-map review --plan <plan>` (step 2 rules), then `npx change-map signoff start --plan <plan>`, and ask (step 4).
-4. Approved: continue. Items approved earlier keep working meanwhile. Rejected: find a way without it, or ask the user how to proceed.
+4. Approved: continue. Items approved earlier keep working meanwhile. Not approved: talk with the user, then find a way without it or change it as they say.
 
 A forbidden import with a plain fix (go through the unit's entry point) is just fixed; no amendment.
 

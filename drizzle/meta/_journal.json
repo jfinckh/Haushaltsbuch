@@ -134,6 +134,13 @@
       "when": 1792645905074,
       "tag": "0018_rules_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792648562375,
+      "tag": "0019_budgets",
+      "breakpoints": true
     }
   ]
 }

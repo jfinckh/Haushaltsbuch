@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "budgets",
+  "description": "Budgets (first slice)",
+  "plan": {
+    "path": "docs/plans/2026-10-22-budgets.md",
+    "sha256": "987964780f3b38bf24a68f0bc84b49bbda2c1842a491294a2d9f4feebd041175"
+  },
+  "status": "final",
+  "base": "8cd6875fc221cbf6ae5c23dc6620112ee5e90848"
+}

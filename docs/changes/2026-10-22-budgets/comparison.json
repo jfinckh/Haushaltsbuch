@@ -1,0 +1,282 @@
+{
+  "version": 1,
+  "base": "8cd6875fc221cbf6ae5c23dc6620112ee5e90848",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0019_budgets.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0019_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/create-budgets.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/create-budgets.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/components/budget-section.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/messages/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/budgets.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/budgets-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/budgets/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/budgets/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/budgets/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/i18n/messages.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".claude/skills/change-map/SKILL.md",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "unit",
+      "id": "budgets",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "budgets->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "budgets->transactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->budgets",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transfers",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->db",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "budget",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "budgets:client:BudgetSection",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "budgets:client:budgetsMessages",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "budgets:server:createBudgets",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "budgets:server:Budgets",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "budgets",
+      "state": "new"
+    },
+    {
+      "from": "budgets",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "budgets",
+      "to": "transactions",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:budgets",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:budgets->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:budgets->transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->budgets",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:budget",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:budget:manage",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-add:budgets:client:BudgetSection",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:budgets:client:budgetsMessages",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:budgets:server:createBudgets",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:budgets:server:Budgets",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

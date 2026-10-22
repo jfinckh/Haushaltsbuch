@@ -35,7 +35,7 @@ src/transactions/   bookings, categories, who classified     → shared (account
 src/transfers/      transfer matching, manual linking        → shared, transactions (matching across the household in its own SECURITY DEFINER SQL functions, via accounts' accounts_household_accounts(); the app starts it after each import)
 src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank, sets the opening balance and starts transfer matching)
 src/rules/          rules, auto-categorization, learning     → shared, transactions (scope via accounts' SQL function accounts_visible_account_scopes; the app applies rules after each import, before transfer matching)
-src/budgets/        budgets per account                      → transactions
+src/budgets/        budgets per account and category         → shared, transactions (monthly spending via transactions' expenseTotals; account access via accounts' SQL function accounts_visible_account_ids)
 src/insights/       dashboard figures, combined view         → transactions, budgets, accounts
 ```
 

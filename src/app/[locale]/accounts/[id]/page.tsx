@@ -4,9 +4,11 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
 import { currentBalances } from "@/app/_lib/balances";
+import { budgets } from "@/app/_lib/budgets";
 import { requireCaller } from "@/app/_lib/caller";
 import { transactions } from "@/app/_lib/transactions";
 import { householdMembers, transfers } from "@/app/_lib/transfers";
+import { BudgetSection } from "@/budgets";
 import { formatEuro } from "@/shared/money";
 import { TransactionFilters, TransactionList } from "@/transactions";
 import { TransferInbox } from "@/transfers";
@@ -40,8 +42,9 @@ async function AccountBookings({ params, searchParams }: Props) {
   if (!account) notFound();
   const query = await searchParams;
   const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
-  const [listed, sums, transferOverview, visible, members] = await Promise.all([
+  const [listed, budgetList, sums, transferOverview, visible, members] = await Promise.all([
     transactions.listTransactions(caller, { accountId: id, ...filters }),
+    budgets.listBudgets(caller, id, filters.month || undefined),
     transactions.balances(caller),
     transfers.accountOverview(caller, id),
     accounts.listAccounts(caller),
@@ -89,6 +92,12 @@ async function AccountBookings({ params, searchParams }: Props) {
           accounts={visible.map(({ id, name }) => ({ id, name }))}
           memberNames={Object.fromEntries(members.map((m) => [m.userId, m.name]))}
         />
+      )}
+      {budgetList.ok && (
+        <>
+          <div className="divider my-0" />
+          <BudgetSection accountId={account.id} month={budgetList.month} budgets={budgetList.budgets} />
+        </>
       )}
       <div className="divider my-0" />
       <TransactionFilters values={filters} />

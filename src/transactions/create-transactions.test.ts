@@ -229,6 +229,44 @@ describe("balances", () => {
   });
 });
 
+describe("monthly expense totals inside another part's database transaction", () => {
+  const totals = (caller: Caller, accountId: string, month?: string) =>
+    withSession(setup.db, caller, (tx) => transactions.expenseTotals(tx, accountId, month));
+
+  it("sums the expenses with category per category key, refunds lowering the sum", async () => {
+    await create(max, { date: "2026-10-01", amount: "-30,00", category: "groceries.supermarket" });
+    await create(max, { date: "2026-10-31", amount: "-10,00", category: "groceries.supermarket" });
+    await create(max, { date: "2026-10-05", amount: "5,00", category: "groceries.supermarket" });
+    await create(max, { date: "2026-10-06", amount: "-7,00", category: "groceries" });
+    await create(max, { date: "2026-10-07", amount: "-2,00", category: null });
+
+    expect(await totals(max, "max-private", "2026-10")).toEqual({
+      month: "2026-10",
+      totals: { "groceries.supermarket": -3500, groceries: -700 },
+    });
+  });
+
+  it("leaves out income, transfers, saving and other months", async () => {
+    await create(max, { date: "2026-10-02", amount: "100,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-03", amount: "-50,00", kind: "transfer", category: null });
+    await create(max, { date: "2026-10-04", amount: "-60,00", kind: "saving", category: null });
+    await create(max, { date: "2026-09-30", amount: "-9,00", category: "groceries" });
+    await create(max, { date: "2026-11-01", amount: "-9,00", category: "groceries" });
+
+    expect(await totals(max, "max-private", "2026-10")).toEqual({ month: "2026-10", totals: {} });
+  });
+
+  it("uses the current month without a month", async () => {
+    await create(max, { date: "2026-10-21", amount: "-4,00", category: "health" });
+    expect(await totals(max, "max-private")).toEqual({ month: "2026-10", totals: { health: -400 } });
+  });
+
+  it("sums nothing of an account the caller cannot see", async () => {
+    await create(max, { date: "2026-10-08", amount: "-4,00", category: "health" });
+    expect(await totals(erika, "max-private", "2026-10")).toEqual({ month: "2026-10", totals: {} });
+  });
+});
+
 describe("bookings written inside another part's database transaction", () => {
   const values = (overrides: Partial<TransactionValues> = {}): TransactionValues => ({
     accountId: "max-private",
