@@ -121,7 +121,9 @@ function decisionOf(row: BookingRow | undefined): TransferDecision | null {
 /**
  * The transfers part. Every call is about the caller's own view; their user id comes from the
  * database. Pairs are only reached through the transfers_* database functions
- * (drizzle/0016_transfers_functions.sql), which never reveal another member's private booking.
+ * (drizzle/0016_transfers_functions.sql, 0020_transfers_owner_consent.sql), which never reveal
+ * another member's private booking and never change it without that member's OK: a likely partner on
+ * another member's private account becomes a proposal only its owner sees and decides on.
  */
 export function createTransfers({ db, crypto: fieldCrypto, transactions, today = localToday }: TransfersOptions) {
   const pairsOf = (tx: RlsTransaction, ids: string[]) =>
@@ -238,7 +240,8 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
      * After an import (or after rules were applied): stores the transfer hints of the bookings (read
      * in the caller's session) and matches them across all accounts of the household. Bookings a
      * rule typed as transfer or saving (`ruleTransfers`) wait for a partner; with target external
-     * they are not listed as open. Manual decisions stay. Returns only counts.
+     * they are not listed as open. Manual decisions stay. Returns only counts of what the caller may see:
+     * proposals that wait for another member are left out.
      */
     async matchAfterImport(
       caller: Caller,

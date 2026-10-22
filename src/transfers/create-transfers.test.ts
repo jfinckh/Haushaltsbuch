@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Caller } from "@/shared/rls";
-import { createTestDatabase, ING_IBAN, ING_ROWS, TR_ROWS } from "./test-utils";
+import { createTestDatabase, ING_IBAN, ING_ROWS, MEMBERS, TR_ROWS } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestDatabase>>;
 
@@ -39,6 +39,15 @@ async function importTestData(order: "ing-first" | "tr-first" = "ing-first") {
 beforeEach(async () => {
   await prepare();
 });
+
+/** Accepts, as `caller`, every proposal of the account they can decide on; returns how many. */
+async function acceptAll(caller: Caller, accountId: string) {
+  const overview = (await setup.transfers.accountOverview(caller, accountId))!;
+  for (const proposal of overview.proposals) {
+    expect(await setup.transfers.acceptProposal(caller, proposal.pairId)).toBe("ok");
+  }
+  return overview.proposals.length;
+}
 
 describe("matching the test data", () => {
   for (const order of ["ing-first", "tr-first"] as const) {
@@ -91,19 +100,34 @@ describe("matching the test data", () => {
     expect(await setup.transfers.statusOf(max, ing("2026-10-15", -20000))).toMatchObject({ open: true, overdue: false });
   });
 
-  it("links the rent to the shared account's counter-booking of the same month only", async () => {
+  it("asks Max before linking the shared rent to his private booking, then links the same month only", async () => {
     const { ing } = await importTestData();
     const shared = await setup.importBookings("erika", "shared", [
       { date: "2026-09-01", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
       { date: "2026-10-02", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
     ]);
-    expect(shared.result).toEqual({ linked: 2, proposed: 0 });
+    // Max's side is private: Erika's import only proposes it to Max, and she learns nothing.
+    expect(shared.result).toEqual({ linked: 0, proposed: 0 });
+    expect(await setup.transfers.accountOverview(erika, "shared")).toMatchObject({ proposals: [] });
+    expect(await setup.kindOf(ing("2026-09-01", -120000))).toBe("transfer");
+    expect(await acceptAll(max, "ing")).toBe(2);
     const pairs = await setup.pairs();
     expect(pairs).toEqual(
       expect.arrayContaining([
-        { out: ing("2026-09-01", -120000), in: shared.ids[0], status: "linked", manual: false },
-        { out: ing("2026-10-01", -120000), in: shared.ids[1], status: "linked", manual: false },
+        { out: ing("2026-09-01", -120000), in: shared.ids[0], status: "linked", manual: true },
+        { out: ing("2026-10-01", -120000), in: shared.ids[1], status: "linked", manual: true },
       ]),
+    );
+  });
+
+  it("links the rent at once when Max imports after the shared account's counter-booking", async () => {
+    const shared = await setup.importBookings("erika", "shared", [
+      { date: "2026-09-01", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
+    ]);
+    const { ing, results } = await importTestData();
+    expect(results[0].linked).toBe(1);
+    expect(await setup.pairs()).toEqual(
+      expect.arrayContaining([{ out: ing("2026-09-01", -120000), in: shared.ids[0], status: "linked", manual: false }]),
     );
   });
 });
@@ -114,11 +138,12 @@ describe("what each member sees", () => {
     const shared = await setup.importBookings("erika", "shared", [
       { date: "2026-09-01", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
     ]);
+    await acceptAll(max, "ing");
     const status = (await setup.transfers.statusOf(erika, shared.ids[0]))!;
     expect(status.link).toEqual({
       pairId: expect.any(String),
       status: "linked",
-      manual: false,
+      manual: true,
       partner: { visible: false, ownerUserId: "max" },
     });
     expect(status.candidates).toEqual([]);
@@ -204,7 +229,9 @@ describe("several candidates", () => {
     const [out] = (await setup.importBookings("max", "ing", [ING_ROWS[0]])).ids;
     // "Trade Republic" does not point at the shared ING account, and the counter-booking has no text.
     const { ids, result } = await setup.importBookings("erika", "shared", [{ date: "2026-10-16", amountCents: 20000 }]);
-    expect(result).toEqual({ linked: 0, proposed: 1 });
+    // Max's side is private: only Max sees the proposal.
+    expect(result).toEqual({ linked: 0, proposed: 0 });
+    expect((await setup.transfers.statusOf(erika, ids[0]))!.proposals).toEqual([]);
     expect((await setup.transfers.statusOf(max, out))!.proposals[0].partner).toMatchObject({ booking: { id: ids[0] } });
   });
 });
@@ -350,6 +377,7 @@ describe("rule results", () => {
     );
     expect(await setup.transfers.statusOf(max, ids[rent])).toMatchObject({ open: true, isTransfer: true });
     await setup.importBookings("erika", "shared", [{ date: "2026-10-02", amountCents: 120000, counterparty: "Max Mustermann" }]);
+    expect(await acceptAll(max, "ing")).toBe(1);
     const status = await setup.transfers.statusOf(max, ids[rent]);
     expect(status?.link?.status).toBe("linked");
     expect(status?.open).toBe(false);
@@ -385,12 +413,14 @@ describe("rule results", () => {
 describe("contribution to shared accounts (dashboard, all own private accounts)", () => {
   const contribution = async (caller: Caller, month = "2026-10") => setup.transfers.sharedContribution(caller, month);
 
-  /** The shared account's counter-bookings of Max's rent, imported by Erika; both months link. */
-  const importRentOnShared = () =>
-    setup.importBookings("erika", "shared", [
+  /** The shared account's counter-bookings of Max's rent, imported by Erika; Max accepts both months. */
+  const importRentOnShared = async () => {
+    await setup.importBookings("erika", "shared", [
       { date: "2026-09-01", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
       { date: "2026-10-02", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
     ]);
+    expect(await acceptAll(max, "ing")).toBe(2);
+  };
 
   it("is zero for transfers between own private accounts and for open transfers", async () => {
     await importTestData();
@@ -475,5 +505,113 @@ describe("contribution to shared accounts (dashboard, all own private accounts)"
   it("rejects an invalid month", async () => {
     expect(await contribution(max, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
     expect(await contribution(max, "oct")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
+describe("another member's private bookings need their owner's OK", () => {
+  const OTHER_IBAN = "DE89370400440532013000";
+
+  /** Erika's private salary, which Max may not see. */
+  const erikasSalary = async () =>
+    (
+      await setup.importBookings("erika", "erika-ing", [
+        { date: "2026-10-01", amountCents: 312345, counterparty: "Arbeitgeber GmbH", reference: "Gehalt" },
+      ])
+    ).ids[0];
+
+  /** Max books −3.123,45 € naming Erika, as if he guessed her salary. */
+  const maxProbes = async (date = "2026-10-03", amountCents = -312345) =>
+    (await setup.importBookings("max", "ing", [{ date, amountCents, counterparty: "Erika Mustermann" }])).ids[0];
+
+  it("tells Max nothing when he guesses the amount of Erika's private booking, and changes nothing of hers", async () => {
+    const salary = await erikasSalary();
+    const miss = await setup.importBookings("max", "ing", [{ date: "2026-10-03", amountCents: -312300, counterparty: "Erika Mustermann" }]);
+    const hit = await setup.importBookings("max", "ing", [{ date: "2026-10-03", amountCents: -312345, counterparty: "Erika Mustermann" }]);
+    expect(hit.result).toEqual({ linked: 0, proposed: 0 });
+    expect(hit.result).toEqual(miss.result);
+    const withoutBooking = async (id: string) => {
+      const { booking, ...rest } = (await setup.transfers.statusOf(max, id))!;
+      return { ...rest, kind: booking.kind };
+    };
+    expect(await withoutBooking(hit.ids[0])).toEqual(await withoutBooking(miss.ids[0]));
+    expect(await setup.transfers.statusOf(max, hit.ids[0])).toMatchObject({ link: null, proposals: [], open: true });
+    expect(await setup.kindOf(salary)).toBe("income");
+
+    await setup.deleteBooking(hit.ids[0]);
+    expect(await setup.kindOf(salary)).toBe("income");
+    expect(await setup.classifiedByOf(salary)).toBe("auto");
+    expect(await setup.transfers.statusOf(erika, salary)).toMatchObject({ link: null, proposals: [], open: false });
+  });
+
+  it("lets only Erika accept the proposal for her private booking; then both sides are linked", async () => {
+    const salary = await erikasSalary();
+    const out = await maxProbes();
+    const view = (await setup.transfers.statusOf(erika, salary))!;
+    expect(view.proposals).toHaveLength(1);
+    expect(view.proposals[0].partner).toEqual({ visible: false, ownerUserId: "max" });
+    const pairId = view.proposals[0].pairId;
+    expect(await setup.transfers.acceptProposal(max, pairId)).toBe("not-found");
+    expect(await setup.transfers.rejectProposal(max, pairId)).toBe(false);
+    expect(await setup.transfers.acceptProposal(dora, pairId)).toBe("not-found");
+    expect(await setup.kindOf(salary)).toBe("income");
+
+    expect(await setup.transfers.acceptProposal(erika, pairId)).toBe("ok");
+    expect(await setup.kindOf(salary)).toBe("transfer");
+    expect((await setup.transfers.statusOf(max, out))!.link).toMatchObject({
+      status: "linked",
+      partner: { visible: false, ownerUserId: "erika" },
+    });
+  });
+
+  it("never proposes it again after Erika rejects", async () => {
+    const salary = await erikasSalary();
+    const out = await maxProbes();
+    const [proposal] = (await setup.transfers.statusOf(erika, salary))!.proposals;
+    expect(await setup.transfers.rejectProposal(erika, proposal.pairId)).toBe(true);
+    await setup.transfers.matchAfterImport(max, { bookingIds: [out], members: MEMBERS });
+    expect((await setup.transfers.statusOf(erika, salary))!.proposals).toEqual([]);
+    expect(await setup.kindOf(salary)).toBe("income");
+  });
+
+  it("gives Max the same result whether or not Erika has a matching private booking", async () => {
+    const probe = async (withSalary: boolean) => {
+      await prepare();
+      if (withSalary) await erikasSalary();
+      await setup.addAccount("max-savings", "max", { iban: OTHER_IBAN });
+      // Same day as Erika's salary, so her booking would tie with Max's own counter-booking.
+      await setup.importBookings("max", "max-savings", [{ date: "2026-10-01", amountCents: 312345, counterparty: "Max Mustermann" }]);
+      const { ids, result } = await setup.importBookings("max", "ing", [
+        { date: "2026-10-01", amountCents: -312345, counterparty: "Erika Mustermann", counterpartyIban: OTHER_IBAN },
+      ]);
+      const { link } = (await setup.transfers.statusOf(max, ids[0]))!;
+      return { result, partnerAccount: link?.partner.visible ? link.partner.booking.accountId : null };
+    };
+    const without = await probe(false);
+    expect(without).toEqual({ result: { linked: 1, proposed: 0 }, partnerAccount: "max-savings" });
+    expect(await probe(true)).toEqual(without);
+  });
+
+  it("does not make Max's booking a transfer for naming the IBAN of Erika's private account", async () => {
+    await setup.addAccount("erika-savings", "erika", { iban: OTHER_IBAN });
+    const { ids } = await setup.importBookings("max", "ing", [
+      { date: "2026-10-03", amountCents: -5000, counterparty: "Laden", counterpartyIban: OTHER_IBAN },
+    ]);
+    expect(await setup.kindOf(ids[0])).toBe("expense");
+
+    await setup.addAccount("max-savings", "max", { iban: "DE75512108001245126199" });
+    const own = await setup.importBookings("max", "ing", [
+      { date: "2026-10-03", amountCents: -6000, counterparty: "Laden", counterpartyIban: "DE75512108001245126199" },
+    ]);
+    expect(await setup.kindOf(own.ids[0])).toBe("transfer");
+  });
+
+  it("changes the type of a linked pair only on the side the caller may see", async () => {
+    const salary = await erikasSalary();
+    const out = await maxProbes();
+    const [proposal] = (await setup.transfers.statusOf(erika, salary))!.proposals;
+    expect(await setup.transfers.acceptProposal(erika, proposal.pairId)).toBe("ok");
+    expect(await setup.transfers.setKind(max, out, "saving")).toBe(true);
+    expect(await setup.kindOf(out)).toBe("saving");
+    expect(await setup.kindOf(salary)).toBe("transfer");
   });
 });

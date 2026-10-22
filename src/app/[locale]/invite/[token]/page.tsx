@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { InviteAcceptance } from "@/auth";
+import { inviteReturn } from "@/app/_lib/invite-return";
 
 export default function InvitePage({ params }: PageProps<"/[locale]/invite/[token]">) {
   return (
@@ -13,5 +14,7 @@ export default function InvitePage({ params }: PageProps<"/[locale]/invite/[toke
 
 async function Invite({ params }: Pick<PageProps<"/[locale]/invite/[token]">, "params">) {
   const { token } = await params;
-  return <InviteAcceptance token={token} signInHref="/sign-in" signUpHref="/sign-up" continueHref="/" />;
+  // Signing in or up from here leads back to this page, where the user accepts the invite.
+  const { signInHref, signUpHref } = inviteReturn(token);
+  return <InviteAcceptance token={token} signInHref={signInHref} signUpHref={signUpHref} continueHref="/" />;
 }

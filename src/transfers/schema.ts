@@ -21,6 +21,9 @@ export const transferPair = pgTable(
     // Decided by a person (link, accept, reject, unlink); automatic matching never changes these.
     manual: boolean("manual").notNull().default(false),
     decidedByUserId: text("decided_by_user_id"),
+    // A proposal with someone's private booking waits for that member: only they see it and may accept
+    // or reject it. Null: any member who sees a side may decide (drizzle/0020_transfers_owner_consent.sql).
+    waitingForUserId: text("waiting_for_user_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

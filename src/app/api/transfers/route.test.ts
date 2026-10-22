@@ -151,6 +151,36 @@ async function sharedRent() {
   return id;
 }
 
+/** Accepts, through the route, every proposal on the account that `userId` can decide on. */
+async function acceptAllAs(userId: string, accountId: string) {
+  const overview = await (await overviewAs(userId, accountId)).json();
+  for (const proposal of overview.proposals) {
+    expect((await proposalAs(userId, proposal.pairId, { action: "accept" })).status).toBe(200);
+  }
+  return overview.proposals.length;
+}
+
+/** A private booking of Erika's that Max may not see, and Max's booking naming her with the opposite amount. */
+async function erikasSalaryAndMaxsProbe(amountCents = 312345) {
+  const erika = await caller("erika");
+  const max = await caller("max");
+  const booking = (accountId: string, cents: number, counterparty: string) => ({
+    accountId,
+    bookingDate: "2026-10-01",
+    amountCents: cents,
+    kind: cents < 0 ? ("expense" as const) : ("income" as const),
+    category: null,
+    counterparty,
+    counterpartyIban: null,
+    reference: null,
+  });
+  const [salary] = await withSession(db, erika, (tx, userId) => transactions.insertBookings(tx, userId, [booking(erikas, 312345, "Arbeitgeber GmbH")]));
+  await transfers.matchAfterImport(erika, { bookingIds: [salary], members: MEMBERS });
+  const [probe] = await withSession(db, max, (tx, userId) => transactions.insertBookings(tx, userId, [booking(maxIng, -amountCents, "Erika Mustermann")]));
+  const result = await transfers.matchAfterImport(max, { bookingIds: [probe], members: MEMBERS });
+  return { salary, probe, result };
+}
+
 describe("test data through the import route", () => {
   it("links the two ING → Trade Republic transfers and keeps the balance at 703,26 €", async () => {
     const { first, second } = await importTestData();
@@ -187,9 +217,11 @@ describe("test data through the import route", () => {
     expect((await response.json()).status).toMatchObject({ open: false, decision: { type: "no-partner", target: "external" } });
   });
 
-  it("links the rent to the shared account and shows Erika only who it came from", async () => {
+  it("links the rent to the shared account once Max accepts, and shows Erika only who it came from", async () => {
     await importTestData();
     const sharedId = await sharedRent();
+    expect((await (await statusAs("erika", sharedId)).json()).status).toMatchObject({ link: null, proposals: [] });
+    expect(await acceptAllAs("max", maxIng)).toBe(1);
     const maxRent = await bookingId("max", maxIng, "2026-09-01", -120000);
 
     const erikaView = await statusAs("erika", sharedId);
@@ -245,9 +277,35 @@ describe("/api/transfers privacy", () => {
   it("lets Erika unlink the shared side; Max's side is open again", async () => {
     await importTestData();
     const sharedId = await sharedRent();
+    await acceptAllAs("max", maxIng);
     expect((await actAs("erika", sharedId, { action: "unlink" })).status).toBe(200);
     const maxRent = await bookingId("max", maxIng, "2026-09-01", -120000);
     expect((await (await statusAs("max", maxRent)).json()).status).toMatchObject({ link: null, open: true });
+  });
+
+  it("tells Max nothing about Erika's private booking with the amount he guessed, and leaves it unchanged", async () => {
+    const { salary, probe, result } = await erikasSalaryAndMaxsProbe();
+    expect(result).toEqual({ linked: 0, proposed: 0 });
+    const text = await (await statusAs("max", probe)).text();
+    expect(JSON.parse(text).status).toMatchObject({ link: null, proposals: [], open: true });
+    expect(text).not.toContain(salary);
+    expect(text).not.toContain("erika");
+    expect((await (await overviewAs("max", maxIng)).json()).proposals).toEqual([]);
+    expect((await (await statusAs("erika", salary)).json()).status.booking.kind).toBe("income");
+  });
+
+  it("lets only Erika decide on the proposal for her private booking", async () => {
+    const { salary, probe } = await erikasSalaryAndMaxsProbe();
+    const overview = await (await overviewAs("erika", erikas)).json();
+    expect(overview.proposals).toHaveLength(1);
+    expect(overview.proposals[0].partner).toEqual({ visible: false, ownerUserId: "max" });
+    const pairId = overview.proposals[0].pairId;
+    expect((await proposalAs("max", pairId, { action: "accept" })).status).toBe(404);
+    expect((await proposalAs("max", pairId, { action: "reject" })).status).toBe(404);
+    expect((await proposalAs("dora", pairId, { action: "accept" })).status).toBe(404);
+    expect((await proposalAs("erika", pairId, { action: "accept" })).status).toBe(200);
+    expect((await (await statusAs("erika", salary)).json()).status.booking.kind).toBe("transfer");
+    expect((await (await statusAs("max", probe)).json()).status.link).toMatchObject({ status: "linked", partner: { visible: false } });
   });
 
   it("gives another household nothing", async () => {
@@ -295,13 +353,16 @@ describe("manual corrections through the routes", () => {
         { accountId: shared, bookingDate: "2026-10-16", amountCents: 20000, kind: "income", category: null, counterparty: null, counterpartyIban: null, reference: null },
       ]),
     );
-    expect(await transfers.matchAfterImport(erika, { bookingIds: [proposed], members: MEMBERS })).toEqual({ linked: 0, proposed: 1 });
-    const overview = await (await overviewAs("erika", shared)).json();
+    // Max's side is private, so the proposal waits for Max; Erika learns nothing of it.
+    expect(await transfers.matchAfterImport(erika, { bookingIds: [proposed], members: MEMBERS })).toEqual({ linked: 0, proposed: 0 });
+    expect((await (await overviewAs("erika", shared)).json()).proposals).toEqual([]);
+    const overview = await (await overviewAs("max", maxIng)).json();
     expect(overview.proposals).toHaveLength(1);
-    expect(overview.proposals[0].partner).toEqual({ visible: false, ownerUserId: "max" });
+    expect(overview.proposals[0].partner).toMatchObject({ visible: true, booking: { id: proposed, accountId: shared } });
     const pairId = overview.proposals[0].pairId;
-    expect((await proposalAs("erika", pairId, { action: "accept" })).status).toBe(200);
     expect((await proposalAs("erika", pairId, { action: "accept" })).status).toBe(404);
+    expect((await proposalAs("max", pairId, { action: "accept" })).status).toBe(200);
+    expect((await proposalAs("max", pairId, { action: "accept" })).status).toBe(404);
   });
 
   it("changing the type in the booking form to expense unlinks the transfer", async () => {

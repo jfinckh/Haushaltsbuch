@@ -43,7 +43,7 @@ describe("findInviter", () => {
     const invite = await max.createInvite();
     const erika = createBrowser(setup.auth);
     const erikaId = (await erika.signUp("Erika Test", "erika@example.com")).json.user.id;
-    await erika.openInvite(tokenFromUrl(invite.json.url));
+    await erika.acceptInvite(tokenFromUrl(invite.json.url));
 
     const inviter = await findInviter(setup.auth, erikaId);
     expect(inviter).toEqual({ id: maxId, name: "Max Muster", invitedAt: expect.any(Date) });

@@ -42,13 +42,16 @@
     "invalidTitle": "Einladungslink ungültig",
     "invalidText": "Dieser Link ist abgelaufen oder wurde schon benutzt. Bitte um einen neuen oder registriere dich ohne Einladung.",
     "acceptedTitle": "Einladung angenommen",
-    "acceptedText": "{name} hat dich eingeladen.",
+    "acceptedText": "Du hast die Einladung von {name} angenommen. Auf der Startseite siehst du, ob du in den Haushalt gewechselt bist.",
     "ownTitle": "Das ist deine eigene Einladung",
     "ownText": "Du kannst deinen eigenen Einladungslink nicht annehmen. Teile ihn mit der Person, die du einladen möchtest.",
     "invitedTitle": "{name} hat dich eingeladen",
-    "invitedText": "Erstelle ein Konto oder melde dich an, wenn du schon eines hast.",
+    "invitedText": "Erstelle ein Konto oder melde dich an, wenn du schon eines hast. Danach kommst du hierher zurück und kannst beitreten.",
     "signUp": "Registrieren",
     "signIn": "Anmelden",
-    "continue": "Weiter"
+    "continue": "Weiter",
+    "joinText": "Wenn du beitrittst, siehst du die gemeinsamen Konten des Haushalts. Deine privaten Konten bleiben privat. Bist du bisher allein in einem Haushalt ohne gemeinsame Konten, wechselst du in den neuen Haushalt.",
+    "join": "Beitreten",
+    "notNow": "Nicht jetzt"
   }
 }

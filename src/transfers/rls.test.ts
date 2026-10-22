@@ -39,10 +39,37 @@ describe("transfer_pair", () => {
       sql`SELECT * FROM transfers_candidates(${maxIng[1]})`,
       sql`SELECT transfers_do_link(${maxIng[1]}, ${maxIng[0]}, true, 'erika')`,
       sql`SELECT transfers_visible_booking(${maxIng[1]})`,
-      sql`SELECT transfers_propose(${maxIng[1]}, -100000, ARRAY[]::text[])`,
+      sql`SELECT transfers_propose(${maxIng[1]}, -100000, ARRAY[]::text[], false)`,
     ]) {
       await expect(asUser("erika", (tx) => tx.execute(call))).rejects.toThrow();
     }
+  });
+
+  it("shows a proposal that waits for a member only to that member", async () => {
+    const pairsOf = (userId: string, id: string) =>
+      asUser(userId, async (tx) => {
+        const result = (await tx.execute(sql`SELECT * FROM transfers_pairs_of(ARRAY[${id}]::text[])`)) as unknown as {
+          rows: { pair_id: string; status: string; partner_transaction_id: string | null; partner_owner_user_id: string | null }[];
+        };
+        return result.rows;
+      });
+    // Erika pays Max the +150 € of his ING file: his side is private, so the proposal waits for him.
+    const { ids, result } = await setup.importBookings("erika", "erika-ing", [
+      { date: "2026-10-05", amountCents: -15000, counterparty: "Max Mustermann" },
+    ]);
+    expect(result).toEqual({ linked: 0, proposed: 0 });
+    expect(await pairsOf("erika", ids[0])).toEqual([]);
+    const [waiting] = await pairsOf("max", maxIng[2]);
+    expect(waiting).toMatchObject({ status: "proposed", partner_transaction_id: null, partner_owner_user_id: "erika" });
+    const decide = (userId: string, call: "accept" | "reject") =>
+      asUser(userId, async (tx) => {
+        const query = call === "accept" ? sql`SELECT transfers_accept(${waiting.pair_id}) AS r` : sql`SELECT transfers_reject(${waiting.pair_id}) AS r`;
+        return ((await tx.execute(query)) as unknown as { rows: { r: unknown }[] }).rows[0].r;
+      });
+    expect(await decide("erika", "accept")).toBe("not-found");
+    expect(await decide("erika", "reject")).toBe(false);
+    expect(await decide("max", "accept")).toBe("ok");
+    expect(await pairsOf("erika", ids[0])).toMatchObject([{ status: "linked", partner_owner_user_id: "max" }]);
   });
 
   it("gives another member no rows for private bookings", async () => {

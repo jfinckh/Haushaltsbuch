@@ -55,6 +55,7 @@ export function createBrowser(auth: Auth) {
     signOut: () => request("/sign-out", { body: {} }),
     createInvite: () => request("/invite/create", { body: {} }),
     openInvite: (token: string) => request("/invite/open", { body: { token } }),
+    acceptInvite: (token: string) => request("/invite/accept", { body: { token } }),
     getInviter: () => request("/invite/inviter"),
     hasCookie: (suffix: string) => [...cookies.keys()].some((k) => k.endsWith(suffix)),
   };

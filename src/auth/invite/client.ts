@@ -6,5 +6,5 @@ export const invitesClient = () =>
     id: "invites",
     $InferServerPlugin: {} as ReturnType<typeof invites>,
     // Calls without a body default to GET; these endpoints are POST-only.
-    pathMethods: { "/invite/create": "POST", "/invite/open": "POST" },
+    pathMethods: { "/invite/create": "POST", "/invite/open": "POST", "/invite/accept": "POST" },
   }) satisfies BetterAuthClientPlugin;

@@ -48,16 +48,21 @@ describe("invite links", () => {
     expect(row.tokenHash).not.toBe(tokenFromUrl(url)); // only the hash is stored
   });
 
-  it("signing up after opening a link records the inviter and uses up the link", async () => {
+  it("opening a link only shows who invites; the new user joins by accepting, which uses up the link", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
 
     const opened = await ben.openInvite(tokenFromUrl(anna.url));
-    expect(opened.json).toEqual({ valid: true, inviterName: "Anna", applied: false, signedIn: false });
+    expect(opened.json).toEqual({ valid: true, inviterName: "Anna", signedIn: false, own: false });
+    expect(ben.hasCookie("invite_token")).toBe(false);
 
     await ben.signUp("Ben", "ben@example.com");
+    expect((await ben.getInviter()).json).toEqual({ inviter: null });
+    const [unused] = await setup.db.select().from(authInvite);
+    expect(unused.usedAt).toBeNull();
+
+    expect((await ben.acceptInvite(tokenFromUrl(anna.url))).json).toEqual({ applied: true });
     expect((await ben.getInviter()).json).toEqual({ inviter: { id: anna.userId, name: "Anna" } });
-    expect(ben.hasCookie("invite_token")).toBe(false);
 
     const [invite] = await setup.db.select().from(authInvite);
     expect(invite.usedAt).not.toBeNull();
@@ -74,10 +79,12 @@ describe("invite links", () => {
     expect((await ben.openInvite(tokenFromUrl(anna.url))).json).toEqual({ valid: false });
     expect((await ben.openInvite("does-not-exist")).json).toEqual({ valid: false });
     await ben.signUp("Ben", "ben@example.com");
+    expect((await ben.acceptInvite(tokenFromUrl(anna.url))).json).toEqual({ applied: false });
+    expect((await ben.acceptInvite("does-not-exist")).json).toEqual({ applied: false });
     expect((await ben.getInviter()).json).toEqual({ inviter: null });
   });
 
-  it("an existing user signing in through a link gets the inviter", async () => {
+  it("signing in after opening a link records nothing", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
     const benId = (await ben.signUp("Ben", "ben@example.com")).json.user.id;
@@ -85,28 +92,37 @@ describe("invite links", () => {
 
     await ben.openInvite(tokenFromUrl(anna.url));
     await ben.signIn("ben@example.com");
-    expect((await userRow(benId)).invitedById).toBe(anna.userId);
+    expect((await userRow(benId)).invitedById).toBeNull();
   });
 
-  it("a signed-in user opening a link gets the inviter immediately", async () => {
+  it("a signed-in user opening a link gets the inviter only by accepting", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
     await ben.signUp("Ben", "ben@example.com");
     const opened = await ben.openInvite(tokenFromUrl(anna.url));
-    expect(opened.json).toEqual({ valid: true, inviterName: "Anna", applied: true, signedIn: true });
+    expect(opened.json).toEqual({ valid: true, inviterName: "Anna", signedIn: true, own: false });
+    expect((await ben.getInviter()).json).toEqual({ inviter: null });
+    expect((await ben.acceptInvite(tokenFromUrl(anna.url))).json).toEqual({ applied: true });
     expect((await ben.getInviter()).json.inviter.name).toBe("Anna");
+  });
+
+  it("accepting needs a session", async () => {
+    const anna = await inviteFrom("Anna", "anna@example.com");
+    const anonymous = createBrowser(setup.auth);
+    expect((await anonymous.acceptInvite(tokenFromUrl(anna.url))).status).toBe(401);
+    const [invite] = await setup.db.select().from(authInvite);
+    expect(invite.usedAt).toBeNull();
   });
 
   it("a new invite from someone else replaces the recorded inviter", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
-    await ben.openInvite(tokenFromUrl(anna.url));
     const benId = (await ben.signUp("Ben", "ben@example.com")).json.user.id;
+    await ben.acceptInvite(tokenFromUrl(anna.url));
     const first = await userRow(benId);
 
     const carla = await inviteFrom("Carla", "carla@example.com");
-    const opened = await ben.openInvite(tokenFromUrl(carla.url));
-    expect(opened.json).toEqual({ valid: true, inviterName: "Carla", applied: true, signedIn: true });
+    expect((await ben.acceptInvite(tokenFromUrl(carla.url))).json).toEqual({ applied: true });
     expect((await ben.getInviter()).json.inviter).toEqual({ id: carla.userId, name: "Carla" });
     const second = await userRow(benId);
     expect(second.invitedAt!.getTime()).toBeGreaterThan(first.invitedAt!.getTime());
@@ -119,31 +135,34 @@ describe("invite links", () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
     await ben.signUp("Ben", "ben@example.com");
-    expect((await ben.openInvite(tokenFromUrl(anna.url))).json.applied).toBe(true);
+    expect((await ben.acceptInvite(tokenFromUrl(anna.url))).json.applied).toBe(true);
 
     expect((await ben.openInvite(tokenFromUrl(anna.url))).json).toEqual({ valid: false });
+    expect((await ben.acceptInvite(tokenFromUrl(anna.url))).json).toEqual({ applied: false });
     const dora = createBrowser(setup.auth);
     await dora.signUp("Dora", "dora@example.com");
     expect((await dora.openInvite(tokenFromUrl(anna.url))).json).toEqual({ valid: false });
+    expect((await dora.acceptInvite(tokenFromUrl(anna.url))).json).toEqual({ applied: false });
     expect((await dora.getInviter()).json).toEqual({ inviter: null });
   });
 
   it("an own invite is never accepted, also with another inviter on record", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
-    await ben.openInvite(tokenFromUrl(anna.url));
     await ben.signUp("Ben", "ben@example.com");
+    await ben.acceptInvite(tokenFromUrl(anna.url));
 
     const own = await ben.createInvite();
     const opened = await ben.openInvite(tokenFromUrl(own.json.url));
-    expect(opened.json).toEqual({ valid: true, inviterName: "Ben", applied: false, signedIn: true });
+    expect(opened.json).toEqual({ valid: true, inviterName: "Ben", signedIn: true, own: true });
+    expect((await ben.acceptInvite(tokenFromUrl(own.json.url))).json).toEqual({ applied: false });
     expect((await ben.getInviter()).json.inviter.name).toBe("Anna");
   });
 
   it("ignores self-invites", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
-    const opened = await anna.browser.openInvite(tokenFromUrl(anna.url));
-    expect(opened.json.applied).toBe(false);
+    expect((await anna.browser.openInvite(tokenFromUrl(anna.url))).json.own).toBe(true);
+    expect((await anna.browser.acceptInvite(tokenFromUrl(anna.url))).json).toEqual({ applied: false });
     expect((await anna.browser.getInviter()).json).toEqual({ inviter: null });
   });
 });
@@ -157,8 +176,8 @@ describe("privacy of the inviter endpoint", () => {
   it("returns only the caller's own inviter and ignores any user id in the query", async () => {
     const anna = await inviteFrom("Anna", "anna@example.com");
     const ben = createBrowser(setup.auth);
-    await ben.openInvite(tokenFromUrl(anna.url));
     const benId = (await ben.signUp("Ben", "ben@example.com")).json.user.id;
+    await ben.acceptInvite(tokenFromUrl(anna.url));
 
     const dora = createBrowser(setup.auth);
     await dora.signUp("Dora", "dora@example.com");

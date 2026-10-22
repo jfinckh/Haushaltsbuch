@@ -42,13 +42,16 @@
     "invalidTitle": "Invite link not valid",
     "invalidText": "This link has expired or was already used. Ask for a new one, or sign up without an invite.",
     "acceptedTitle": "Invite accepted",
-    "acceptedText": "You were invited by {name}.",
+    "acceptedText": "You accepted {name}'s invite. Your home page shows whether you moved to the household.",
     "ownTitle": "This is your own invite",
     "ownText": "You can't accept your own invite link. Share it with the person you want to invite.",
     "invitedTitle": "{name} invited you",
-    "invitedText": "Create an account, or sign in if you already have one.",
+    "invitedText": "Create an account, or sign in if you already have one. Then you come back here and can join.",
     "signUp": "Sign up",
     "signIn": "Sign in",
-    "continue": "Continue"
+    "continue": "Continue",
+    "joinText": "If you join, you see the household's shared accounts. Your private accounts stay private. If you are alone in a household without shared accounts so far, you move to the new household.",
+    "join": "Join",
+    "notNow": "Not now"
   }
 }

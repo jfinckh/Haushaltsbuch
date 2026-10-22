@@ -7,25 +7,30 @@ import { authClient } from "../client";
 
 type Props = {
   token: string;
+  /** Sign-in and sign-up pages; they should lead back to this page so the user can accept. */
   signInHref: string;
   signUpHref: string;
-  /** Where a user who is already signed in continues to. */
+  /** Where the user continues to after accepting, declining or for their own invite. */
   continueHref?: string;
 };
 
 type State =
   | { status: "loading" }
   | { status: "invalid" }
-  | { status: "valid"; inviterName: string; applied: boolean; signedIn: boolean };
+  | { status: "valid"; inviterName: string; signedIn: boolean; own: boolean }
+  | { status: "accepted"; inviterName: string };
 
 const openInvite = (token: string) => authClient.invite.open({ token });
 
-/** Landing view for an invite link: checks it and remembers it for the next sign-up or sign-in. */
+/**
+ * Landing view for an invite link. Opening it only shows who invites; a signed-in user joins with
+ * "Beitreten", so a link alone never moves anyone into a household.
+ */
 export function InviteAcceptance({ token, signInHref, signUpHref, continueHref = "/" }: Props) {
   const t = useTranslations("auth.inviteAcceptance");
   const [state, setState] = useState<State>({ status: "loading" });
-  // Opening an invite applies it, so it must run once per token. Effects can run twice
-  // (React Strict Mode); both runs share the same request.
+  const [pending, setPending] = useState(false);
+  // Effects can run twice (React Strict Mode); both runs share one request.
   const request = useRef<{ token: string; promise: ReturnType<typeof openInvite> } | null>(null);
 
   useEffect(() => {
@@ -34,12 +39,19 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
     request.current.promise.then(({ data }) => {
       if (cancelled) return;
       if (!data?.valid) setState({ status: "invalid" });
-      else setState({ status: "valid", inviterName: data.inviterName, applied: data.applied, signedIn: data.signedIn });
+      else setState({ status: "valid", inviterName: data.inviterName, signedIn: data.signedIn, own: data.own });
     });
     return () => {
       cancelled = true;
     };
   }, [token]);
+
+  async function accept(inviterName: string) {
+    setPending(true);
+    const { data } = await authClient.invite.accept({ token });
+    setPending(false);
+    setState(data?.applied ? { status: "accepted", inviterName } : { status: "invalid" });
+  }
 
   return (
     <div className="card bg-base-100 w-full max-w-sm shadow-md">
@@ -55,7 +67,7 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
             </div>
           </>
         )}
-        {state.status === "valid" && state.applied && (
+        {state.status === "accepted" && (
           <>
             <h1 className="card-title text-2xl">{t("acceptedTitle")}</h1>
             <p>{t("acceptedText", { name: state.inviterName })}</p>
@@ -64,7 +76,7 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
             </div>
           </>
         )}
-        {state.status === "valid" && !state.applied && state.signedIn && (
+        {state.status === "valid" && state.own && (
           <>
             <h1 className="card-title text-2xl">{t("ownTitle")}</h1>
             <p>{t("ownText")}</p>
@@ -73,7 +85,20 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
             </div>
           </>
         )}
-        {state.status === "valid" && !state.applied && !state.signedIn && (
+        {state.status === "valid" && !state.own && state.signedIn && (
+          <>
+            <h1 className="card-title text-2xl">{t("invitedTitle", { name: state.inviterName })}</h1>
+            <p>{t("joinText")}</p>
+            <div className="card-actions">
+              <button type="button" className="btn btn-primary" disabled={pending} onClick={() => accept(state.inviterName)}>
+                {pending && <span className="loading loading-spinner loading-sm" />}
+                {t("join")}
+              </button>
+              <Link href={continueHref} className="btn btn-ghost">{t("notNow")}</Link>
+            </div>
+          </>
+        )}
+        {state.status === "valid" && !state.signedIn && (
           <>
             <h1 className="card-title text-2xl">{t("invitedTitle", { name: state.inviterName })}</h1>
             <p>{t("invitedText")}</p>

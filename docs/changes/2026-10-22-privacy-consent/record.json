@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "privacy-consent",
+  "description": "Owner consent for transfers, confirmed invites",
+  "plan": {
+    "path": "docs/plans/2026-10-22-privacy-consent.md",
+    "sha256": "fbcca6dc505d2a195be33bf001a35c1aea68ef362308d944ea6dea2bd89f2e97"
+  },
+  "status": "final",
+  "base": "e300ea54fd2bfb81dd28c160003d27980bd03605"
+}

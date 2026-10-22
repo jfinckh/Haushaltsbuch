@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "permission-change:transfers:change-other-members-private-bookings",
+      "itemHash": "sha256:9e730c334f188fbb9bb27296c4b6b2c13e0af0e471f72679519e321933a7f230",
+      "decision": "approve",
+      "at": "2026-10-22T08:49:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth:join-household-by-invite",
+      "itemHash": "sha256:2a8e017a7977fa0764ca57e948b02ae59a024b668cfec53d0a9fa0ebb6baa197",
+      "decision": "approve",
+      "at": "2026-10-22T08:49:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0020_transfers_owner_consent.sql",
+      "itemHash": "sha256:e9c2f26b3b9611478e792b5670d3f5575823bb7e6ba5be13bbe129bdeab5926b",
+      "decision": "approve",
+      "at": "2026-10-22T08:49:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0020_snapshot.json",
+      "itemHash": "sha256:c60682252b12403bd06a6bf327c85c38d98481cc7eba9c7d8c142c49bfff5857",
+      "decision": "approve",
+      "at": "2026-10-22T08:49:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "itemHash": "sha256:0db6dc98c5d3037bda3c88cc1d1c69b57c67a72b173d47612a86a9e9dada192d",
+      "decision": "approve",
+      "at": "2026-10-22T08:49:14Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:src/transfers/schema.ts",
+      "itemHash": "sha256:6586c05b653d033e6ac6612fc5054a3554d6b8819ea7e70ea836f37c9683bbce",
+      "decision": "approve",
+      "at": "2026-10-22T08:49:14Z",
+      "source": "hook"
+    }
+  ]
+}

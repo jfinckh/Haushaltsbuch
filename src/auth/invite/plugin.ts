@@ -23,7 +23,6 @@ type UserRow = { id: string; name: string; invitedById: string | null };
 
 type InviteContext = Parameters<Parameters<typeof createAuthMiddleware>[0]>[0];
 
-const COOKIE_NAME = "invite_token";
 const DEFAULT_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 async function findOpenInvite(ctx: InviteContext, token: string): Promise<InviteRow | null> {
@@ -69,10 +68,6 @@ async function applyInvite(ctx: InviteContext, invite: InviteRow, userId: string
 
 class InviteNotApplied extends Error {}
 
-function expireInviteCookie(ctx: InviteContext) {
-  ctx.setCookie(ctx.context.createAuthCookie(COOKIE_NAME).name, "", { path: "/", maxAge: 0 });
-}
-
 export const invites = (options: InvitesOptions) => {
   const ttlSeconds = options.ttlSeconds ?? DEFAULT_TTL_SECONDS;
 
@@ -113,8 +108,8 @@ export const invites = (options: InvitesOptions) => {
         return ctx.json({ url: options.buildInviteUrl(token), expiresAt });
       }),
 
-      // Called when someone opens an invite link. Applies the invite right away for a signed-in
-      // user; otherwise remembers it in a cookie until the next sign-up or sign-in.
+      // Called when someone opens an invite link. Only checks it and says who invites: joining needs
+      // an explicit accept (below), so a link alone never changes anything.
       openInvite: createAuthEndpoint(
         "/invite/open",
         { method: "POST", body: z.object({ token: z.string().min(1).max(200) }) },
@@ -129,16 +124,24 @@ export const invites = (options: InvitesOptions) => {
           if (!inviter) return ctx.json({ valid: false as const });
 
           const session = await getSessionFromCtx(ctx);
-          if (session) {
-            const applied = await applyInvite(ctx, invite, session.user.id);
-            return ctx.json({ valid: true as const, inviterName: inviter.name, applied, signedIn: true });
-          }
-
-          const cookie = ctx.context.createAuthCookie(COOKIE_NAME, {
-            maxAge: Math.floor((new Date(invite.expiresAt).getTime() - Date.now()) / 1000),
+          return ctx.json({
+            valid: true as const,
+            inviterName: inviter.name,
+            signedIn: Boolean(session),
+            own: session?.user.id === invite.inviterId,
           });
-          ctx.setCookie(cookie.name, ctx.body.token, cookie.attributes);
-          return ctx.json({ valid: true as const, inviterName: inviter.name, applied: false, signedIn: false });
+        },
+      ),
+
+      // The signed-in user accepts an invite they opened. Records the inviter once; false for an own,
+      // used, expired or unknown link.
+      acceptInvite: createAuthEndpoint(
+        "/invite/accept",
+        { method: "POST", use: [sessionMiddleware], body: z.object({ token: z.string().min(1).max(200) }) },
+        async (ctx) => {
+          const invite = await findOpenInvite(ctx, ctx.body.token);
+          const applied = invite ? await applyInvite(ctx, invite, ctx.context.session.user.id) : false;
+          return ctx.json({ applied });
         },
       ),
 
@@ -155,21 +158,6 @@ export const invites = (options: InvitesOptions) => {
         });
         return ctx.json({ inviter: inviter ? { id: inviter.id, name: inviter.name } : null });
       }),
-    },
-    hooks: {
-      after: [
-        {
-          matcher: (ctx) => ctx.path === "/sign-up/email" || ctx.path === "/sign-in/email",
-          handler: createAuthMiddleware(async (ctx) => {
-            const newSession = ctx.context.newSession;
-            const token = ctx.getCookie(ctx.context.createAuthCookie(COOKIE_NAME).name);
-            if (!newSession || !token) return;
-            expireInviteCookie(ctx);
-            const invite = await findOpenInvite(ctx, token);
-            if (invite) await applyInvite(ctx, invite, newSession.user.id);
-          }),
-        },
-      ],
     },
   } satisfies BetterAuthPlugin;
 };
