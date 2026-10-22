@@ -14,7 +14,17 @@
     "leaveNoteLastMember": "Its shared accounts are deleted with it. Your private accounts stay with you.",
     "leaveNoteOthers": "Your private accounts stay with you. Shared accounts stay with the household.",
     "importCsv": "Import CSV",
-    "rules": "Rules"
+    "rules": "Rules",
+    "manage": "Household & accounts",
+    "switcher": "Choose account",
+    "available": "Available this month",
+    "income": "Income",
+    "expenses": "Expenses",
+    "saving": "Saved",
+    "latest": "Latest bookings",
+    "allBookings": "All bookings",
+    "editBudgets": "Change budgets",
+    "noAccounts": "No account yet. Add one to get started."
   },
   "members": {
     "you": "You",
@@ -50,5 +60,8 @@
     "intro": "Rules sort bookings automatically on import. They never change what someone set by hand.",
     "newTitle": "New rule",
     "editTitle": "Edit rule"
+  },
+  "household": {
+    "back": "Back"
   }
 }

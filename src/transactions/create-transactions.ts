@@ -4,7 +4,7 @@ import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { isCategoryFor } from "./categories";
 import type { ClassifiedBy, TransactionKind } from "./kinds";
-import { monthOf, monthRange, today as localToday } from "./months";
+import { isMonth, monthOf, monthRange, today as localToday } from "./months";
 import { transaction } from "./schema";
 import {
   createTransactionSchema,
@@ -56,6 +56,10 @@ export type Classification = { id: string; kind: TransactionKind; category: stri
 
 export type ListTransactionsResult =
   | { ok: true; transactions: TransactionView[] }
+  | { ok: false; reason: "invalid-input" | "not-found" };
+
+export type MonthSummaryResult =
+  | { ok: true; month: string; incomeCents: number; expenseCents: number; savingCents: number; availableCents: number }
   | { ok: false; reason: "invalid-input" | "not-found" };
 
 export type SaveTransactionResult =
@@ -361,6 +365,50 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         )
         .groupBy(transaction.category);
       return { month, totals: Object.fromEntries(rows.map((row) => [row.category!, Number(row.sum)])) };
+    },
+
+    /**
+     * Income, expenses and saving of a visible account in a calendar month (cents, signed as booked:
+     * money out is negative), and what is available: their sum, i.e. income − expenses − saving.
+     * Refunds lower the expenses; transfers never count. Without a month, the current one.
+     */
+    async monthSummary(caller: Caller, accountId: string, month: string = monthOf(today())): Promise<MonthSummaryResult> {
+      if (!isMonth(month)) return { ok: false, reason: "invalid-input" };
+      const { from, to } = monthRange(month);
+      return withSession(db, caller, async (tx): Promise<MonthSummaryResult> => {
+        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        const rows = await tx
+          .select({ kind: transaction.kind, sum: sql<string>`sum(${transaction.amountCents})` })
+          .from(transaction)
+          .where(
+            and(
+              visible,
+              eq(transaction.accountId, accountId),
+              inArray(transaction.kind, ["income", "expense", "saving"]),
+              gte(transaction.bookingDate, from),
+              lte(transaction.bookingDate, to),
+            ),
+          )
+          .groupBy(transaction.kind);
+        const sumOf = (kind: TransactionKind) => Number(rows.find((row) => row.kind === kind)?.sum ?? 0);
+        const [incomeCents, expenseCents, savingCents] = [sumOf("income"), sumOf("expense"), sumOf("saving")];
+        return { ok: true, month, incomeCents, expenseCents, savingCents, availableCents: incomeCents + expenseCents + savingCents };
+      });
+    },
+
+    /** The newest bookings of a visible account, any month, at most `limit` (1–50). */
+    async latestTransactions(caller: Caller, accountId: string, limit: number): Promise<ListTransactionsResult> {
+      if (!Number.isInteger(limit) || limit < 1 || limit > 50) return { ok: false, reason: "invalid-input" };
+      return withSession(db, caller, async (tx, userId): Promise<ListTransactionsResult> => {
+        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        const rows = await tx
+          .select()
+          .from(transaction)
+          .where(and(eq(transaction.accountId, accountId), visible))
+          .orderBy(desc(transaction.bookingDate), desc(transaction.createdAt))
+          .limit(limit);
+        return { ok: true, transactions: rows.map((row) => toView(row, userId)) };
+      });
     },
 
     /** Sum of the bookings per visible account that has any (cents). The app adds the opening balance. */

@@ -229,6 +229,83 @@ describe("balances", () => {
   });
 });
 
+describe("month summary of one account (dashboard)", () => {
+  it("sums income, expenses and saving of the month; available is their sum, transfers never count", async () => {
+    await create(max, { date: "2026-10-01", amount: "2.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-02", amount: "-300,00", category: "groceries" });
+    await create(max, { date: "2026-10-03", amount: "20,00", category: "groceries" });
+    await create(max, { date: "2026-10-04", amount: "-15,00", category: null });
+    await create(max, { date: "2026-10-05", amount: "-250,00", kind: "saving", category: null });
+    await create(max, { date: "2026-10-06", amount: "-500,00", kind: "transfer", category: null });
+    await create(max, { date: "2026-09-30", amount: "-99,00", category: "groceries" });
+    await create(max, { date: "2026-11-01", amount: "-99,00", category: "groceries" });
+
+    expect(await transactions.monthSummary(max, "max-private", "2026-10")).toEqual({
+      ok: true,
+      month: "2026-10",
+      incomeCents: 200000,
+      expenseCents: -29500,
+      savingCents: -25000,
+      availableCents: 145500,
+    });
+  });
+
+  it("uses the current month without a month, and zeros without bookings", async () => {
+    expect(await transactions.monthSummary(max, "max-private")).toEqual({
+      ok: true,
+      month: "2026-10",
+      incomeCents: 0,
+      expenseCents: 0,
+      savingCents: 0,
+      availableCents: 0,
+    });
+  });
+
+  it("never sums another member's private account, as if it did not exist", async () => {
+    await create(max, { date: "2026-10-08", amount: "-4,00" });
+    expect(await transactions.monthSummary(erika, "max-private")).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.monthSummary(dora, "home-shared")).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.monthSummary(max, "unknown")).toEqual({ ok: false, reason: "not-found" });
+  });
+
+  it("gives every member the same figures of a shared account", async () => {
+    await create(max, { accountId: "home-shared", date: "2026-10-08", amount: "-4,00" });
+    const ofMax = await transactions.monthSummary(max, "home-shared");
+    expect(ofMax).toMatchObject({ ok: true, expenseCents: -400, availableCents: -400 });
+    expect(await transactions.monthSummary(erika, "home-shared")).toEqual(ofMax);
+  });
+
+  it("rejects an invalid month", async () => {
+    expect(await transactions.monthSummary(max, "max-private", "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
+describe("latest bookings of one account (dashboard)", () => {
+  beforeEach(async () => {
+    await create(max, { date: "2026-08-01", amount: "-1,00" });
+    await create(max, { date: "2026-10-01", amount: "-2,00" });
+    await create(max, { date: "2026-09-15", amount: "-3,00" });
+    await create(max, { accountId: "home-shared", date: "2026-10-02" });
+  });
+
+  it("lists the newest bookings across months, up to the limit", async () => {
+    const result = await transactions.latestTransactions(max, "max-private", 2);
+    expect(result.ok && result.transactions.map((t) => t.date)).toEqual(["2026-10-01", "2026-09-15"]);
+  });
+
+  it("never lists another member's private account, as if it did not exist", async () => {
+    expect(await transactions.latestTransactions(erika, "max-private", 8)).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.latestTransactions(dora, "home-shared", 8)).toEqual({ ok: false, reason: "not-found" });
+    const shared = await transactions.latestTransactions(erika, "home-shared", 8);
+    expect(shared.ok && shared.transactions.map((t) => t.accountId)).toEqual(["home-shared"]);
+  });
+
+  it("rejects a limit outside 1 to 50", async () => {
+    expect(await transactions.latestTransactions(max, "max-private", 0)).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await transactions.latestTransactions(max, "max-private", 51)).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
 describe("monthly expense totals inside another part's database transaction", () => {
   const totals = (caller: Caller, accountId: string, month?: string) =>
     withSession(setup.db, caller, (tx) => transactions.expenseTotals(tx, accountId, month));

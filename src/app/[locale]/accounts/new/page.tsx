@@ -14,7 +14,7 @@ export default function NewAccountPage() {
         <div className="card-body gap-4">
           <div className="flex items-center justify-between gap-2">
             <h1 className="card-title text-2xl">{t("addTitle")}</h1>
-            <Link href="/" className="btn btn-ghost btn-sm">
+            <Link href="/household" className="btn btn-ghost btn-sm">
               {t("back")}
             </Link>
           </div>

@@ -17,6 +17,8 @@ type Props = {
   budgets: BudgetView[];
   /** Endpoint. Default: /api/budgets */
   action?: string;
+  /** Only the bars, without the forms to add, change and delete (dashboard). */
+  readOnly?: boolean;
 };
 
 /** Warning colour from 80 %, error colour above 100 %. Integer comparison, no floats. */
@@ -26,8 +28,8 @@ function progressClass(spentCents: number, limitCents: number): string {
   return "progress-success";
 }
 
-/** The budgets of one account for a month: a progress bar per budget, and a form to add one. */
-export function BudgetSection({ accountId, month, budgets, action = "/api/budgets" }: Props) {
+/** The budgets of one account for a month: a progress bar per budget, and (unless read-only) forms to add, change and delete. */
+export function BudgetSection({ accountId, month, budgets, action = "/api/budgets", readOnly = false }: Props) {
   const t = useTranslations("budgets.section");
   const format = useFormatter();
   const monthName = format.dateTime(new Date(`${month}-01T00:00:00Z`), { month: "long", year: "numeric", timeZone: "UTC" });
@@ -39,16 +41,16 @@ export function BudgetSection({ accountId, month, budgets, action = "/api/budget
       ) : (
         <ul className="flex flex-col gap-3">
           {budgets.map((budget) => (
-            <BudgetRow key={budget.id} budget={budget} action={action} />
+            <BudgetRow key={budget.id} budget={budget} action={action} readOnly={readOnly} />
           ))}
         </ul>
       )}
-      <AddBudgetForm accountId={accountId} action={action} />
+      {!readOnly && <AddBudgetForm accountId={accountId} action={action} />}
     </section>
   );
 }
 
-function BudgetRow({ budget, action }: { budget: BudgetView; action: string }) {
+function BudgetRow({ budget, action, readOnly }: { budget: BudgetView; action: string; readOnly: boolean }) {
   const t = useTranslations("budgets.section");
   const translateKey = useTranslateKey();
   const categoryName = useCategoryName();
@@ -103,7 +105,7 @@ function BudgetRow({ budget, action }: { budget: BudgetView; action: string }) {
         />
         <span className="w-14 text-right text-sm tabular-nums">{t("percent", { percent })}</span>
       </div>
-      {editing ? (
+      {readOnly ? null : editing ? (
         <form onSubmit={onSave} className="flex items-center gap-2">
           <input
             className="input input-sm flex-1"

@@ -14,7 +14,17 @@
     "leaveNoteLastMember": "Seine gemeinsamen Konten werden mit gelöscht. Deine privaten Konten bleiben bei dir.",
     "leaveNoteOthers": "Deine privaten Konten bleiben bei dir. Gemeinsame Konten bleiben im Haushalt.",
     "importCsv": "CSV importieren",
-    "rules": "Regeln"
+    "rules": "Regeln",
+    "manage": "Haushalt & Konten",
+    "switcher": "Konto wählen",
+    "available": "Verfügbar diesen Monat",
+    "income": "Einnahmen",
+    "expenses": "Ausgaben",
+    "saving": "Gespart",
+    "latest": "Letzte Buchungen",
+    "allBookings": "Alle Buchungen",
+    "editBudgets": "Budgets ändern",
+    "noAccounts": "Noch kein Konto. Lege eins an, um loszulegen."
   },
   "members": {
     "you": "Du",
@@ -50,5 +60,8 @@
     "intro": "Regeln ordnen Buchungen beim Import automatisch zu. Was jemand von Hand setzt, ändern sie nie.",
     "newTitle": "Neue Regel",
     "editTitle": "Regel bearbeiten"
+  },
+  "household": {
+    "back": "Zurück"
   }
 }

@@ -58,7 +58,7 @@ async function AccountBookings({ params, searchParams }: Props) {
     <>
       <div className="flex items-center justify-between gap-2">
         <h1 className="card-title truncate text-2xl">{account.name}</h1>
-        <Link href="/" className="btn btn-ghost btn-sm">
+        <Link href={`/?account=${account.id}`} className="btn btn-ghost btn-sm">
           {t("back")}
         </Link>
       </div>

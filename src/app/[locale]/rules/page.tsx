@@ -31,7 +31,7 @@ async function Rules() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="card-title text-2xl">{t("title")}</h1>
         <div className="flex gap-2">
-          <Link href="/" className="btn btn-ghost btn-sm">
+          <Link href="/household" className="btn btn-ghost btn-sm">
             {t("back")}
           </Link>
           <Link href="/rules/new" className="btn btn-primary btn-sm">

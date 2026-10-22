@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "dashboard",
+  "description": "Dashboard (first slice)",
+  "plan": {
+    "path": "docs/plans/2026-10-22-dashboard.md",
+    "sha256": "d5c2f7a574ef683766355280075262fc0a9c4b889b2b6afa3121640391970b38"
+  },
+  "status": "final",
+  "base": "e772719bb0a9a42a2afcf0d0085b4d011f161c03"
+}
