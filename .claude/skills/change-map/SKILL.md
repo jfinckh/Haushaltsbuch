@@ -11,6 +11,8 @@ change-map shows what a plan changes in the architecture, gets those changes sig
 
 Run every command from the project root as `npx change-map …`. In the commands below, `<plan>` is the implementation plan's path and `<slug>` the manifest's `slug`.
 
+**Never redirect or hide change-map's output** (no `>/dev/null`, `2>&1`, `| tail`, `| head`): read what each command prints. Hooks show the user the map and the report on their own; you don't open files or pass flags for that.
+
 ## When to use
 
 When to use change-map: use the change-map workflow for every new feature, change to a feature, or refactoring. Skip it only for a change that stays inside one unit and adds no source file, dependency, table, package, environment key or export: typos, small bug fixes, tests, docs.
@@ -46,6 +48,7 @@ If the session briefing says **Local mode** (the project has `.change-map/config
 - Run `npx change-map doctor` and read its `Workflow` block.
   - **W4** (approval hooks) missing: answers can't be recorded. Say so and stop.
   - **W3** (gate) missing: say so, and continue only if the user agrees.
+  - **W6** (report hooks) missing: the user may not get the map and the report. Say so and suggest `npx change-map report install-hooks`; continue.
   - P-requirement gaps: mention them, don't fix them.
 
 ## 1. Plan: add the change manifest
@@ -151,13 +154,9 @@ Warnings (`unit-without-rules`, `unmapped-rule`, `existing-violation`) don't blo
 
 ## 3. Show the map
 
-`review` writes the map on every run to `.change-map/<slug>.html` (gitignored working files). It opens on an overview in plain words (summary, steps, what the user decides, what needs no decision) with a numbered change list as the second tab. Show it when the plan has at least one sign-off item, or when the user asks:
+`review` writes the map on every run to `.change-map/<slug>.html` (gitignored working files). It opens on an overview in plain words (summary, steps, what the user decides, what needs no decision) with a numbered change list as the second tab.
 
-```
-npx change-map review --plan <plan> --open
-```
-
-`--open` may fail without a browser (e.g. a cloud session); that is only a warning. Always give the user the path. If you have a tool that sends files to the user, send the map file too.
+**You don't open the map.** When you ask the sign-off question (step 4), a hook renders the map again if it is older than the plan, opens it in the user's browser and shows the user its path (in a cloud session, only the path). Whether it opens is the config's `openMap`, not a flag. If the user asks to see the map at another time, run `npx change-map review --plan <plan> --open` and give the path. If you have a tool that sends files to the user, send the map file too.
 
 **No sign-off items** (`review` prints `No sign-off items.`): don't show the map and don't ask anything. Run `npx change-map signoff start --plan <plan>` (it opens the record, which is approved right away), tell the user one line, `No architecture changes to sign off. Map: .change-map/<slug>.html`, and go to step 5.
 
@@ -169,8 +168,8 @@ npx change-map signoff start --plan <plan>
 
 It prints `{ "record", "questions": […], "approved", "total" }`. `questions` holds one question: "Do you approve all N decisions for "<title>"?", with the answers **Approve all** and **Not yet**. The user reads and clicks through the decisions in the map; don't list them again in the chat.
 
-1. Tell the user in one line: how many decisions, where the map is, and that they can look at each one there before answering.
-2. Call `AskUserQuestion` with **exactly** that `questions` array. A hook recognises the question by its two options. Never reword, split it into one question per decision, or pre-fill anything. A hook denies anything else. If it does, run `signoff start` again and use its new output.
+1. Tell the user in one line: how many decisions, and that the map (`.change-map/<slug>.html`, opened by a hook when you ask) shows each one before they answer.
+2. Call `AskUserQuestion` with **exactly** that `questions` array. A hook recognises the question by its two options and opens the map for the user. Never reword, split it into one question per decision, or pre-fill anything. A hook denies anything else. If it does, run `signoff start` again and use its new output.
 3. **After the call** a hook adds a line to your context: `change-map sign-off, <record>: recorded approve for <items>. Not approved yet: …. Record status: …`, or `…: not approved, nothing recorded. The user answered …`. A `NOT recorded: …` line means: ask again.
    - **No such line = the answer was NOT recorded.** Hooks aren't installed, or change-map can't run. Don't treat the chat answer as approval and never write `approvals.json`. Tell the user, run `npx change-map doctor` to show why, and stop.
 
@@ -229,7 +228,7 @@ A file the manifest doesn't list, a planned file that isn't needed, or another c
 npx change-map review --plan <plan> --implementation
 ```
 
-This prints the implementation check and the file deviations, with amendment stubs. Act on what it prints:
+This prints the implementation check and the file deviations, with amendment stubs. Never pass `--base` unless the user gives you a commit, and **never build a base commit yourself** (`git commit-tree`, `git stash create`, a temporary index, a throwaway branch). When an earlier step is still uncommitted, `finalize` saved a snapshot of it, and the next plan's `review --implementation` and `finalize` start from it on their own (they print `Base: change-map's snapshot …`). A `WARNING:` about the base goes to the user as it is. Act on what it prints:
 - **File deviations**: fill in each stub's purpose and reason (replace every `TODO`) and append the stubs.
 - `undeclared-signoff`: stop, amend, ask (above). If it names a dependency from or to a part inside a planned use (the plan has `a -> b`, it reports `a/x -> b`), that is a bug in change-map, not a reason for an amendment: tell the user and report it.
 - `introduced-violation`, `entry-point-bypass`: fix the code.
@@ -240,8 +239,10 @@ Run it again until it exits 0.
 ## 6. Finalize and report
 
 ```
-npx change-map finalize --plan <plan> --open
+npx change-map finalize --plan <plan>
 ```
+
+Run it as its own Bash command, output not redirected. **A hook shows the user the report verbatim and opens the record's map** (the report is read from the record, so the user gets it whatever happens to the output), and adds a line to your context saying so. Don't repeat the report in the chat; refer to it ("The report is above"). A Stop hook won't let you end the turn while an approved plan's code changed without `finalize`, or while a report wasn't shown: do what its reason says. If you stopped on purpose (e.g. to ask the user something mid-implementation), say so in one line and end the turn again.
 
 Every missing item in the report comes with what change-map found. If it lists "Missing items without an explanation", record one short note per item: why it is missing, in words the user can judge (at most 300 characters). Copy the ref from the list:
 
@@ -249,7 +250,9 @@ Every missing item in the report comes with what change-map found. If it lists "
 npx change-map explain --plan <plan> <ref> "<one or two sentences>"
 ```
 
-This is your claim, shown on the map as "Claude's explanation"; say only what you know. Skip an item you can't explain. Each `explain` prints the updated report. Then post the latest report **verbatim** in a code block, then the map path (and send the file if you can). Don't add facts to it. For each divergence, absence or violation it lists, say in one sentence what you would do, and ask.
+This is your claim, shown on the map as "Claude's explanation"; say only what you know. Skip an item you can't explain. Each `explain` prints the updated report, and the hook shows it to the user again. Then, without repeating the report: for each divergence, absence or violation it lists, say in one sentence what you would do, and ask. Don't add facts to it.
+
+**No hook line after `finalize`** (the report hooks aren't installed, W6): post the latest report **verbatim** in a code block, then the map path (and send the file if you can).
 
 ## 7. Commit
 
@@ -269,4 +272,5 @@ It checks the code as it is: rule violations, units without rules, and changes s
 
 - Edit `approvals.json`, `record.json` or `plan.md` inside `docs/changes/`. Only change-map writes them.
 - Answer, pre-fill or reword a sign-off question.
+- Redirect change-map's output to `/dev/null` or cut it off, or build base commits yourself (`commit-tree`, `stash create`).
 - Build before the record is `approved`, or work around a hook's denial.
