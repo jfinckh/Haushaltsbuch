@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, like, lte, ne, or,
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import { isCategoryFor } from "./categories";
+import { isCategoryFor, spendingByGroup, type GroupSpending } from "./categories";
 import type { ClassifiedBy, TransactionKind } from "./kinds";
 import { isMonth, monthOf, monthRange, today as localToday } from "./months";
 import { transaction } from "./schema";
@@ -60,6 +60,10 @@ export type ListTransactionsResult =
 
 export type MonthSummaryResult =
   | { ok: true; month: string; incomeCents: number; expenseCents: number; savingCents: number; availableCents: number }
+  | { ok: false; reason: "invalid-input" | "not-found" };
+
+export type CategorySpendingResult =
+  | { ok: true; month: string; totalCents: number; groups: GroupSpending[] }
   | { ok: false; reason: "invalid-input" | "not-found" };
 
 export type SaveTransactionResult =
@@ -393,6 +397,33 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         const sumOf = (kind: TransactionKind) => Number(rows.find((row) => row.kind === kind)?.sum ?? 0);
         const [incomeCents, expenseCents, savingCents] = [sumOf("income"), sumOf("expense"), sumOf("saving")];
         return { ok: true, month, incomeCents, expenseCents, savingCents, availableCents: incomeCents + expenseCents + savingCents };
+      });
+    },
+
+    /**
+     * What a visible account spent in a calendar month per category group (positive cents), largest
+     * first; `group: null` is expenses without category. Only expenses count; refunds lower their
+     * group, and a group at zero or below is left out. Without a month, the current one.
+     */
+    async categorySpending(caller: Caller, accountId: string, month: string = monthOf(today())): Promise<CategorySpendingResult> {
+      if (!isMonth(month)) return { ok: false, reason: "invalid-input" };
+      const { from, to } = monthRange(month);
+      return withSession(db, caller, async (tx): Promise<CategorySpendingResult> => {
+        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        const rows = await tx
+          .select({ category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
+          .from(transaction)
+          .where(
+            and(
+              visible,
+              eq(transaction.accountId, accountId),
+              eq(transaction.kind, "expense"),
+              gte(transaction.bookingDate, from),
+              lte(transaction.bookingDate, to),
+            ),
+          )
+          .groupBy(transaction.category);
+        return { ok: true, month, ...spendingByGroup(rows.map((row) => ({ category: row.category, sumCents: Number(row.sum) }))) };
       });
     },
 

@@ -19,6 +19,12 @@
     "uncategorized": "Ohne Kategorie",
     "noText": "Buchung"
   },
+  "spending": {
+    "title": "Ausgaben nach Kategorie",
+    "uncategorized": "Ohne Kategorie",
+    "empty": "Diesen Monat noch keine Ausgaben.",
+    "share": "{percent} %"
+  },
   "filters": {
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:transactions:client:CategorySpending",
+      "itemHash": "sha256:5e481da65d44748a22b8e724c58247c0a61728a5102d7d4d1cbf714c14e0ceab",
+      "decision": "approve",
+      "at": "2026-10-22T07:09:40Z",
+      "source": "hook"
+    }
+  ]
+}

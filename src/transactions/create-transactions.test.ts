@@ -280,6 +280,54 @@ describe("month summary of one account (dashboard)", () => {
   });
 });
 
+describe("spending by category of one account (dashboard)", () => {
+  it("sums only the month's expenses per group; refunds lower them, uncategorized is its own row", async () => {
+    await create(max, { date: "2026-10-01", amount: "-50,00", category: "groceries.supermarket" });
+    await create(max, { date: "2026-10-02", amount: "-10,00", category: "groceries" });
+    await create(max, { date: "2026-10-03", amount: "-40,00", category: "shopping.clothing" });
+    await create(max, { date: "2026-10-04", amount: "40,00", category: "shopping" });
+    await create(max, { date: "2026-10-05", amount: "-15,00", category: null });
+    await create(max, { date: "2026-10-06", amount: "2.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-07", amount: "-250,00", kind: "saving", category: null });
+    await create(max, { date: "2026-10-08", amount: "-500,00", kind: "transfer", category: null });
+    await create(max, { date: "2026-09-30", amount: "-99,00", category: "groceries" });
+    await create(max, { date: "2026-11-01", amount: "-99,00", category: "groceries" });
+
+    expect(await transactions.categorySpending(max, "max-private", "2026-10")).toEqual({
+      ok: true,
+      month: "2026-10",
+      totalCents: 7500,
+      groups: [
+        { group: "groceries", cents: 6000 },
+        { group: null, cents: 1500 },
+      ],
+    });
+  });
+
+  it("uses the current month without a month, and has no rows without expenses", async () => {
+    await create(max, { date: "2026-09-30", amount: "-99,00", category: "groceries" });
+    expect(await transactions.categorySpending(max, "max-private")).toEqual({ ok: true, month: "2026-10", totalCents: 0, groups: [] });
+  });
+
+  it("never sums another member's private account, as if it did not exist", async () => {
+    await create(max, { date: "2026-10-08", amount: "-4,00" });
+    expect(await transactions.categorySpending(erika, "max-private")).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.categorySpending(dora, "home-shared")).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.categorySpending(max, "unknown")).toEqual({ ok: false, reason: "not-found" });
+  });
+
+  it("gives every member the same figures of a shared account", async () => {
+    await create(max, { accountId: "home-shared", date: "2026-10-08", amount: "-4,00" });
+    const ofMax = await transactions.categorySpending(max, "home-shared");
+    expect(ofMax).toMatchObject({ ok: true, totalCents: 400, groups: [{ group: "groceries", cents: 400 }] });
+    expect(await transactions.categorySpending(erika, "home-shared")).toEqual(ofMax);
+  });
+
+  it("rejects an invalid month", async () => {
+    expect(await transactions.categorySpending(max, "max-private", "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
 describe("latest bookings of one account (dashboard)", () => {
   beforeEach(async () => {
     await create(max, { date: "2026-08-01", amount: "-1,00" });

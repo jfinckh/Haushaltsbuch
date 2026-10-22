@@ -19,6 +19,12 @@
     "uncategorized": "Uncategorized",
     "noText": "Booking"
   },
+  "spending": {
+    "title": "Spending by category",
+    "uncategorized": "Uncategorized",
+    "empty": "No spending this month yet.",
+    "share": "{percent}%"
+  },
   "filters": {
     "previousMonth": "Previous month",
     "nextMonth": "Next month",

@@ -48,3 +48,27 @@ export function categoryMessageKey(key: string): string {
   const [group, sub] = key.split(".");
   return sub ? `categories.${group}.${sub}` : `categoryGroups.${group}`;
 }
+
+/** Spending of one category group in a month; `group: null` means expenses without category. */
+export type GroupSpending = { group: string | null; cents: number };
+
+/**
+ * Folds net expense sums per stored category key (cents, signed as booked: money out is negative)
+ * into category groups. Amounts become positive; refunds lower their group, and a group at zero or
+ * below is left out. Largest first; the total is the sum of the rows.
+ */
+export function spendingByGroup(totals: readonly { category: string | null; sumCents: number }[]): {
+  totalCents: number;
+  groups: GroupSpending[];
+} {
+  const byGroup = new Map<string | null, number>();
+  for (const { category, sumCents } of totals) {
+    const group = category === null ? null : category.split(".")[0];
+    byGroup.set(group, (byGroup.get(group) ?? 0) - sumCents);
+  }
+  const groups = [...byGroup]
+    .map(([group, cents]) => ({ group, cents }))
+    .filter((row) => row.cents > 0)
+    .sort((a, b) => b.cents - a.cents);
+  return { totalCents: groups.reduce((sum, row) => sum + row.cents, 0), groups };
+}

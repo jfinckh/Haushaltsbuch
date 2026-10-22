@@ -13,7 +13,7 @@ import { selectAccount } from "@/app/_lib/select-account";
 import { transactions } from "@/app/_lib/transactions";
 import { formatEuro } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
-import { TransactionList } from "@/transactions";
+import { CategorySpending, TransactionList } from "@/transactions";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -32,7 +32,7 @@ export default function Home(props: Props) {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-/** One account at a time (?account=<id>): available this month, budgets, newest bookings. */
+/** One account at a time (?account=<id>): available this month, budgets, spending by category, newest bookings. */
 async function Dashboard({ searchParams }: Props) {
   const { user, caller } = await requireCaller("/sign-in");
   const inviter = await auth.getInviter(user.id);
@@ -103,9 +103,10 @@ async function Dashboard({ searchParams }: Props) {
 }
 
 async function AccountDashboard({ caller, accountId }: { caller: Caller; accountId: string }) {
-  const [summary, budgetList, latest] = await Promise.all([
+  const [summary, budgetList, spending, latest] = await Promise.all([
     transactions.monthSummary(caller, accountId),
     budgets.listBudgets(caller, accountId),
+    transactions.categorySpending(caller, accountId),
     transactions.latestTransactions(caller, accountId, LATEST),
   ]);
   const t = await getTranslations("app.home");
@@ -141,6 +142,12 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
           <Link href={`/accounts/${accountId}`} className="link link-hover self-end text-sm">
             {t("editBudgets")}
           </Link>
+        </>
+      )}
+      {spending.ok && (
+        <>
+          <div className="divider my-0" />
+          <CategorySpending accountId={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} />
         </>
       )}
       {latest.ok && (

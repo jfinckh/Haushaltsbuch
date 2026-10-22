@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "dashboard-categories",
+  "description": "Dashboard spending by category",
+  "plan": {
+    "path": "docs/plans/2026-10-22-dashboard-categories.md",
+    "sha256": "5dbca5bf7581929370c25a9bf2d1689bf74a7ea7675d58d5e1de634abc7de332"
+  },
+  "status": "final",
+  "base": "86de858cbedd07655aee5191f0e2b0f0b2e803f0"
+}

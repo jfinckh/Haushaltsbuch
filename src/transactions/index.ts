@@ -1,6 +1,7 @@
 // Entry point of transactions: other parts import transactions only through this file.
 export { isCategoryFor } from "./categories";
 export { CategorySelect } from "./components/category-select";
+export { CategorySpending } from "./components/category-spending";
 export { DeleteTransactionButton } from "./components/delete-transaction-button";
 export { TransactionFilters } from "./components/transaction-filters";
 export { TransactionForm } from "./components/transaction-form";
