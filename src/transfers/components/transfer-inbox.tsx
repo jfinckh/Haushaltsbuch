@@ -11,8 +11,6 @@ type Props = {
   overview: AccountTransfers;
   /** The accounts the viewer may see (for names). */
   accounts: { id: string; name: string }[];
-  /** Names of the household members (user id → name). */
-  memberNames: Record<string, string>;
   /** Link to one booking: `${href}/${id}`. Default: /transactions */
   href?: string;
   /** Endpoint of the transfers API. Default: /api/transfers */
@@ -20,9 +18,9 @@ type Props = {
 };
 
 /** Open and proposed transfers of an account; nothing when there are none. */
-export function TransferInbox({ overview, accounts, memberNames, href = "/transactions", endpoint }: Props) {
+export function TransferInbox({ overview, accounts, href = "/transactions", endpoint }: Props) {
   const t = useTranslations("transfers");
-  const texts = useTransferTexts({ accounts: Object.fromEntries(accounts.map((a) => [a.id, a.name])), members: memberNames });
+  const texts = useTransferTexts({ accounts: Object.fromEntries(accounts.map((a) => [a.id, a.name])) });
   const { run, pending, error } = useTransferAction(endpoint);
   if (overview.open.length === 0 && overview.proposals.length === 0) return null;
 

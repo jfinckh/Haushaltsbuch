@@ -45,7 +45,7 @@ function sessionOf(userId: string | null) {
 }
 
 const caller = async (userId: string) => (await sessionOf(userId)())!;
-const deps = (userId: string | null) => ({ transfers, getCaller: sessionOf(userId) });
+const deps = (userId: string | null) => ({ transfers, members: async () => MEMBERS, getCaller: sessionOf(userId) });
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
 const post = (body: unknown) =>
   new Request("http://localhost/api/transfers/x", { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json" } });
@@ -227,7 +227,8 @@ describe("test data through the import route", () => {
     const erikaView = await statusAs("erika", sharedId);
     expect(erikaView.status).toBe(200);
     const text = await erikaView.text();
-    expect(JSON.parse(text).status.link).toMatchObject({ status: "linked", partner: { visible: false, ownerUserId: "max" } });
+    expect(JSON.parse(text).status.link).toMatchObject({ status: "linked", partner: { visible: false, ownerName: "Max Mustermann" } });
+    expect(text).not.toContain('"max"');
     expect(text).not.toContain(maxRent);
     expect(text).not.toContain(maxIng);
 
@@ -298,7 +299,7 @@ describe("/api/transfers privacy", () => {
     const { salary, probe } = await erikasSalaryAndMaxsProbe();
     const overview = await (await overviewAs("erika", erikas)).json();
     expect(overview.proposals).toHaveLength(1);
-    expect(overview.proposals[0].partner).toEqual({ visible: false, ownerUserId: "max" });
+    expect(overview.proposals[0].partner).toEqual({ visible: false, ownerName: "Max Mustermann" });
     const pairId = overview.proposals[0].pairId;
     expect((await proposalAs("max", pairId, { action: "accept" })).status).toBe(404);
     expect((await proposalAs("max", pairId, { action: "reject" })).status).toBe(404);

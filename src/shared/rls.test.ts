@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
-import { InvalidSessionError, withSession, type RlsDatabase } from "./rls";
+import { DatabaseQueryError, InvalidSessionError, withSession, type RlsDatabase } from "./rls";
 import { createTestSession, endTestSessions } from "./test-sessions";
 
 let db: RlsDatabase;
@@ -64,5 +64,26 @@ describe("withSession", () => {
     await withSession(db, max, async () => null);
     const after = await db.execute(sql`SELECT nullif(current_setting('app.session_token', true), '') AS id`);
     expect(currentUser(after)).toBeNull();
+  });
+});
+
+describe("failed queries", () => {
+  it("leave no query and no values in the error", async () => {
+    const max = await createTestSession(db, "max");
+    const secret = "IBAN DE89370400440532013000 und 1.234,56 €";
+    const error = await withSession(db, max, (tx) => tx.execute(sql`SELECT ${secret}::integer`)).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(DatabaseQueryError);
+    expect((error as DatabaseQueryError).code).toBe("22P02");
+    const everything = JSON.stringify(error, Object.getOwnPropertyNames(error)) + String(error) + String((error as Error).cause);
+    expect(everything).not.toContain("DE89");
+    expect(everything).not.toContain("1.234,56");
+    expect(everything).not.toContain("SELECT");
+  });
+
+  it("let other errors pass unchanged", async () => {
+    const max = await createTestSession(db, "max");
+    const own = new Error("own error");
+    await expect(withSession(db, max, async () => Promise.reject(own))).rejects.toBe(own);
+    await expect(withSession(db, { sessionToken: "nope" }, async () => 1)).rejects.toBeInstanceOf(InvalidSessionError);
   });
 });

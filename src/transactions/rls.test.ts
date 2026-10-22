@@ -104,3 +104,17 @@ describe("row-level security on transactions", () => {
     expect(ids(await setup.db.select().from(transaction))).toEqual(["t-dora", "t-erika", "t-max"]);
   });
 });
+
+describe("who created a booking", () => {
+  it("cannot be changed, while the booking itself can", async () => {
+    await expect(
+      asUser("max", (tx) => tx.update(transaction).set({ createdByUserId: "max" }).where(eq(transaction.id, "t-home"))),
+    ).rejects.toThrow();
+    const changed = await asUser("max", (tx) =>
+      tx.update(transaction).set({ amountCents: -400 }).where(eq(transaction.id, "t-home")).returning({ id: transaction.id }),
+    );
+    expect(changed).toEqual([{ id: "t-home" }]);
+    const [stored] = await setup.db.select().from(transaction).where(eq(transaction.id, "t-home"));
+    expect(stored).toMatchObject({ createdByUserId: "erika", amountCents: -400 });
+  });
+});

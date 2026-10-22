@@ -15,9 +15,9 @@ export type TransferBookingView = {
 
 /**
  * The other side of a pair. Hidden: the caller may not see it (another member's private account);
- * only its account's owner is known, or null if they left the household.
+ * only the name of its account's owner is shown, or null if they left the household. Never a user id.
  */
-export type PartnerView = { visible: true; booking: TransferBookingView } | { visible: false; ownerUserId: string | null };
+export type PartnerView = { visible: true; booking: TransferBookingView } | { visible: false; ownerName: string | null };
 
 export type TransferPairView = {
   pairId: string;

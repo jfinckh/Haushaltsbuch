@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "hardening-d",
+  "description": "Hardening of uploads, logs, ids and database rules",
+  "plan": {
+    "path": "docs/plans/2026-10-22-hardening-d.md",
+    "sha256": "47e245e3f25000c50482d7e0b26fc1e676606aad7f0a52e568253dd7de59483a"
+  },
+  "status": "final",
+  "base": "b3a953b9605393c94ed8debb3d083c493e9a2357"
+}

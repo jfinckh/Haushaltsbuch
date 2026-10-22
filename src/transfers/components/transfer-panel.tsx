@@ -10,8 +10,6 @@ type Props = {
   status: TransferStatus;
   /** The accounts the viewer may see (for names and the "account in the app" target). */
   accounts: { id: string; name: string }[];
-  /** Names of the household members (user id → name). */
-  memberNames: Record<string, string>;
   /** Endpoint of the transfers API. Default: /api/transfers */
   endpoint?: string;
   /**
@@ -24,9 +22,9 @@ type Props = {
 const KINDS: TransferKind[] = ["transfer", "saving", "expense", "income"];
 
 /** The transfer box on the booking page: link, proposals, open state and the corrections. */
-export function TransferPanel({ status, accounts, memberNames, endpoint, offerRule = false }: Props) {
+export function TransferPanel({ status, accounts, endpoint, offerRule = false }: Props) {
   const t = useTranslations("transfers");
-  const names = { accounts: Object.fromEntries(accounts.map((a) => [a.id, a.name])), members: memberNames };
+  const names = { accounts: Object.fromEntries(accounts.map((a) => [a.id, a.name])) };
   const texts = useTransferTexts(names);
   const { run, pending, error } = useTransferAction(endpoint);
   const { booking, link, proposals, decision } = status;

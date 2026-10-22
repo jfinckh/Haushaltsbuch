@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Caller } from "@/shared/rls";
 import { createTestDatabase, ING_IBAN, ING_ROWS, MEMBERS, TR_ROWS } from "./test-utils";
@@ -139,17 +140,18 @@ describe("what each member sees", () => {
       { date: "2026-09-01", amountCents: 120000, counterparty: "Max Mustermann", reference: "Miete und co" },
     ]);
     await acceptAll(max, "ing");
-    const status = (await setup.transfers.statusOf(erika, shared.ids[0]))!;
+    const status = (await setup.transfers.statusOf(erika, shared.ids[0], MEMBERS))!;
     expect(status.link).toEqual({
       pairId: expect.any(String),
       status: "linked",
       manual: true,
-      partner: { visible: false, ownerUserId: "max" },
+      partner: { visible: false, ownerName: "Max Mustermann" },
     });
     expect(status.candidates).toEqual([]);
     const json = JSON.stringify(status);
     expect(json).not.toContain(ing("2026-09-01", -120000));
     expect(json).not.toContain('"ing"');
+    expect(json).not.toContain('"max"');
 
     const maxView = (await setup.transfers.statusOf(max, ing("2026-09-01", -120000)))!;
     expect(maxView.link?.partner).toMatchObject({ visible: true, booking: { id: shared.ids[0], accountId: "shared" } });
@@ -293,6 +295,17 @@ describe("manual decisions win", () => {
     expect(await setup.transfers.markWithoutPartner(max, id, { type: "account", accountId: "ing" })).toBe("invalid");
     expect(await setup.transfers.markWithoutPartner(max, id, { type: "account", accountId: "tr" })).toBe("ok");
     expect(await setup.transfers.statusOf(max, id)).toMatchObject({ decision: { type: "no-partner", target: "account", accountId: "tr" } });
+  });
+
+  it("hides the target account's id once the caller can no longer see that account", async () => {
+    const { ing } = await importTestData();
+    const id = ing("2026-10-15", -20000);
+    expect(await setup.transfers.markWithoutPartner(max, id, { type: "account", accountId: "shared" })).toBe("ok");
+    expect(await setup.transfers.statusOf(max, id)).toMatchObject({ decision: { accountId: "shared" } });
+    // Erika, who added the shared account, makes it private.
+    await setup.db.execute(sql`UPDATE account SET visibility = 'private', household_id = NULL WHERE id = 'shared'`);
+    expect(await setup.transfers.statusOf(max, id)).toMatchObject({ decision: { type: "no-partner", target: "account", accountId: null } });
+    expect(JSON.stringify(await setup.transfers.statusOf(max, id))).not.toContain('"shared"');
   });
 
   it("never links an unlinked pair again", async () => {
@@ -546,9 +559,9 @@ describe("another member's private bookings need their owner's OK", () => {
   it("lets only Erika accept the proposal for her private booking; then both sides are linked", async () => {
     const salary = await erikasSalary();
     const out = await maxProbes();
-    const view = (await setup.transfers.statusOf(erika, salary))!;
+    const view = (await setup.transfers.statusOf(erika, salary, MEMBERS))!;
     expect(view.proposals).toHaveLength(1);
-    expect(view.proposals[0].partner).toEqual({ visible: false, ownerUserId: "max" });
+    expect(view.proposals[0].partner).toEqual({ visible: false, ownerName: "Max Mustermann" });
     const pairId = view.proposals[0].pairId;
     expect(await setup.transfers.acceptProposal(max, pairId)).toBe("not-found");
     expect(await setup.transfers.rejectProposal(max, pairId)).toBe(false);
@@ -557,10 +570,12 @@ describe("another member's private bookings need their owner's OK", () => {
 
     expect(await setup.transfers.acceptProposal(erika, pairId)).toBe("ok");
     expect(await setup.kindOf(salary)).toBe("transfer");
-    expect((await setup.transfers.statusOf(max, out))!.link).toMatchObject({
+    expect((await setup.transfers.statusOf(max, out, MEMBERS))!.link).toMatchObject({
       status: "linked",
-      partner: { visible: false, ownerUserId: "erika" },
+      partner: { visible: false, ownerName: "Erika Mustermann" },
     });
+    // Without the household's names (the owner left), only "a member" is known.
+    expect((await setup.transfers.statusOf(max, out))!.link?.partner).toEqual({ visible: false, ownerName: null });
   });
 
   it("never proposes it again after Erika rejects", async () => {

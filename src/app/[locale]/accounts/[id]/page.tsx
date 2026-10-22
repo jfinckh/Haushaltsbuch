@@ -42,13 +42,12 @@ async function AccountBookings({ params, searchParams }: Props) {
   if (!account) notFound();
   const query = await searchParams;
   const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
-  const [listed, budgetList, sums, transferOverview, visible, members] = await Promise.all([
+  const [listed, budgetList, sums, transferOverview, visible] = await Promise.all([
     transactions.listTransactions(caller, { accountId: id, ...filters }),
     budgets.listBudgets(caller, id, filters.month || undefined),
     transactions.balances(caller),
-    transfers.accountOverview(caller, id),
+    householdMembers(caller).then((members) => transfers.accountOverview(caller, id, members)),
     accounts.listAccounts(caller),
-    householdMembers(caller),
   ]);
   if (!listed.ok && listed.reason === "not-found") notFound();
   const balance = currentBalances([account], sums)[account.id];
@@ -90,7 +89,6 @@ async function AccountBookings({ params, searchParams }: Props) {
         <TransferInbox
           overview={transferOverview}
           accounts={visible.map(({ id, name }) => ({ id, name }))}
-          memberNames={Object.fromEntries(members.map((m) => [m.userId, m.name]))}
         />
       )}
       {budgetList.ok && (

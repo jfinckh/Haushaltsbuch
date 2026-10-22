@@ -1,5 +1,6 @@
 import "server-only";
 import type { Rules } from "@/rules/server";
+import type { Caller } from "@/shared/rls";
 import type { Transfers } from "@/transfers/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
@@ -7,9 +8,13 @@ type Deps = {
   transfers: Transfers;
   /** Creates a rule when a transfer to an external own account is marked "Künftig immer so". */
   rules?: Rules;
+  /** The caller's household members with names: a hidden partner is shown by its owner's name. */
+  members?: (caller: Caller) => Promise<{ userId: string; name: string }[]>;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
+
+const membersOf = (deps: Deps, caller: Caller) => (deps.members ? deps.members(caller) : Promise.resolve([]));
 
 type IdContext = { params: Promise<{ id: string }> };
 
@@ -18,14 +23,15 @@ type IdContext = { params: Promise<{ id: string }> };
  * another member's private account, booking or pair gets the same 404 as an unknown id, and a hidden
  * partner is described only by its owner.
  */
-export function transfersRoute({ transfers, getCaller }: Deps) {
+export function transfersRoute(deps: Deps) {
+  const { transfers, getCaller } = deps;
   return {
     /** Query: accountId (required). Open and proposed transfers of the account. */
     async GET(request: Request) {
       return asCaller(getCaller, async (caller) => {
         const accountId = new URL(request.url).searchParams.get("accountId");
         if (!accountId || accountId.length > 100) return invalidInput();
-        const overview = await transfers.accountOverview(caller, accountId);
+        const overview = await transfers.accountOverview(caller, accountId, await membersOf(deps, caller));
         return overview ? json(overview) : notFound();
       });
     },
@@ -40,11 +46,12 @@ function isExternalWithRule(body: unknown): body is { rule: unknown } {
 }
 
 /** Handlers for /api/transfers/[id] (id: a booking). */
-export function transferRoute({ transfers, rules, getCaller }: Deps) {
+export function transferRoute(deps: Deps) {
+  const { transfers, rules, getCaller } = deps;
   return {
     async GET(_request: Request, { params }: IdContext) {
       return asCaller(getCaller, async (caller) => {
-        const status = await transfers.statusOf(caller, (await params).id);
+        const status = await transfers.statusOf(caller, (await params).id, await membersOf(deps, caller));
         return status ? json({ status }) : notFound();
       });
     },
@@ -61,7 +68,7 @@ export function transferRoute({ transfers, rules, getCaller }: Deps) {
         const result = await transfers.applyAction(caller, id, body);
         if (result === "not-found") return notFound();
         if (result !== "ok") return invalidInput();
-        const status = await transfers.statusOf(caller, id);
+        const status = await transfers.statusOf(caller, id, await membersOf(deps, caller));
         if (rules && isExternalWithRule(body)) {
           const created = await rules.createFromBooking(caller, id, body.rule, "external");
           return json({ status, rule: { created: created.ok } });

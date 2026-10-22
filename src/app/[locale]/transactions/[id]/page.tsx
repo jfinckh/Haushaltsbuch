@@ -30,10 +30,9 @@ async function EditTransaction({ params }: Params) {
   // A booking of another member's private account does not exist for this caller.
   const transaction = await transactions.getTransaction(caller, (await params).id);
   if (!transaction) notFound();
-  const [visible, transferStatus, members] = await Promise.all([
+  const [visible, transferStatus] = await Promise.all([
     accounts.listAccounts(caller),
-    transfers.statusOf(caller, transaction.id),
-    householdMembers(caller),
+    householdMembers(caller).then((members) => transfers.statusOf(caller, transaction.id, members)),
   ]);
   // Active accounts, plus the booking's own account even if it is archived.
   const bookable = visible
@@ -56,7 +55,6 @@ async function EditTransaction({ params }: Params) {
           <TransferPanel
             status={transferStatus}
             accounts={visible.filter((a) => !a.archived || a.id === transaction.accountId).map(({ id, name }) => ({ id, name }))}
-            memberNames={Object.fromEntries(members.map((m) => [m.userId, m.name]))}
             offerRule
           />
         </>

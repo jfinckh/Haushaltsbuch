@@ -79,3 +79,36 @@ describe("households_current_user_member_ids (households' database contract)", (
     expect(await memberIds("lone")).toEqual([]);
   });
 });
+
+describe("membership is not changed through the restricted role", () => {
+  it("lets no member add someone, change a membership or remove another member", async () => {
+    const erika = await setup.as("erika");
+    await expect(
+      withSession(setup.db, erika, (tx) => tx.insert(householdMember).values({ householdId: householdA, userId: "intruder" })),
+    ).rejects.toThrow();
+    await expect(
+      withSession(setup.db, erika, (tx) => tx.update(householdMember).set({ userId: "intruder" }).where(sql`true`)),
+    ).rejects.toThrow();
+    const removed = await withSession(setup.db, erika, (tx) =>
+      tx.delete(householdMember).where(sql`${householdMember.userId} = 'max'`).returning(),
+    );
+    expect(removed).toEqual([]);
+    const members = await setup.db.select().from(householdMember).where(sql`${householdMember.householdId} = ${householdA}`);
+    expect(members.map((m) => m.userId).sort()).toEqual(["erika", "max"]);
+  });
+
+  it("lets no member delete the household while someone else is still in it", async () => {
+    const deleted = await withSession(setup.db, await setup.as("erika"), (tx) =>
+      tx.delete(household).where(sql`${household.id} = ${householdA}`).returning(),
+    );
+    expect(deleted).toEqual([]);
+    expect(await setup.db.select().from(household).where(sql`${household.id} = ${householdA}`)).toHaveLength(1);
+  });
+
+  it("still lets members rename, leave, and the last one delete the household", async () => {
+    expect((await setup.households.renameHousehold(await setup.as("erika"), { name: "Neu" })).ok).toBe(true);
+    expect(await setup.households.leaveHousehold(await setup.as("erika"))).toEqual({ left: true, householdDeleted: false });
+    expect(await setup.households.leaveHousehold(await setup.as("max"))).toEqual({ left: true, householdDeleted: true });
+    expect(await setup.db.select().from(household).where(sql`${household.id} = ${householdA}`)).toEqual([]);
+  });
+});

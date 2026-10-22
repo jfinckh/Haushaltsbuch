@@ -110,10 +110,13 @@ const isTransferKind = (kind: TransferKind) => kind === "transfer" || kind === "
 const blocks = (row: BookingRow | undefined) =>
   row?.decision === "no-partner" || (row?.decision === "kind" && (row.decidedKind === "expense" || row.decidedKind === "income"));
 
-function decisionOf(row: BookingRow | undefined): TransferDecision | null {
+/** The manual decision; the target account's id only while the caller may still see that account. */
+function decisionOf(row: BookingRow | undefined, targetVisible: boolean): TransferDecision | null {
   if (row?.decision === "kind" && row.decidedKind) return { type: "kind", kind: row.decidedKind };
   if (row?.decision === "no-partner") {
-    return row.target === "account" ? { type: "no-partner", target: "account", accountId: row.targetAccountId } : { type: "no-partner", target: "external" };
+    return row.target === "account"
+      ? { type: "no-partner", target: "account", accountId: targetVisible ? row.targetAccountId : null }
+      : { type: "no-partner", target: "external" };
   }
   return null;
 }
@@ -135,8 +138,17 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
     return new Map(found.map((row) => [row.transactionId, row]));
   }
 
-  /** The pair views of the given rows, with the visible partners' bookings. */
-  async function pairViews(tx: RlsTransaction, userId: string, pairRows: PairRow[]): Promise<Map<string, TransferPairView[]>> {
+  /**
+   * The pair views of the given rows, with the visible partners' bookings. A hidden partner gets its
+   * owner's name from `members` (the caller's household), never the user id.
+   */
+  async function pairViews(
+    tx: RlsTransaction,
+    userId: string,
+    pairRows: PairRow[],
+    members: readonly Member[],
+  ): Promise<Map<string, TransferPairView[]>> {
+    const names = new Map(members.map((member) => [member.userId, member.name]));
     const partnerIds = pairRows.map((row) => row.partner_transaction_id).filter((id): id is string => id !== null);
     const partners = new Map(
       (await transactions.findBookings(tx, userId, { ids: partnerIds })).map((view) => [view.id, toBookingView(view)]),
@@ -148,7 +160,9 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
         pairId: row.pair_id,
         status: row.status,
         manual: row.manual,
-        partner: partner ? { visible: true, booking: partner } : { visible: false, ownerUserId: row.partner_owner_user_id },
+        partner: partner
+          ? { visible: true, booking: partner }
+          : { visible: false, ownerName: (row.partner_owner_user_id && names.get(row.partner_owner_user_id)) || null },
       };
       views.set(row.transaction_id, [...(views.get(row.transaction_id) ?? []), view]);
     }
@@ -280,13 +294,17 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** A booking's transfer status, or null if the caller may not see it. */
-    async statusOf(caller: Caller, id: string): Promise<TransferStatus | null> {
+    /**
+     * A booking's transfer status, or null if the caller may not see it. `members`: the caller's
+     * household members, for the names of hidden partners' owners.
+     */
+    async statusOf(caller: Caller, id: string, members: readonly Member[] = []): Promise<TransferStatus | null> {
       return withSession(db, caller, async (tx, userId) => {
         const booking = await findOne(tx, userId, id);
         if (!booking) return null;
         const row = (await bookingRows(tx, [id])).get(id);
-        const pairs = (await pairViews(tx, userId, await pairsOf(tx, [id]))).get(id) ?? [];
+        const pairs = (await pairViews(tx, userId, await pairsOf(tx, [id]), members)).get(id) ?? [];
+        const targetVisible = Boolean(row?.targetAccountId && (await accountIsVisible(tx, row.targetAccountId)));
         const link = pairs.find((pair) => pair.status === "linked") ?? null;
         const proposals = pairs.filter((pair) => pair.status === "proposed");
 
@@ -310,7 +328,7 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
           isTransfer: isTransferKind(booking.kind),
           link,
           proposals,
-          decision: decisionOf(row),
+          decision: decisionOf(row, targetVisible),
           ruleTarget: row?.ruleTarget ?? null,
           open,
           overdue: open && isOverdue(booking.date),
@@ -319,8 +337,8 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** Open transfers and proposals of an account, or null if the caller may not see it. */
-    async accountOverview(caller: Caller, accountId: string): Promise<AccountTransfers | null> {
+    /** Open transfers and proposals of an account, or null if the caller may not see it. `members` as for statusOf. */
+    async accountOverview(caller: Caller, accountId: string, members: readonly Member[] = []): Promise<AccountTransfers | null> {
       return withSession(db, caller, async (tx, userId) => {
         if (!(await accountIsVisible(tx, accountId))) return null;
         const bookings = await transactions.findBookings(tx, userId, { accountId });
@@ -329,7 +347,7 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
         const pairRows = await pairsOf(tx, ids);
         const linked = new Set(pairRows.filter((p) => p.status === "linked").map((p) => p.transaction_id));
         const proposalRows = pairRows.filter((p) => p.status === "proposed");
-        const views = await pairViews(tx, userId, proposalRows);
+        const views = await pairViews(tx, userId, proposalRows, members);
         const byId = new Map(bookings.map((b) => [b.id, toBookingView(b)]));
         const open = bookings
           .filter((b) => isOpen(facts.get(b.id), linked.has(b.id)))

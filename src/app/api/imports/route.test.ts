@@ -5,7 +5,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { currentBalances } from "@/app/_lib/balances";
-import { importPreviewRoute, importRoute, importsRoute } from "@/app/_lib/imports-route";
+import { importPreviewRoute, importRoute, importsRoute, MAX_UPLOAD_BYTES } from "@/app/_lib/imports-route";
 import { createAccounts, type Accounts } from "@/accounts/server";
 import { createHouseholds } from "@/households/server";
 import { createImports, type Imports } from "@/import/server";
@@ -235,6 +235,46 @@ describe("/api/imports", () => {
     const response = await previewAs("max", maxPrivate, Buffer.from("a;b\n1;2"));
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "unknown-format" });
+  });
+
+  it("refuses a body over the limit before reading it, with or without a size header", async () => {
+    let pulled = 0;
+    /** A body that would never end; counts how much of it the route reads. */
+    const endless = () =>
+      new ReadableStream<Uint8Array>({
+        pull(controller) {
+          pulled += 64 * 1024;
+          controller.enqueue(new Uint8Array(64 * 1024));
+        },
+      });
+    const post = (headers: Record<string, string>) =>
+      importsRoute(deps("max")).POST(
+        new Request("http://localhost/api/imports", {
+          method: "POST",
+          body: endless(),
+          headers: { "content-type": "multipart/form-data; boundary=x", ...headers },
+          duplex: "half",
+        } as RequestInit),
+      );
+
+    const declared = await post({ "content-length": String(MAX_UPLOAD_BYTES + 1) });
+    expect(declared.status).toBe(400);
+    expect(await declared.json()).toEqual({ error: "too-large" });
+    expect(pulled).toBeLessThanOrEqual(64 * 1024 * 2);
+
+    for (const headers of [{}, { "content-length": "100" }] as Record<string, string>[]) {
+      pulled = 0;
+      const response = await post(headers);
+      expect(await response.json()).toEqual({ error: "too-large" });
+      expect(pulled).toBeLessThan(MAX_UPLOAD_BYTES + 3 * 64 * 1024);
+    }
+  });
+
+  it("refuses a file over the import's own limit", async () => {
+    const big = Buffer.concat([ING, Buffer.alloc(1024 * 1024)]);
+    const response = await importAs("max", maxPrivate, big);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "too-large" });
   });
 
   it("rejects a file that does not fit the account's bank", async () => {

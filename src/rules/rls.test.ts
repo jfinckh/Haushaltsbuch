@@ -80,3 +80,15 @@ describe("row-level security on booking_rule", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("who created a rule", () => {
+  it("cannot be changed, while the rule itself can", async () => {
+    await expect(
+      asUser("erika", (tx) => tx.update(bookingRule).set({ createdByUserId: "erika" }).where(sql`${bookingRule.id} = 'household'`)),
+    ).rejects.toThrow();
+    const changed = await asUser("erika", (tx) =>
+      tx.update(bookingRule).set({ resultKind: "income" }).where(sql`${bookingRule.id} = 'household'`).returning({ id: bookingRule.id }),
+    );
+    expect(changed).toEqual([{ id: "household" }]);
+  });
+});

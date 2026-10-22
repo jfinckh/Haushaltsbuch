@@ -201,3 +201,15 @@ describe("privacy", () => {
     await expect(insert(erika, "home-shared", "erika")).resolves.toBeDefined();
   });
 });
+
+describe("a stored budget", () => {
+  it("keeps its account and creator; only its limit changes", async () => {
+    const created = await add(max, "home-shared", "groceries", "300,00");
+    const asErika = <T,>(fn: Parameters<typeof withSession<T>>[2]) => withSession(db, erika, fn);
+    await expect(asErika((tx) => tx.update(budget).set({ accountId: "max-private" }).where(sql`${budget.id} = ${created.id}`))).rejects.toThrow();
+    await expect(asErika((tx) => tx.update(budget).set({ createdByUserId: "erika" }).where(sql`${budget.id} = ${created.id}`))).rejects.toThrow();
+    expect((await budgets.updateBudget(erika, created.id, { limit: "350,00" })).ok).toBe(true);
+    const [stored] = await storedBudgets();
+    expect(stored).toMatchObject({ accountId: "home-shared", createdByUserId: "max", limitCents: 35000 });
+  });
+});

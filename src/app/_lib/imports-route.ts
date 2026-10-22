@@ -34,8 +34,11 @@ type IdContext = { params: Promise<{ id: string }> };
 
 type RulesApplied = { applied: number; transfers: { id: string; target: "external" | null }[] };
 
-/** Larger uploads are refused before they are read; the import part has its own, smaller limit. */
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+/**
+ * Larger request bodies are refused before they are read in full: the import part's 1 MB file limit
+ * plus room for the form around it.
+ */
+export const MAX_UPLOAD_BYTES = 1024 * 1024 + 64 * 1024;
 
 /** Which bank exports fit an account of each bank. */
 const FITTING_BANKS = {
@@ -53,13 +56,38 @@ const uploadSchema = z.object({
 const failed = (reason: string, line?: number) =>
   reason === "not-found" ? notFound() : json({ error: reason, ...(line ? { line } : {}) }, 400);
 
+/**
+ * The request's form data, read only up to MAX_UPLOAD_BYTES: a larger declared size is refused at
+ * once, and reading stops as soon as the body grows past the limit (also without or with a wrong
+ * Content-Length). Null if it is not form data.
+ */
+async function readLimitedForm(request: Request): Promise<FormData | "too-large" | null> {
+  if (Number(request.headers.get("content-length")) > MAX_UPLOAD_BYTES) return "too-large";
+  if (!request.body) return null;
+  const reader = request.body.getReader();
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_UPLOAD_BYTES) {
+      await reader.cancel().catch(() => undefined);
+      return "too-large";
+    }
+    chunks.push(new Uint8Array(value));
+  }
+  const headers = { "content-type": request.headers.get("content-type") ?? "" };
+  return new Response(new Blob(chunks), { headers }).formData().catch(() => null);
+}
+
 /** The upload as the import part takes it, for an account the caller may see; else an error response. */
 async function readUpload({ accounts, transactions }: Deps, caller: Caller, request: Request) {
-  const form = await request.formData().catch(() => null);
+  const form = await readLimitedForm(request);
+  if (form === "too-large") return { ok: false as const, error: failed("too-large") };
   const parsed = uploadSchema.safeParse({ accountId: form?.get("accountId"), file: form?.get("file") });
   if (!parsed.success) return { ok: false as const, error: failed("invalid-input") };
   const { accountId, file } = parsed.data;
-  if (file.size > MAX_UPLOAD_BYTES) return { ok: false as const, error: failed("too-large") };
   // Another member's private account does not exist for this caller: same 404 as an unknown id.
   const account = await accounts.getAccount(caller, accountId);
   if (!account) return { ok: false as const, error: notFound() };

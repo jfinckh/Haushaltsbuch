@@ -177,3 +177,17 @@ describe("accounts_visible_account_scopes (accounts' database contract)", () => 
     expect(await scopes("lone")).toEqual([]);
   });
 });
+
+describe("who owns an account", () => {
+  it("cannot be changed, not even on a shared account every member may change", async () => {
+    await expect(
+      asUser("erika", (tx) => tx.update(account).set({ ownerUserId: "erika" }).where(eq(account.id, "max-shared"))),
+    ).rejects.toThrow();
+    const renamed = await asUser("erika", (tx) =>
+      tx.update(account).set({ name: "Gemeinsam" }).where(eq(account.id, "max-shared")).returning({ id: account.id }),
+    );
+    expect(renamed).toEqual([{ id: "max-shared" }]);
+    const [stored] = await setup.db.select().from(account).where(eq(account.id, "max-shared"));
+    expect(stored).toMatchObject({ ownerUserId: "max", name: "Gemeinsam" });
+  });
+});
