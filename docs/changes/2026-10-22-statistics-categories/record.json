@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "statistics-categories",
+  "description": "Statistics, category trends and averages",
+  "plan": {
+    "path": "docs/plans/2026-10-22-statistics-categories.md",
+    "sha256": "098529d63a38413de9a93025b7934cae092ce434d0b69d7174919fa1de511d4c"
+  },
+  "status": "final",
+  "base": "e16b683bc5e2e61e072d9db40e47fbc108e40e07"
+}

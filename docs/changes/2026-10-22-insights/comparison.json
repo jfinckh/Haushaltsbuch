@@ -1,0 +1,303 @@
+{
+  "version": 1,
+  "base": "7f13b92c2587681d9d35d8267a7331fa6737b564",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/insights/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/statistics.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/statistics.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/balances.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/balances.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/select-account.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/select-account.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/statistics.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/statistics.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/balances.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/balances.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/select-account.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/select-account.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/insights.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/account-switcher.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/household/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/route.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transfers/route.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A10"
+    },
+    {
+      "kind": "unit",
+      "id": "insights",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "insights->transactions",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "insights->transfers",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "insights->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->insights",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transfers",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:createInsights",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:Insights",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:StatisticsRow",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "export",
+      "id": "insights:client:ALL_MINE",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "export",
+      "id": "insights:client:offersAllMine",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "export",
+      "id": "insights:client:selectAccount",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "insights",
+      "state": "new"
+    },
+    {
+      "from": "insights",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "insights",
+      "to": "transactions",
+      "state": "new"
+    },
+    {
+      "from": "insights",
+      "to": "transfers",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:insights",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:insights->transactions",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:insights->transfers",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:insights->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->insights",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:server:createInsights",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:server:Insights",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:server:StatisticsRow",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:client:ALL_MINE",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:client:offersAllMine",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:client:selectAccount",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

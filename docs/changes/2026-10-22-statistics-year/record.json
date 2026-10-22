@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "statistics-year",
+  "description": "Statistics, yearly overview",
+  "plan": {
+    "path": "docs/plans/2026-10-22-statistics-year.md",
+    "sha256": "e9d5df0fdbc126face88b47e25e5087206cf06cb4fefe4a895b9bb9f8bef838a"
+  },
+  "status": "final",
+  "base": "d0df7048f8e34c2ebac69248aad7130978019f1f"
+}

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:insights",
+      "itemHash": "sha256:68af901ae5465d34405a9e4bc0e01fb72bb39a66ac861e1df9f0e0fd63a4495d",
+      "decision": "approve",
+      "at": "2026-10-22T11:54:15Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:insights->transactions",
+      "itemHash": "sha256:41457fe54361c03e7897fbfd38c235b1246053cb331cab03bf883152cfaf9782",
+      "decision": "approve",
+      "at": "2026-10-22T11:54:15Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:insights->transfers",
+      "itemHash": "sha256:5f9adc75173b63b9d4253d271b71cffb4c2831284f11d5df1a24217a87f12ba7",
+      "decision": "approve",
+      "at": "2026-10-22T11:54:15Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:insights->shared",
+      "itemHash": "sha256:265ee6cabc6918c91407fb2136bd1180b29f1824d06fd04e4602e5fe53673a28",
+      "decision": "approve",
+      "at": "2026-10-22T11:54:15Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->insights",
+      "itemHash": "sha256:02f8466c92604761b3bc9d1d52e1af37ca96d8afbab5321572013b6fe1b278f6",
+      "decision": "approve",
+      "at": "2026-10-22T11:54:15Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:server:createInsights",
+      "itemHash": "sha256:d78edee357f44cfabc3fb5750e1539daa3f7a2b181386748af776447856891e2",
+      "decision": "approve",
+      "at": "2026-10-22T12:15:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:server:Insights",
+      "itemHash": "sha256:82b7476c363380031cde8dff60dff117e45d903a5b1031561cd913b4e455632b",
+      "decision": "approve",
+      "at": "2026-10-22T12:15:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:server:StatisticsRow",
+      "itemHash": "sha256:a8c92e5daacfcb4e613fecb1ebe27fcb36a65044ceea4440bdb4e23510c29e9a",
+      "decision": "approve",
+      "at": "2026-10-22T12:15:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:client:ALL_MINE",
+      "itemHash": "sha256:f615652207f1ae870e508ba3e6ae89adc9896b62fbeea5b3ec161893015fcf07",
+      "decision": "approve",
+      "at": "2026-10-22T12:15:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:client:offersAllMine",
+      "itemHash": "sha256:4b2b522cd983cfe4f4d6c606d38f74e0b3e22d87c613d8e5979cd692512151a9",
+      "decision": "approve",
+      "at": "2026-10-22T12:15:00Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:client:selectAccount",
+      "itemHash": "sha256:0410d8e2f7a2ca763cab684014a1f915a7985c8fa58ea8b909bd616b19f91748",
+      "decision": "approve",
+      "at": "2026-10-22T12:15:00Z",
+      "source": "hook"
+    }
+  ]
+}

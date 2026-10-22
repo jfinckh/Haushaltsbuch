@@ -5,7 +5,6 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createAccounts, type Accounts } from "@/accounts/server";
-import { currentBalances } from "@/app/_lib/balances";
 import { importsRoute } from "@/app/_lib/imports-route";
 import { transactionRoute } from "@/app/_lib/transactions-route";
 import { proposalRoute, transferRoute, transfersRoute } from "@/app/_lib/transfers-route";
@@ -192,7 +191,7 @@ describe("test data through the import route", () => {
     expect(status.status.booking.kind).toBe("transfer");
 
     const account = (await accounts.getAccount(await caller("max"), maxIng))!;
-    expect(currentBalances([account], await transactions.balances(await caller("max")))[maxIng]).toBe(70326);
+    expect(account.openingBalanceCents + (await transactions.balances(await caller("max")))[maxIng]).toBe(70326);
   });
 
   it("lists the open transfers of the ING account", async () => {

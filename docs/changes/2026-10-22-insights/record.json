@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-22",
+  "slug": "insights",
+  "description": "Insights part for dashboard and statistics figures",
+  "plan": {
+    "path": "docs/plans/2026-10-22-insights.md",
+    "sha256": "1d07378285597c876b36a07823d8dce547e9f5ea1a9b6896086d4471317a9953"
+  },
+  "status": "final",
+  "base": "7f13b92c2587681d9d35d8267a7331fa6737b564"
+}

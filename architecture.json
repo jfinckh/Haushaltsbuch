@@ -3,7 +3,7 @@
   "root": "src",
   "libraries": ["shared"],
   "modules": {
-    "app": ["accounts", "auth", "budgets", "db", "households", "import", "rules", "shared", "transactions", "transfers"],
+    "app": ["accounts", "auth", "budgets", "db", "households", "import", "insights", "rules", "shared", "transactions", "transfers"],
     "shared": [],
     "db": [],
     "auth": [],
@@ -13,7 +13,8 @@
     "import": ["shared", "transactions"],
     "transfers": ["shared", "transactions"],
     "rules": ["shared", "transactions"],
-    "budgets": ["shared", "transactions"]
+    "budgets": ["shared", "transactions"],
+    "insights": ["shared", "transactions", "transfers"]
   },
   "features": {}
 }

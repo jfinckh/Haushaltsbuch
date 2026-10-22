@@ -10,9 +10,9 @@ import { auth } from "@/app/_lib/auth";
 import { budgets } from "@/app/_lib/budgets";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
-import { ALL_MINE, selectAccount } from "@/app/_lib/select-account";
+import { insights } from "@/app/_lib/insights";
 import { transactions } from "@/app/_lib/transactions";
-import { transfers } from "@/app/_lib/transfers";
+import { ALL_MINE, selectAccount } from "@/insights";
 import { formatEuro } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
 import { CategorySpending, TransactionList } from "@/transactions";
@@ -104,7 +104,7 @@ async function Dashboard({ searchParams }: Props) {
 
 async function AccountDashboard({ caller, accountId }: { caller: Caller; accountId: string }) {
   const [summary, budgetList, spending, latest] = await Promise.all([
-    transactions.monthSummary(caller, accountId),
+    insights.monthFigures(caller, accountId),
     budgets.listBudgets(caller, accountId),
     transactions.categorySpending(caller, accountId),
     transactions.latestTransactions(caller, accountId, LATEST),
@@ -179,23 +179,22 @@ async function MonthFigures({ availableCents, figures }: { availableCents: numbe
 async function CombinedDashboard({ caller, accountNames }: { caller: Caller; accountNames: Record<string, string> }) {
   const mine = { ownPrivate: true } as const;
   const [summary, spending, latest] = await Promise.all([
-    transactions.monthSummary(caller, mine),
+    insights.monthFigures(caller, mine),
     transactions.categorySpending(caller, mine),
     transactions.latestTransactions(caller, mine, LATEST),
   ]);
-  const contribution = summary.ok ? await transfers.sharedContribution(caller, summary.month) : null;
   const t = await getTranslations("app.home");
 
   return (
     <>
-      {summary.ok && contribution?.ok && (
+      {summary.ok && (
         <MonthFigures
-          availableCents={summary.availableCents + contribution.cents}
+          availableCents={summary.availableCents}
           figures={[
             ["income", summary.incomeCents],
             ["expenses", summary.expenseCents],
             ["saving", summary.savingCents],
-            ["contribution", contribution.cents],
+            ["contribution", summary.contributionCents ?? 0],
           ]}
         />
       )}

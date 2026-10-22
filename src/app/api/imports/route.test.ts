@@ -4,7 +4,6 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
-import { currentBalances } from "@/app/_lib/balances";
 import { importPreviewRoute, importRoute, importsRoute, MAX_UPLOAD_BYTES } from "@/app/_lib/imports-route";
 import { createAccounts, type Accounts } from "@/accounts/server";
 import { createHouseholds } from "@/households/server";
@@ -62,7 +61,7 @@ async function createAccount(userId: string, visibility: "private" | "shared", n
 
 async function balanceOf(userId: string, accountId: string) {
   const account = (await accounts.getAccount(await caller(userId), accountId))!;
-  return currentBalances([account], await transactions.balances(await caller(userId)))[accountId];
+  return account.openingBalanceCents + ((await transactions.balances(await caller(userId)))[accountId] ?? 0);
 }
 
 async function imported(userId: string, accountId: string, bytes?: Buffer): Promise<{ id: string }> {

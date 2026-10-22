@@ -7,11 +7,10 @@ import { InviteShareButton } from "@/auth";
 import { HouseholdNameEditor, LeaveHouseholdButton } from "@/households";
 import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
-import { currentBalances } from "@/app/_lib/balances";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
+import { insights } from "@/app/_lib/insights";
 import { describeMembers } from "@/app/_lib/member-names";
-import { transactions } from "@/app/_lib/transactions";
 
 export default function HouseholdPage() {
   return (
@@ -28,13 +27,12 @@ async function Household() {
   const { user, caller } = await requireCaller("/sign-in");
   const household = await households.getHousehold(caller);
   if (!household) redirect("/household/new");
-  const [inviter, visibleAccounts, sums, members] = await Promise.all([
+  const [inviter, visibleAccounts, members] = await Promise.all([
     auth.getInviter(user.id),
     accounts.listAccounts(caller),
-    transactions.balances(caller),
     households.listMembers(caller),
   ]);
-  const balances = currentBalances(visibleAccounts, sums);
+  const balances = await insights.balances(caller, visibleAccounts);
   // Only ids of the caller's own household go to auth, so only their names are shown.
   const memberIds = members.map((m) => m.userId);
   const names = await auth.getUserNames(memberIds);

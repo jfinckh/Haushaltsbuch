@@ -5,7 +5,6 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createAccounts, type Accounts } from "@/accounts/server";
-import { currentBalances } from "@/app/_lib/balances";
 import { importsRoute } from "@/app/_lib/imports-route";
 import { applyRulesRoute, ruleRoute, rulesRoute } from "@/app/_lib/rules-route";
 import { transactionRoute } from "@/app/_lib/transactions-route";
@@ -241,7 +240,7 @@ describe("the ING test file through the import route", () => {
     expect((await transfers.statusOf(await caller("max"), erikas.id))?.open).toBe(false);
 
     const account = (await accounts.getAccount(await caller("max"), maxIng))!;
-    expect(currentBalances([account], await transactions.balances(await caller("max")))[maxIng]).toBe(70326);
+    expect(account.openingBalanceCents + (await transactions.balances(await caller("max")))[maxIng]).toBe(70326);
   });
 
   it("sorts older bookings without category on demand, and never what was set by hand", async () => {

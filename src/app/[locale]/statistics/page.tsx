@@ -6,11 +6,12 @@ import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
-import { ALL_MINE, selectAccount } from "@/app/_lib/select-account";
-import { barScale, compareMonths, statisticsRows, type StatisticsRow } from "@/app/_lib/statistics";
-import { transactions } from "@/app/_lib/transactions";
-import { transfers } from "@/app/_lib/transfers";
+import { insights } from "@/app/_lib/insights";
+import { ALL_MINE, selectAccount } from "@/insights";
+import type { StatisticsRow } from "@/insights/server";
 import { formatEuro } from "@/shared/money";
+import { CategoryTrends } from "./category-trends";
+import { ViewTabs } from "./view-tabs";
 import type { Caller } from "@/shared/rls";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -50,6 +51,7 @@ async function Statistics({ searchParams }: Props) {
         </div>
         {selected ? (
           <>
+            <ViewTabs view="months" accountId={selected === ALL_MINE ? ALL_MINE : selected.id} />
             <AccountSwitcher accounts={visibleAccounts} selectedId={selected === ALL_MINE ? ALL_MINE : selected.id} path="/statistics" />
             <MonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} />
           </>
@@ -63,18 +65,20 @@ async function Statistics({ searchParams }: Props) {
 
 /** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
 async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: string | null }) {
-  const summaries = await transactions.monthSummaries(caller, accountId ?? { ownPrivate: true }, MONTHS);
-  if (!summaries.ok) return null;
-  const newest = summaries.months[0].month;
-  const oldest = summaries.months.at(-1)!.month;
-  const contributions = accountId === null ? await transfers.sharedContributions(caller, oldest, newest) : null;
-  if (contributions && !contributions.ok) return null;
-  const rows = statisticsRows(summaries.months, contributions?.months);
-  const scale = barScale(rows);
+  const target = accountId ?? ({ ownPrivate: true } as const);
+  const [statistics, trends] = await Promise.all([insights.statistics(caller, target, MONTHS), insights.categoryTrends(caller, target)]);
+  if (!statistics.ok) return null;
+  const { rows, comparison, scaleCents: scale } = statistics;
 
   return (
     <>
-      <Comparison current={rows[0]} previous={rows[1]} />
+      {comparison && <Comparison comparison={comparison} previousMonth={rows[1].month} />}
+      {trends.ok && (
+        <>
+          <div className="divider my-0" />
+          <CategoryTrends trends={trends} accountId={accountId} />
+        </>
+      )}
       <div className="divider my-0" />
       <ol className="flex flex-col gap-4">
         {rows.map((row) => (
@@ -88,11 +92,13 @@ async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: s
 /** The first day of a YYYY-MM month as a date, for the month-name formatter. */
 const monthDate = (month: string) => new Date(`${month}-01T00:00:00Z`);
 
-async function Comparison({ current, previous }: { current: StatisticsRow; previous: StatisticsRow }) {
+type MonthComparison = { expenseChangeCents: number; savingsRateChangePoints: number | null };
+
+async function Comparison({ comparison, previousMonth }: { comparison: MonthComparison; previousMonth: string }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
-  const { expenseChangeCents, savingsRateChangePoints } = compareMonths(current, previous);
-  const previousName = format.dateTime(monthDate(previous.month), { month: "long", timeZone: "UTC" });
+  const { expenseChangeCents, savingsRateChangePoints } = comparison;
+  const previousName = format.dateTime(monthDate(previousMonth), { month: "long", timeZone: "UTC" });
   const points = (value: number) => format.number(Math.abs(value), { maximumFractionDigits: 1 });
 
   return (

@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
-import { currentBalances } from "@/app/_lib/balances";
 import { budgets } from "@/app/_lib/budgets";
 import { requireCaller } from "@/app/_lib/caller";
+import { insights } from "@/app/_lib/insights";
 import { transactions } from "@/app/_lib/transactions";
 import { householdMembers, transfers } from "@/app/_lib/transfers";
 import { BudgetSection } from "@/budgets";
@@ -42,15 +42,15 @@ async function AccountBookings({ params, searchParams }: Props) {
   if (!account) notFound();
   const query = await searchParams;
   const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
-  const [listed, budgetList, sums, transferOverview, visible] = await Promise.all([
+  const [listed, budgetList, balances, transferOverview, visible] = await Promise.all([
     transactions.listTransactions(caller, { accountId: id, ...filters }),
     budgets.listBudgets(caller, id, filters.month || undefined),
-    transactions.balances(caller),
+    insights.balances(caller, [account]),
     householdMembers(caller).then((members) => transfers.accountOverview(caller, id, members)),
     accounts.listAccounts(caller),
   ]);
   if (!listed.ok && listed.reason === "not-found") notFound();
-  const balance = currentBalances([account], sums)[account.id];
+  const balance = balances[account.id];
   const t = await getTranslations("app.accounts");
 
   return (

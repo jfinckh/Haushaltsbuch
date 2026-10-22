@@ -68,9 +68,12 @@ export type MonthSummariesResult = { ok: true; months: MonthSummary[] } | { ok: 
 /** The longest series of months monthSummaries computes at once. */
 const MAX_MONTHS = 24;
 
-export type CategorySpendingResult =
-  | { ok: true; month: string; totalCents: number; groups: GroupSpending[] }
-  | { ok: false; reason: "invalid-input" | "not-found" };
+/** What was spent in one calendar month per category group (positive cents), largest first. */
+export type MonthCategorySpending = { month: string; totalCents: number; groups: GroupSpending[] };
+
+export type CategorySpendingResult = ({ ok: true } & MonthCategorySpending) | { ok: false; reason: "invalid-input" | "not-found" };
+
+export type CategorySpendingsResult = { ok: true; months: MonthCategorySpending[] } | { ok: false; reason: "invalid-input" | "not-found" };
 
 export type SaveTransactionResult =
   | { ok: true; transaction: TransactionView }
@@ -190,6 +193,44 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
           const [incomeCents, expenseCents, savingCents] = [sumOf(m, "income"), sumOf(m, "expense"), sumOf(m, "saving")];
           return { month: m, incomeCents, expenseCents, savingCents, availableCents: incomeCents + expenseCents + savingCents };
         }),
+      };
+    });
+  }
+
+  /** The category series behind categorySpending and categorySpendings (documented on the latter). */
+  async function categorySpendings(
+    caller: Caller,
+    target: AccountTarget,
+    count: number,
+    until: string = monthOf(today()),
+  ): Promise<CategorySpendingsResult> {
+    if (!isMonth(until) || !Number.isInteger(count) || count < 1 || count > MAX_MONTHS) return { ok: false, reason: "invalid-input" };
+    const months = Array.from({ length: count }, (_, i) => shiftMonth(until, -i));
+    const from = monthRange(months[count - 1]).from;
+    const to = monthRange(until).to;
+    return withSession(db, caller, async (tx): Promise<CategorySpendingsResult> => {
+      const accounts = await targetFilter(tx, target);
+      if (!accounts) return { ok: false, reason: "not-found" };
+      const month = sql<string>`to_char(${transaction.bookingDate}, 'YYYY-MM')`;
+      const rows = await tx
+        .select({ month, category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
+        .from(transaction)
+        .where(
+          and(
+            visible,
+            accounts,
+            eq(transaction.kind, "expense"),
+            gte(transaction.bookingDate, from),
+            lte(transaction.bookingDate, to),
+          ),
+        )
+        .groupBy(month, transaction.category);
+      return {
+        ok: true,
+        months: months.map((m) => ({
+          month: m,
+          ...spendingByGroup(rows.filter((row) => row.month === m).map((row) => ({ category: row.category, sumCents: Number(row.sum) }))),
+        })),
       };
     });
   }
@@ -455,27 +496,16 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
      * `{ ownPrivate: true }`, over all of the caller's own private accounts together.
      */
     async categorySpending(caller: Caller, target: AccountTarget, month: string = monthOf(today())): Promise<CategorySpendingResult> {
-      if (!isMonth(month)) return { ok: false, reason: "invalid-input" };
-      const { from, to } = monthRange(month);
-      return withSession(db, caller, async (tx): Promise<CategorySpendingResult> => {
-        const accounts = await targetFilter(tx, target);
-        if (!accounts) return { ok: false, reason: "not-found" };
-        const rows = await tx
-          .select({ category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
-          .from(transaction)
-          .where(
-            and(
-              visible,
-              accounts,
-              eq(transaction.kind, "expense"),
-              gte(transaction.bookingDate, from),
-              lte(transaction.bookingDate, to),
-            ),
-          )
-          .groupBy(transaction.category);
-        return { ok: true, month, ...spendingByGroup(rows.map((row) => ({ category: row.category, sumCents: Number(row.sum) }))) };
-      });
+      const result = await categorySpendings(caller, target, 1, month);
+      return result.ok ? { ok: true, ...result.months[0] } : result;
     },
+
+    /**
+     * The category spending (as categorySpending) of `count` (1–24) calendar months ending with
+     * `until` (default: the current month), newest first; a month without expenses has no rows.
+     * Same target and errors as categorySpending.
+     */
+    categorySpendings,
 
     /**
      * The newest bookings of a visible account, any month, at most `limit` (1–50). With
