@@ -13,10 +13,19 @@ const monthDate = (month: string) => new Date(`${month}-01T00:00:00Z`);
  * Spending per category group: 12 small bars (oldest left) and the averages over complete months.
  * With an account, each bar links to that account's bookings of the month and group.
  */
-export function CategoryTrends({ trends, accountId }: { trends: Trends; accountId: string | null }) {
+export function CategoryTrends({
+  trends,
+  accountId,
+  categoryNames,
+}: {
+  trends: Trends;
+  accountId: string | null;
+  /** Names of own categories (the page's catalog). */
+  categoryNames: Record<string, string>;
+}) {
   const t = useTranslations("app.statistics");
   const uncategorized = useTranslations("transactions.spending")("uncategorized");
-  const categoryName = useCategoryName();
+  const categoryName = useCategoryName(categoryNames);
   const format = useFormatter();
   const monthName = (month: string, style: "long" | "short") =>
     format.dateTime(monthDate(month), { month: style, year: "numeric", timeZone: "UTC" });

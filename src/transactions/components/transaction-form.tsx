@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatCents, parseGermanAmount } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
-import { isCategoryFor } from "../categories";
+import { isCategoryFor, isOwnCategoryKey, type CategoryCatalog } from "../categories";
 import type { TransactionView } from "../create-transactions";
 import { proposedKind, TRANSACTION_KINDS, type TransactionKind } from "../kinds";
 import { today } from "../months";
@@ -13,8 +13,10 @@ import { createTransactionSchema } from "../validation";
 import { CategorySelect } from "./category-select";
 
 type Props = {
-  /** The accounts the user may book on (passed by the app). */
-  accounts: { id: string; name: string }[];
+  /** The accounts the user may book on (passed by the app); visibility picks the categories offered. */
+  accounts: { id: string; name: string; visibility?: "private" | "shared" }[];
+  /** The page's category catalog; without it only the standard categories are offered. */
+  categories?: CategoryCatalog;
   /** The booking to edit; without it the form adds a new one. */
   transaction?: TransactionView;
   /** Preselected account for a new booking. */
@@ -46,6 +48,7 @@ function firstErrors(issues: { path: PropertyKey[]; message: string }[]): Errors
 /** Adds or edits a booking. The type follows the amount's sign until it is chosen by hand. */
 export function TransactionForm({
   accounts,
+  categories,
   transaction,
   accountId,
   action = "/api/transactions",
@@ -69,6 +72,16 @@ export function TransactionForm({
   const [rulePattern, setRulePattern] = useState(transaction?.[ruleFields[0] ?? "counterparty"] ?? "");
   const classificationChanged = Boolean(transaction) && (kind !== transaction?.kind || category !== (transaction?.category ?? ""));
   const canLearn = offerRule && classificationChanged && ruleFields.length > 0;
+  /** The categories offered on an account: a shared account never offers personal ones. */
+  const groupsFor = (accountId: string) =>
+    categories && (accounts.find((a) => a.id === accountId)?.visibility === "shared" ? categories.shared : categories.private);
+  const offered = (accountId: string, key: string) =>
+    groupsFor(accountId)?.some((g) => g.key === key || g.subcategories.some((s) => s.key === key)) ?? false;
+
+  function chooseAccount(next: string) {
+    setAccount(next);
+    if (isOwnCategoryKey(category) && !offered(next, category)) setCategory("");
+  }
 
   function chooseRuleField(field: RuleField) {
     setRuleField(field);
@@ -76,8 +89,10 @@ export function TransactionForm({
   }
 
   function chooseKind(next: TransactionKind) {
+    if (next === kind) return;
     setKind(next);
-    if (category && !isCategoryFor(next, category)) setCategory("");
+    // Own categories have a fixed type, so they never fit another one.
+    if (category && (isOwnCategoryKey(category) || !isCategoryFor(next, category))) setCategory("");
   }
 
   function onAmountChange(value: string) {
@@ -188,7 +203,15 @@ export function TransactionForm({
         {(kind === "expense" || kind === "income") && (
           <fieldset className="fieldset">
             <label className="fieldset-legend" htmlFor="transaction-category">{t("category")}</label>
-            <CategorySelect id="transaction-category" kinds={[kind]} value={category} onChange={setCategory} emptyLabel={t("noCategory")} />
+            <CategorySelect
+              id="transaction-category"
+              kinds={[kind]}
+              value={category}
+              onChange={setCategory}
+              emptyLabel={t("noCategory")}
+              groups={groupsFor(account)}
+              names={categories?.names}
+            />
             {error("category")}
           </fieldset>
         )}
@@ -262,7 +285,7 @@ export function TransactionForm({
 
       <fieldset className="fieldset">
         <label className="fieldset-legend" htmlFor="transaction-account">{t("account")}</label>
-        <select id="transaction-account" className="select w-full" value={account} onChange={(e) => setAccount(e.target.value)}>
+        <select id="transaction-account" className="select w-full" value={account} onChange={(e) => chooseAccount(e.target.value)}>
           {accounts.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name}

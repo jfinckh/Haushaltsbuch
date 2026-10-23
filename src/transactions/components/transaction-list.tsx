@@ -10,6 +10,8 @@ type Props = {
   href?: string;
   /** Names of the bookings' accounts; with it, each row shows its account (several accounts in one list). */
   accountNames?: Record<string, string>;
+  /** Names of own categories (the page's catalog). */
+  categoryNames?: Record<string, string>;
 };
 
 function byDate(transactions: TransactionView[]): [string, TransactionView[]][] {
@@ -18,9 +20,9 @@ function byDate(transactions: TransactionView[]): [string, TransactionView[]][] 
   return [...groups];
 }
 
-function Row({ transaction, href, accountName }: { transaction: TransactionView; href: string; accountName?: string }) {
+function Row({ transaction, href, accountName, categoryNames }: { transaction: TransactionView; href: string; accountName?: string; categoryNames?: Record<string, string> }) {
   const t = useTranslations("transactions");
-  const categoryName = useCategoryName();
+  const categoryName = useCategoryName(categoryNames);
   const categorized = transaction.kind === "transfer" || transaction.kind === "saving" || transaction.category !== null;
   return (
     <li>
@@ -42,7 +44,7 @@ function Row({ transaction, href, accountName }: { transaction: TransactionView;
 }
 
 /** Bookings grouped by date, newest first; uncategorized expenses and income are marked. */
-export function TransactionList({ transactions, href = "/transactions", accountNames }: Props) {
+export function TransactionList({ transactions, href = "/transactions", accountNames, categoryNames }: Props) {
   const t = useTranslations("transactions.list");
   const format = useFormatter();
   if (transactions.length === 0) return <p className="opacity-70">{t("empty")}</p>;
@@ -55,7 +57,7 @@ export function TransactionList({ transactions, href = "/transactions", accountN
           </h3>
           <ul className="flex flex-col">
             {items.map((transaction) => (
-              <Row key={transaction.id} transaction={transaction} href={href} accountName={accountNames?.[transaction.accountId]} />
+              <Row key={transaction.id} transaction={transaction} href={href} accountName={accountNames?.[transaction.accountId]} categoryNames={categoryNames} />
             ))}
           </ul>
         </section>

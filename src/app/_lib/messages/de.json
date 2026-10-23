@@ -27,7 +27,8 @@
     "noAccounts": "Noch kein Konto. Lege eins an, um loszulegen.",
     "allMine": "Alle meine Konten",
     "contribution": "Beitrag Gemeinschaftskonto",
-    "statistics": "Statistik"
+    "statistics": "Statistik",
+    "categories": "Kategorien"
   },
   "statistics": {
     "title": "Statistik",
@@ -107,5 +108,10 @@
   },
   "household": {
     "back": "Zurück"
+  },
+  "categories": {
+    "title": "Kategorien",
+    "back": "Zurück",
+    "intro": "Lege eigene Kategorien an, benenne sie um oder blende Standardkategorien aus."
   }
 }

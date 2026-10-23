@@ -26,4 +26,5 @@ export type RuleView = {
 export type ApplyResult = { applied: number; transfers: { id: string; target: "external" | null }[] };
 
 /** An account as the rules forms show it. */
-export type RuleAccount = { id: string; name: string };
+/** An account the user may see; its visibility picks the categories a rule on it may set. */
+export type RuleAccount = { id: string; name: string; visibility?: "private" | "shared" };

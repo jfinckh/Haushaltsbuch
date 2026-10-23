@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
+import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { TransactionForm } from "@/transactions";
 
@@ -24,7 +25,8 @@ export default function NewTransactionPage(props: Props) {
 async function NewTransaction({ searchParams }: Props) {
   const { caller } = await requireCaller("/sign-in");
   const requested = (await searchParams).accountId;
-  const bookable = (await accounts.listAccounts(caller)).filter((a) => !a.archived).map(({ id, name }) => ({ id, name }));
+  const [visible, catalog] = await Promise.all([accounts.listAccounts(caller), categories.catalog(caller)]);
+  const bookable = visible.filter((a) => !a.archived).map(({ id, name, visibility }) => ({ id, name, visibility }));
   // Only an account the caller may see is preselected.
   const accountId = bookable.find((a) => a.id === requested)?.id;
   const t = await getTranslations("app.transactions");
@@ -36,7 +38,7 @@ async function NewTransaction({ searchParams }: Props) {
           {t("back")}
         </Link>
       </div>
-      {bookable.length === 0 ? <p className="opacity-70">{t("noAccounts")}</p> : <TransactionForm accounts={bookable} accountId={accountId} />}
+      {bookable.length === 0 ? <p className="opacity-70">{t("noAccounts")}</p> : <TransactionForm accounts={bookable} accountId={accountId} categories={catalog} />}
     </>
   );
 }

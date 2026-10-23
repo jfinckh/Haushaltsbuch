@@ -10,7 +10,7 @@ import { createHouseholds } from "@/households/server";
 import { createFieldCrypto } from "@/shared/field-crypto";
 import type { Caller, RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
-import { createTransactions } from "@/transactions/server";
+import { createCategories, createTransactions } from "@/transactions/server";
 
 // Privacy tests for every budgets route: a member never creates, changes or deletes budgets of
 // another member's private account (404 like an unknown id), shared accounts' budgets belong to
@@ -130,5 +130,28 @@ describe("privacy between members", () => {
     expect((await createAs("max", { accountId: doras, category: "groceries", limit: "1,00" })).status).toBe(404);
     expect(await limitsOf("max", shared)).toEqual([30000]);
     expect((await deleteAs("erika", onShared.id)).status).toBe(200);
+  });
+});
+
+describe("/api/budgets with own categories", () => {
+  async function own(userId: string, input: Record<string, unknown>) {
+    const result = await createCategories({ db }).createCategory(await caller(userId), { kind: "expense", ...input });
+    if (!result.ok) throw new Error(result.reason);
+    return result.category;
+  }
+
+  it("budgets household categories anywhere and personal ones only on the owner's private account", async () => {
+    const pets = await own("max", { scope: "household", name: "Haustiere" });
+    const hobby = await own("max", { scope: "personal", name: "Modellbau" });
+    expect((await createAs("erika", { accountId: shared, category: pets.key, limit: "50,00" })).status).toBe(201);
+    expect((await createAs("max", { accountId: maxIng, category: hobby.key, limit: "50,00" })).status).toBe(201);
+    expect((await createAs("max", { accountId: shared, category: hobby.key, limit: "50,00" })).status).toBe(400);
+  });
+
+  it("never lets another member or household budget someone else's category", async () => {
+    const pets = await own("max", { scope: "household", name: "Haustiere" });
+    const hobby = await own("max", { scope: "personal", name: "Modellbau" });
+    expect((await createAs("erika", { accountId: shared, category: hobby.key, limit: "1,00" })).status).toBe(400);
+    expect((await createAs("dora", { accountId: doras, category: pets.key, limit: "1,00" })).status).toBe(400);
   });
 });

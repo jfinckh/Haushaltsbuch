@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "date": "2026-10-23",
+  "slug": "categories-use",
+  "description": "Own categories, part 1b - use them for bookings and budgets",
+  "plan": {
+    "path": "docs/plans/2026-10-23-categories-use.md",
+    "sha256": "7777231cef8eef11090ae80e6bc8cddad9d6c1d6c2ec4c2d0a2d5ffacc1d23b9"
+  },
+  "status": "final",
+  "base": "031588672b6fab5f0bc77b0306629f90890cfb8c",
+  "baseSnapshot": {
+    "after": "docs/changes/2026-10-23-categories-manage",
+    "head": "968b854b12be0a69448292b6b4a86273c985e4c0"
+  },
+  "report": "Finalized categories-use (0315886..working-tree)\nBase: change-map's snapshot of the uncommitted work after docs/changes/2026-10-23-categories-manage (0315886, on top of HEAD 968b854).\nFiles: 28 converge, 0 diverge, 0 absent. Elements: 3 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-23-categories-use/map.html\n",
+  "shownAt": "2026-10-23T13:42:34Z"
+}

@@ -6,6 +6,7 @@ import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
+import { categories } from "@/app/_lib/categories";
 import { insights } from "@/app/_lib/insights";
 import { ALL_MINE, selectAccount } from "@/insights";
 import type { StatisticsRow } from "@/insights/server";
@@ -66,7 +67,11 @@ async function Statistics({ searchParams }: Props) {
 /** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
 async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: string | null }) {
   const target = accountId ?? ({ ownPrivate: true } as const);
-  const [statistics, trends] = await Promise.all([insights.statistics(caller, target, MONTHS), insights.categoryTrends(caller, target)]);
+  const [statistics, trends, { names }] = await Promise.all([
+    insights.statistics(caller, target, MONTHS),
+    insights.categoryTrends(caller, target),
+    categories.catalog(caller),
+  ]);
   if (!statistics.ok) return null;
   const { rows, comparison, scaleCents: scale } = statistics;
 
@@ -76,7 +81,7 @@ async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: s
       {trends.ok && (
         <>
           <div className="divider my-0" />
-          <CategoryTrends trends={trends} accountId={accountId} />
+          <CategoryTrends trends={trends} accountId={accountId} categoryNames={names} />
         </>
       )}
       <div className="divider my-0" />

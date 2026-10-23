@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "table-new:category",
+      "itemHash": "sha256:87c6e204c689e4982b05e0bc875bc2a705f08e10acc469a0a24c0a26a65a9162",
+      "decision": "approve",
+      "at": "2026-10-23T08:36:09Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:hiddenCategory",
+      "itemHash": "sha256:3badee0fb8749bd4408a17c6e63eb5ff67307ceb058ed87eecb3133ceb6e1cc0",
+      "decision": "approve",
+      "at": "2026-10-23T08:36:09Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:createCategories",
+      "itemHash": "sha256:8e83ddd4ce9305128992d05752f983722ccab240c86e5e3e3e95ce5d1051b245",
+      "decision": "approve",
+      "at": "2026-10-23T08:36:09Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:Categories",
+      "itemHash": "sha256:ab3140c97941eb0227b272447755247d33c3bae7e8f979169bf25bcd796e606a",
+      "decision": "approve",
+      "at": "2026-10-23T08:36:09Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:client:CategoryManager",
+      "itemHash": "sha256:ddd5168db1e40a928c05feb5110166c7f72c282b784532b5f7445cd88a4c2ef7",
+      "decision": "approve",
+      "at": "2026-10-23T08:36:09Z",
+      "source": "hook"
+    }
+  ]
+}

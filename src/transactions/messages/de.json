@@ -12,7 +12,9 @@
     "categoryNotForKind": "Diese Kategorie passt nicht zur Art.",
     "counterpartyTooLong": "Der Name ist zu lang.",
     "referenceTooLong": "Der Verwendungszweck ist zu lang.",
-    "ibanInvalid": "Gib eine gültige IBAN ein."
+    "ibanInvalid": "Gib eine gültige IBAN ein.",
+    "categoryNameRequired": "Gib einen Namen ein.",
+    "categoryNameTooLong": "Der Name ist zu lang (höchstens 40 Zeichen)."
   },
   "list": {
     "empty": "Keine Buchungen in diesem Zeitraum.",
@@ -128,5 +130,33 @@
       "electronics": "Elektronik",
       "household": "Haushalt"
     }
-  }
+  },
+  "categoryManager": {
+    "scopeHousehold": "Haushalt",
+    "scopeHouseholdHint": "Gelten für alle im Haushalt und auf allen Konten.",
+    "scopePersonal": "Nur für mich",
+    "scopePersonalHint": "Siehst nur du. Gelten nur auf deinen privaten Konten.",
+    "noHousehold": "Ohne Haushalt gibt es nur persönliche Kategorien.",
+    "expenses": "Ausgaben",
+    "income": "Einnahmen",
+    "subcategories": "{count, plural, one {# Unterkategorie} other {# Unterkategorien}}",
+    "hide": "Ausblenden",
+    "show": "Einblenden",
+    "own": "eigene",
+    "rename": "Umbenennen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "archive": "Archivieren",
+    "restore": "Wiederherstellen",
+    "archivedTitle": "Archiviert ({count})",
+    "addTitle": "Kategorie hinzufügen",
+    "kind": "Art",
+    "parent": "Gehört zu",
+    "newGroup": "Neue Gruppe",
+    "name": "Name",
+    "addSubmit": "Hinzufügen",
+    "duplicate": "Diesen Namen gibt es hier schon.",
+    "failed": "Das hat nicht geklappt. Bitte versuch es noch einmal."
+  },
+  "ownUnknown": "Eigene Kategorie"
 }

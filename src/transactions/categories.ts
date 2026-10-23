@@ -43,6 +43,50 @@ export function isCategoryFor(kind: TransactionKind, key: string): boolean {
   return categoryKeysFor(kind).includes(key);
 }
 
+/** The own part of a key: `c_` and the category's id (a UUID). */
+const OWN_PART = /^c_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+const STANDARD_GROUP_KEYS = new Set(CATEGORY_GROUPS.map((group) => group.key));
+
+/**
+ * Whether `key` has the format of an own category: `c_<id>` (group) or `<group>.c_<id>`
+ * (subcategory of a standard or own group). Whether it exists and fits is the server's check.
+ */
+export function isOwnCategoryKey(key: string): boolean {
+  const parts = key.split(".");
+  if (parts.length > 2 || !OWN_PART.test(parts.at(-1)!)) return false;
+  return parts.length === 1 || STANDARD_GROUP_KEYS.has(parts[0]) || OWN_PART.test(parts[0]);
+}
+
+/** The id of the own category a key names (its last part), or null for other keys. */
+export function ownCategoryId(key: string): string | null {
+  return isOwnCategoryKey(key) ? key.split(".").at(-1)!.slice(2) : null;
+}
+
+/** One group of a category choice with its subcategories. A null name is a standard one (translated). */
+export type CategoryChoice = {
+  key: string;
+  kind: "expense" | "income";
+  name: string | null;
+  subcategories: { key: string; name: string | null }[];
+};
+
+/**
+ * What a page needs to offer and show categories: the names of the own categories the caller may
+ * see (archived ones too), and the choices for a shared and for one of the caller's private accounts.
+ */
+export type CategoryCatalog = { names: Record<string, string>; shared: CategoryChoice[]; private: CategoryChoice[] };
+
+/** The standard categories as choices, in display order. */
+export function standardChoices(): CategoryChoice[] {
+  return CATEGORY_GROUPS.map((group) => ({
+    key: group.key,
+    kind: group.kind,
+    name: null,
+    subcategories: group.subcategories.map((sub) => ({ key: `${group.key}.${sub}`, name: null })),
+  }));
+}
+
 /** The message key of a category's name, relative to this part's namespace. */
 export function categoryMessageKey(key: string): string {
   const [group, sub] = key.split(".");

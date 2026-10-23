@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
 import { budgets } from "@/app/_lib/budgets";
+import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { insights } from "@/app/_lib/insights";
 import { transactions } from "@/app/_lib/transactions";
@@ -42,14 +43,17 @@ async function AccountBookings({ params, searchParams }: Props) {
   if (!account) notFound();
   const query = await searchParams;
   const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
-  const [listed, budgetList, balances, transferOverview, visible] = await Promise.all([
+  const [listed, budgetList, balances, transferOverview, visible, catalog] = await Promise.all([
     transactions.listTransactions(caller, { accountId: id, ...filters }),
     budgets.listBudgets(caller, id, filters.month || undefined),
     insights.balances(caller, [account]),
     householdMembers(caller).then((members) => transfers.accountOverview(caller, id, members)),
     accounts.listAccounts(caller),
+    categories.catalog(caller),
   ]);
   if (!listed.ok && listed.reason === "not-found") notFound();
+  // A shared account never offers personal categories.
+  const groups = account.visibility === "shared" ? catalog.shared : catalog.private;
   const balance = balances[account.id];
   const t = await getTranslations("app.accounts");
 
@@ -94,13 +98,19 @@ async function AccountBookings({ params, searchParams }: Props) {
       {budgetList.ok && (
         <>
           <div className="divider my-0" />
-          <BudgetSection accountId={account.id} month={budgetList.month} budgets={budgetList.budgets} />
+          <BudgetSection
+            accountId={account.id}
+            month={budgetList.month}
+            budgets={budgetList.budgets}
+            categoryGroups={groups}
+            categoryNames={catalog.names}
+          />
         </>
       )}
       <div className="divider my-0" />
-      <TransactionFilters values={filters} />
+      <TransactionFilters values={filters} categoryGroups={groups} categoryNames={catalog.names} />
       {listed.ok ? (
-        <TransactionList transactions={listed.transactions} />
+        <TransactionList transactions={listed.transactions} categoryNames={catalog.names} />
       ) : (
         <div role="alert" className="alert alert-warning alert-soft">
           <span>{t("invalidFilter")}</span>

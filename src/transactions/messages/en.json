@@ -12,7 +12,9 @@
     "categoryNotForKind": "This category does not fit the type.",
     "counterpartyTooLong": "Name is too long.",
     "referenceTooLong": "Reference is too long.",
-    "ibanInvalid": "Enter a valid IBAN."
+    "ibanInvalid": "Enter a valid IBAN.",
+    "categoryNameRequired": "Enter a name.",
+    "categoryNameTooLong": "The name is too long (at most 40 characters)."
   },
   "list": {
     "empty": "No bookings in this period.",
@@ -128,5 +130,33 @@
       "electronics": "Electronics",
       "household": "Household"
     }
-  }
+  },
+  "categoryManager": {
+    "scopeHousehold": "Household",
+    "scopeHouseholdHint": "Apply to everyone in the household and to all accounts.",
+    "scopePersonal": "Only for me",
+    "scopePersonalHint": "Only you see them. They apply only to your private accounts.",
+    "noHousehold": "Without a household there are only personal categories.",
+    "expenses": "Expenses",
+    "income": "Income",
+    "subcategories": "{count, plural, one {# subcategory} other {# subcategories}}",
+    "hide": "Hide",
+    "show": "Show",
+    "own": "own",
+    "rename": "Rename",
+    "save": "Save",
+    "cancel": "Cancel",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archivedTitle": "Archived ({count})",
+    "addTitle": "Add a category",
+    "kind": "Type",
+    "parent": "Belongs to",
+    "newGroup": "New group",
+    "name": "Name",
+    "addSubmit": "Add",
+    "duplicate": "This name already exists here.",
+    "failed": "That didn't work. Please try again."
+  },
+  "ownUnknown": "Own category"
 }

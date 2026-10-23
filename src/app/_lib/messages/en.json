@@ -27,7 +27,8 @@
     "noAccounts": "No account yet. Add one to get started.",
     "allMine": "All my accounts",
     "contribution": "Shared account contribution",
-    "statistics": "Statistics"
+    "statistics": "Statistics",
+    "categories": "Categories"
   },
   "statistics": {
     "title": "Statistics",
@@ -107,5 +108,10 @@
   },
   "household": {
     "back": "Back"
+  },
+  "categories": {
+    "title": "Categories",
+    "back": "Back",
+    "intro": "Add your own categories, rename them or hide standard ones."
   }
 }

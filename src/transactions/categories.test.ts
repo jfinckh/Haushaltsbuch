@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CATEGORY_GROUPS, categoryKeysFor, categoryMessageKey, isCategoryFor, spendingByGroup } from "./categories";
+import { CATEGORY_GROUPS, categoryKeysFor, categoryMessageKey, isCategoryFor, isOwnCategoryKey, ownCategoryId, spendingByGroup, standardChoices } from "./categories";
 import { messages } from "./messages";
 
 describe("categories", () => {
@@ -90,5 +90,39 @@ describe("spending by category group", () => {
 
   it("has no rows without expenses", () => {
     expect(spendingByGroup([])).toEqual({ totalCents: 0, groups: [] });
+  });
+});
+
+describe("own category keys", () => {
+  const a = "c_0b6c8f8e-5f43-4c1e-9d3e-2a1f4b7c9d01";
+  const b = "c_7d2e1a90-1c55-4b9a-8f3a-6e5d4c3b2a10";
+
+  it("recognises own groups and subcategories under a standard or own group", () => {
+    expect(isOwnCategoryKey(a)).toBe(true);
+    expect(isOwnCategoryKey(`groceries.${a}`)).toBe(true);
+    expect(isOwnCategoryKey(`${a}.${b}`)).toBe(true);
+    expect(ownCategoryId(`${a}.${b}`)).toBe(b.slice(2));
+    expect(ownCategoryId(a)).toBe(a.slice(2));
+  });
+
+  it("rejects standard keys and malformed own keys", () => {
+    for (const key of ["groceries", "groceries.supermarket", "c_", "c_nope", `nope.${a}`, `${a}.groceries`, `${a}.${b}.${a}`, `x${a}`]) {
+      expect(isOwnCategoryKey(key), key).toBe(false);
+    }
+    expect(ownCategoryId("groceries.supermarket")).toBeNull();
+  });
+
+  it("lists the standard choices with their subcategories, without names (they are translated)", () => {
+    const choices = standardChoices();
+    expect(choices.map((c) => c.key)).toEqual(CATEGORY_GROUPS.map((g) => g.key));
+    expect(choices.find((c) => c.key === "groceries")).toEqual({
+      key: "groceries",
+      kind: "expense",
+      name: null,
+      subcategories: [
+        { key: "groceries.supermarket", name: null },
+        { key: "groceries.drugstore", name: null },
+      ],
+    });
   });
 });

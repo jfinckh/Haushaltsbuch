@@ -110,9 +110,20 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
     return row ?? null;
   }
 
+  /**
+   * Whether the rule's category fits its scope (transactions' check): a personal category only for
+   * private accounts, never someone else's. An unchanged category may stay when it was archived.
+   */
+  async function categoryFits(tx: RlsTransaction, values: RuleValues, previousCategory: string | null = null) {
+    if (values.category === null) return true;
+    const target = values.scope.type === "account" ? values.scope.accountId : { visibility: values.scope.type };
+    return transactions.checkCategory(tx, target, values.kind, values.category, { allowArchived: values.category === previousCategory });
+  }
+
   async function insertRule(tx: RlsTransaction, userId: string, values: RuleValues): Promise<SaveRuleResult> {
     const scope = await scopeColumns(tx, userId, values.scope);
     if (!scope.ok) return scope;
+    if (!(await categoryFits(tx, values))) return { ok: false, reason: "invalid-input" };
     const [row] = await tx
       .insert(bookingRule)
       .values({ id: crypto.randomUUID(), ...scope.columns, ...valueColumns(values), createdByUserId: userId })
@@ -194,9 +205,11 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       const parsed = ruleInputSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       return withSession(db, caller, async (tx, userId): Promise<SaveRuleResult> => {
-        if (!(await findVisible(tx, id))) return { ok: false, reason: "not-found" };
+        const existing = await findVisible(tx, id);
+        if (!existing) return { ok: false, reason: "not-found" };
         const scope = await scopeColumns(tx, userId, parsed.data.scope);
         if (!scope.ok) return scope;
+        if (!(await categoryFits(tx, parsed.data, existing.resultCategory))) return { ok: false, reason: "invalid-input" };
         const [row] = await tx
           .update(bookingRule)
           .set({ ...scope.columns, ...valueColumns(parsed.data), updatedAt: new Date() })

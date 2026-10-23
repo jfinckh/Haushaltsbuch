@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:transactions:client:isOwnCategoryKey",
+      "itemHash": "sha256:c641453207eb6f4907b53aa3bd307016394d827bc084769a394fc3b2ccffa709",
+      "decision": "approve",
+      "at": "2026-10-23T13:46:35Z",
+      "source": "hook"
+    }
+  ]
+}

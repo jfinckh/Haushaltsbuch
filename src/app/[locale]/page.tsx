@@ -8,6 +8,7 @@ import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
 import { budgets } from "@/app/_lib/budgets";
+import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
 import { insights } from "@/app/_lib/insights";
@@ -103,11 +104,12 @@ async function Dashboard({ searchParams }: Props) {
 }
 
 async function AccountDashboard({ caller, accountId }: { caller: Caller; accountId: string }) {
-  const [summary, budgetList, spending, latest] = await Promise.all([
+  const [summary, budgetList, spending, latest, { names }] = await Promise.all([
     insights.monthFigures(caller, accountId),
     budgets.listBudgets(caller, accountId),
     transactions.categorySpending(caller, accountId),
     transactions.latestTransactions(caller, accountId, LATEST),
+    categories.catalog(caller),
   ]);
   const t = await getTranslations("app.home");
 
@@ -126,7 +128,7 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
       {budgetList.ok && (
         <>
           <div className="divider my-0" />
-          <BudgetSection accountId={accountId} month={budgetList.month} budgets={budgetList.budgets} readOnly />
+          <BudgetSection accountId={accountId} month={budgetList.month} budgets={budgetList.budgets} readOnly categoryNames={names} />
           <Link href={`/accounts/${accountId}`} className="link link-hover self-end text-sm">
             {t("editBudgets")}
           </Link>
@@ -135,7 +137,7 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
       {spending.ok && (
         <>
           <div className="divider my-0" />
-          <CategorySpending accountId={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} />
+          <CategorySpending accountId={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
         </>
       )}
       {latest.ok && (
@@ -143,7 +145,7 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
           <div className="divider my-0" />
           <section className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{t("latest")}</h2>
-            <TransactionList transactions={latest.transactions} />
+            <TransactionList transactions={latest.transactions} categoryNames={names} />
             <Link href={`/accounts/${accountId}`} className="btn btn-ghost btn-sm self-end">
               {t("allBookings")}
             </Link>
@@ -178,10 +180,11 @@ async function MonthFigures({ availableCents, figures }: { availableCents: numbe
 /** The caller's own private accounts together. The contribution to shared accounts lowers what is available. */
 async function CombinedDashboard({ caller, accountNames }: { caller: Caller; accountNames: Record<string, string> }) {
   const mine = { ownPrivate: true } as const;
-  const [summary, spending, latest] = await Promise.all([
+  const [summary, spending, latest, { names }] = await Promise.all([
     insights.monthFigures(caller, mine),
     transactions.categorySpending(caller, mine),
     transactions.latestTransactions(caller, mine, LATEST),
+    categories.catalog(caller),
   ]);
   const t = await getTranslations("app.home");
 
@@ -201,7 +204,7 @@ async function CombinedDashboard({ caller, accountNames }: { caller: Caller; acc
       {spending.ok && (
         <>
           <div className="divider my-0" />
-          <CategorySpending month={spending.month} totalCents={spending.totalCents} groups={spending.groups} />
+          <CategorySpending month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
         </>
       )}
       {latest.ok && (
@@ -209,7 +212,7 @@ async function CombinedDashboard({ caller, accountNames }: { caller: Caller; acc
           <div className="divider my-0" />
           <section className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{t("latest")}</h2>
-            <TransactionList transactions={latest.transactions} accountNames={accountNames} />
+            <TransactionList transactions={latest.transactions} accountNames={accountNames} categoryNames={names} />
           </section>
         </>
       )}

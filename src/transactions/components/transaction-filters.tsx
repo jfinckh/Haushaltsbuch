@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import type { CategoryChoice } from "../categories";
 import { TRANSACTION_KINDS, type TransactionKind } from "../kinds";
 import { isMonth, monthOf, shiftMonth, today } from "../months";
 import { CategorySelect } from "./category-select";
@@ -16,13 +17,19 @@ export type TransactionFilterValues = {
   q?: string;
 };
 
-type Props = { values: TransactionFilterValues };
+type Props = {
+  values: TransactionFilterValues;
+  /** The categories to filter by (the page's catalog for the account). Default: the standard ones. */
+  categoryGroups?: CategoryChoice[];
+  /** Names of own categories (the page's catalog). */
+  categoryNames?: Record<string, string>;
+};
 
 const isKind = (value: string | undefined): value is TransactionKind =>
   (TRANSACTION_KINDS as readonly string[]).includes(value ?? "");
 
 /** Month switcher, type and category filters and search; they live in the page's URL query. */
-export function TransactionFilters({ values: raw }: Props) {
+export function TransactionFilters({ values: raw, categoryGroups, categoryNames }: Props) {
   const values = {
     month: raw.month && isMonth(raw.month) ? raw.month : monthOf(today()),
     kind: isKind(raw.kind) ? raw.kind : undefined,
@@ -84,6 +91,8 @@ export function TransactionFilters({ values: raw }: Props) {
             value={category}
             onChange={setCategory}
             emptyLabel={t("allCategories")}
+            groups={categoryGroups}
+            names={categoryNames}
           />
         </div>
         <div className="join w-full">

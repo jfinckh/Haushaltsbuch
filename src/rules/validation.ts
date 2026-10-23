@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isCategoryFor, TRANSACTION_KINDS } from "@/transactions";
+import { isCategoryFor, isOwnCategoryKey, TRANSACTION_KINDS } from "@/transactions";
 
 // Input of rules, learning and applying, shared by the forms (client) and the service (server).
 // Messages are translation keys; the forms translate them.
@@ -47,7 +47,9 @@ export const ruleInputSchema = z
     if (rule.counterparty === null && rule.reference === null) {
       ctx.addIssue({ code: "custom", path: ["counterparty"], message: "rules.validation.patternRequired" });
     }
-    if (rule.category !== null && !isCategoryFor(rule.kind, rule.category)) {
+    // An own category's key is only checked for its format here; the service checks it against the scope.
+    const own = rule.category !== null && isOwnCategoryKey(rule.category) && (rule.kind === "expense" || rule.kind === "income");
+    if (rule.category !== null && !own && !isCategoryFor(rule.kind, rule.category)) {
       ctx.addIssue({ code: "custom", path: ["category"], message: "rules.validation.categoryNotForKind" });
     }
     if (rule.transferTarget !== null && rule.kind !== "transfer" && rule.kind !== "saving") {

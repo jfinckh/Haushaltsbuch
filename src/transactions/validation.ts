@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isValidIban, normalizeIban } from "@/shared/iban";
 import { germanAmountSchema } from "@/shared/money";
-import { isCategoryFor } from "./categories";
+import { isCategoryFor, isOwnCategoryKey } from "./categories";
 import { TRANSACTION_KINDS } from "./kinds";
 import { isMonth } from "./months";
 
@@ -64,7 +64,9 @@ export const transactionValuesSchema = z
     reference: z.string().max(500).nullable(),
   })
   .superRefine((values, ctx) => {
-    if (values.category !== null && !isCategoryFor(values.kind, values.category)) {
+    // An own category's key is only checked for its format here; the server checks it in the database.
+    const own = values.category !== null && isOwnCategoryKey(values.category) && (values.kind === "expense" || values.kind === "income");
+    if (values.category !== null && !own && !isCategoryFor(values.kind, values.category)) {
       ctx.addIssue({ code: "custom", path: ["category"], message: "transactions.validation.categoryNotForKind" });
     }
   });
@@ -119,3 +121,40 @@ export const listQuerySchema = z.object({
 });
 
 export type ListQuery = z.infer<typeof listQuerySchema>;
+
+/** Where an own category or a hidden standard key applies: the whole household, or only the caller. */
+export const CATEGORY_SCOPES = ["household", "personal"] as const;
+export type CategoryScope = (typeof CATEGORY_SCOPES)[number];
+
+const categoryNameSchema = z
+  .string({ message: "transactions.validation.categoryNameRequired" })
+  .trim()
+  .min(1, "transactions.validation.categoryNameRequired")
+  .max(40, "transactions.validation.categoryNameTooLong");
+
+/** A new own category: a group (no parent) or a subcategory of a standard or own group. */
+export const createCategorySchema = z.object({
+  scope: z.enum(CATEGORY_SCOPES),
+  kind: z.enum(["expense", "income"]),
+  parentKey: z
+    .string()
+    .max(100)
+    .nullish()
+    .transform((value) => value || null),
+  name: categoryNameSchema,
+});
+
+export type CreateCategoryInput = z.input<typeof createCategorySchema>;
+
+/** Renames an own category. */
+export const renameCategorySchema = z.object({ name: categoryNameSchema });
+
+/** Archives (true) or restores (false) an own category. */
+export const archiveCategorySchema = z.object({ archived: z.boolean() });
+
+/** Hides or shows a standard category key for the household or only for the caller. */
+export const hideCategorySchema = z.object({
+  scope: z.enum(CATEGORY_SCOPES),
+  key: z.string().min(1).max(100),
+  hidden: z.boolean(),
+});

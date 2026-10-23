@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { categoryGroupsFor } from "../categories";
+import { standardChoices, type CategoryChoice } from "../categories";
 import type { TransactionKind } from "../kinds";
 import { useCategoryName } from "./use-category-name";
 
@@ -10,32 +10,41 @@ type Props = {
   onChange: (value: string) => void;
   /** Text of the empty option. */
   emptyLabel: string;
+  /** The categories to offer (the page's catalog for the account). Default: the standard categories. */
+  groups?: CategoryChoice[];
+  /** Names of own categories, for a value that is not offered any more (e.g. archived). */
+  names?: Record<string, string>;
 };
 
 /** A select with the category groups of the given types; subcategories are indented under their group. */
-export function CategorySelect({ id, kinds, value, onChange, emptyLabel }: Props) {
+export function CategorySelect({ id, kinds, value, onChange, emptyLabel, groups = standardChoices(), names }: Props) {
   const t = useTranslations("transactions");
-  const name = useCategoryName();
+  const name = useCategoryName(names);
+  const label = (choice: { key: string; name: string | null }) => choice.name ?? name(choice.key);
+  const offered = new Set(groups.flatMap((g) => [g.key, ...g.subcategories.map((s) => s.key)]));
   return (
     <select id={id} className="select w-full" value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="">{emptyLabel}</option>
-      {kinds.map((kind) =>
-        categoryGroupsFor(kind).length === 0 ? null : (
+      {/* A current value that is not offered any more (hidden or archived) stays selectable. */}
+      {value && !offered.has(value) && <option value={value}>{name(value)}</option>}
+      {kinds.map((kind) => {
+        const ofKind = groups.filter((group) => group.kind === kind);
+        return ofKind.length === 0 ? null : (
           <optgroup key={kind} label={t(`kinds.${kind}`)}>
-            {categoryGroupsFor(kind).flatMap((group) => [
+            {ofKind.flatMap((group) => [
               <option key={group.key} value={group.key}>
-                {name(group.key)}
+                {label(group)}
               </option>,
               ...group.subcategories.map((sub) => (
-                <option key={`${group.key}.${sub}`} value={`${group.key}.${sub}`}>
-                  {"   "}
-                  {name(`${group.key}.${sub}`)}
+                <option key={sub.key} value={sub.key}>
+                  {"   "}
+                  {label(sub)}
                 </option>
               )),
             ])}
           </optgroup>
-        ),
-      )}
+        );
+      })}
     </select>
   );
 }

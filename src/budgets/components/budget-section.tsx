@@ -2,7 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, type ComponentProps, type FormEvent } from "react";
 import { formatCents, formatEuro } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { CategorySelect, useCategoryName } from "@/transactions";
@@ -19,6 +19,10 @@ type Props = {
   action?: string;
   /** Only the bars, without the forms to add, change and delete (dashboard). */
   readOnly?: boolean;
+  /** The categories offered for a new budget (the page's catalog for the account). Default: the standard ones. */
+  categoryGroups?: ComponentProps<typeof CategorySelect>["groups"];
+  /** Names of own categories (the page's catalog). */
+  categoryNames?: Record<string, string>;
 };
 
 /** Warning colour from 80 %, error colour above 100 %. Integer comparison, no floats. */
@@ -29,7 +33,7 @@ function progressClass(spentCents: number, limitCents: number): string {
 }
 
 /** The budgets of one account for a month: a progress bar per budget, and (unless read-only) forms to add, change and delete. */
-export function BudgetSection({ accountId, month, budgets, action = "/api/budgets", readOnly = false }: Props) {
+export function BudgetSection({ accountId, month, budgets, action = "/api/budgets", readOnly = false, categoryGroups, categoryNames }: Props) {
   const t = useTranslations("budgets.section");
   const format = useFormatter();
   const monthName = format.dateTime(new Date(`${month}-01T00:00:00Z`), { month: "long", year: "numeric", timeZone: "UTC" });
@@ -41,19 +45,29 @@ export function BudgetSection({ accountId, month, budgets, action = "/api/budget
       ) : (
         <ul className="flex flex-col gap-3">
           {budgets.map((budget) => (
-            <BudgetRow key={budget.id} budget={budget} action={action} readOnly={readOnly} />
+            <BudgetRow key={budget.id} budget={budget} action={action} readOnly={readOnly} categoryNames={categoryNames} />
           ))}
         </ul>
       )}
-      {!readOnly && <AddBudgetForm accountId={accountId} action={action} />}
+      {!readOnly && <AddBudgetForm accountId={accountId} action={action} categoryGroups={categoryGroups} categoryNames={categoryNames} />}
     </section>
   );
 }
 
-function BudgetRow({ budget, action, readOnly }: { budget: BudgetView; action: string; readOnly: boolean }) {
+function BudgetRow({
+  budget,
+  action,
+  readOnly,
+  categoryNames,
+}: {
+  budget: BudgetView;
+  action: string;
+  readOnly: boolean;
+  categoryNames?: Record<string, string>;
+}) {
   const t = useTranslations("budgets.section");
   const translateKey = useTranslateKey();
-  const categoryName = useCategoryName();
+  const categoryName = useCategoryName(categoryNames);
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [limit, setLimit] = useState(formatCents(budget.limitCents));
@@ -145,7 +159,17 @@ function BudgetRow({ budget, action, readOnly }: { budget: BudgetView; action: s
   );
 }
 
-function AddBudgetForm({ accountId, action }: { accountId: string; action: string }) {
+function AddBudgetForm({
+  accountId,
+  action,
+  categoryGroups,
+  categoryNames,
+}: {
+  accountId: string;
+  action: string;
+  categoryGroups?: ComponentProps<typeof CategorySelect>["groups"];
+  categoryNames?: Record<string, string>;
+}) {
   const t = useTranslations("budgets");
   const translateKey = useTranslateKey();
   const router = useRouter();
@@ -182,7 +206,15 @@ function AddBudgetForm({ accountId, action }: { accountId: string; action: strin
           <label className="fieldset-legend" htmlFor="budget-category">
             {t("add.category")}
           </label>
-          <CategorySelect id="budget-category" kinds={["expense"]} value={category} onChange={setCategory} emptyLabel={t("add.chooseCategory")} />
+          <CategorySelect
+            id="budget-category"
+            kinds={["expense"]}
+            value={category}
+            onChange={setCategory}
+            emptyLabel={t("add.chooseCategory")}
+            groups={categoryGroups}
+            names={categoryNames}
+          />
         </fieldset>
         <fieldset className="fieldset w-32">
           <label className="fieldset-legend" htmlFor="budget-limit">

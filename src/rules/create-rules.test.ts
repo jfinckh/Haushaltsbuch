@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Caller } from "@/shared/rls";
+import { createCategories } from "@/transactions/server";
 import { createTestDatabase, ING_ROWS } from "./test-utils";
 import type { RuleInput } from "./validation";
 
@@ -278,5 +279,62 @@ describe("learning from a correction", () => {
       reason: "not-found",
     });
     expect(await setup.rules.listRules(max)).toEqual([]);
+  });
+});
+
+describe("rules with own categories", () => {
+  async function own(caller: Caller, input: Record<string, unknown>) {
+    const result = await createCategories({ db: setup.db }).createCategory(caller, { scope: "household", kind: "expense", ...input });
+    if (!result.ok) throw new Error(result.reason);
+    return result.category;
+  }
+  const invalid = { ok: false, reason: "invalid-input" };
+
+  it("accepts household categories in every scope and personal ones only for private scopes", async () => {
+    const bakery = await own(max, { parentKey: "groceries", name: "Bäcker" });
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    for (const scope of [{ type: "account", accountId: "max-ing" }, { type: "account", accountId: "shared" }, { type: "shared" }, { type: "private" }] as const) {
+      expect(await setup.rules.createRule(max, rule({ scope, category: bakery.key }))).toMatchObject({ ok: true });
+    }
+    expect(await setup.rules.createRule(max, rule({ scope: { type: "private" }, category: hobby.key }))).toMatchObject({ ok: true });
+    expect(await setup.rules.createRule(max, rule({ category: hobby.key }))).toMatchObject({ ok: true, rule: { category: hobby.key } });
+    expect(await setup.rules.createRule(max, rule({ scope: { type: "shared" }, category: hobby.key }))).toEqual(invalid);
+    expect(await setup.rules.createRule(max, rule({ scope: { type: "account", accountId: "shared" }, category: hobby.key }))).toEqual(invalid);
+  });
+
+  it("never lets another member or household use someone else's category", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const pets = await own(max, { name: "Haustiere" });
+    expect(await setup.rules.createRule(erika, rule({ scope: { type: "private" }, category: hobby.key }))).toEqual(invalid);
+    expect(await setup.rules.createRule(erika, rule({ scope: { type: "account", accountId: "erika-ing" }, category: hobby.key }))).toEqual(invalid);
+    expect(await setup.rules.createRule(dora, rule({ scope: { type: "account", accountId: "dora-ing" }, category: pets.key }))).toEqual(invalid);
+    expect(await setup.rules.createRule(max, rule({ kind: "income", category: pets.key }))).toEqual(invalid);
+  });
+
+  it("keeps an archived category on an edited rule, but does not accept it for a new one", async () => {
+    const pets = await own(max, { name: "Haustiere" });
+    const created = await create(max, { category: pets.key });
+    await createCategories({ db: setup.db }).setArchived(max, pets.id, true);
+    expect(await setup.rules.updateRule(max, created.id, rule({ category: pets.key, counterparty: "EDEKA" }))).toMatchObject({ ok: true });
+    expect(await setup.rules.createRule(max, rule({ category: pets.key }))).toEqual(invalid);
+  });
+
+  it("applies an own category to the bookings it fits", async () => {
+    const bakery = await own(max, { parentKey: "groceries", name: "Bäcker" });
+    await create(max, { counterparty: "REWE", category: bakery.key });
+    const idOf = await importIng();
+    expect(await setup.rules.applyToAccount(max, { accountId: "max-ing" })).toMatchObject({ ok: true });
+    expect((await setup.stored(idOf("2026-10-07")))?.category).toBe(bakery.key);
+  });
+
+  it("learns a rule from a booking with an own category", async () => {
+    const bakery = await own(max, { parentKey: "groceries", name: "Bäcker" });
+    const idOf = await importIng();
+    const id = idOf("2026-10-07");
+    expect(await setup.transactions.updateTransaction(max, id, { category: bakery.key })).toMatchObject({ ok: true });
+    expect(await setup.rules.createFromBooking(max, id, { field: "counterparty", pattern: "REWE" })).toMatchObject({
+      ok: true,
+      rule: { category: bakery.key },
+    });
   });
 });

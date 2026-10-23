@@ -9,7 +9,7 @@ import { createHouseholds } from "@/households/server";
 import { createFieldCrypto } from "@/shared/field-crypto";
 import type { Caller, RlsDatabase } from "@/shared/rls";
 import { createTestSession, endTestSessions } from "@/shared/test-sessions";
-import { createTransactions, type Transactions } from "@/transactions/server";
+import { createCategories, createTransactions, type Transactions } from "@/transactions/server";
 
 // Privacy tests for every transactions route: a member never receives, changes or learns about
 // bookings of another member's private account, and another household sees nothing at all.
@@ -167,5 +167,34 @@ describe("shared accounts", () => {
     expect((await changed.json()).transaction).toMatchObject({ amountCents: -400, createdByMe: false });
     expect((await oneAs("max").DELETE(request("DELETE"), ctx(sharedBooking))).status).toBe(200);
     expect((await oneAs("erika").GET(request("GET"), ctx(sharedBooking))).status).toBe(404);
+  });
+});
+
+describe("own categories on bookings", () => {
+  async function own(userId: string, input: Record<string, unknown>) {
+    const result = await createCategories({ db }).createCategory(await caller(userId), { kind: "expense", ...input });
+    if (!result.ok) throw new Error(result.reason);
+    return result.category;
+  }
+
+  it("books household categories anywhere and personal ones only on the owner's private account", async () => {
+    const pets = await own("max", { scope: "household", name: "Haustiere" });
+    const hobby = await own("max", { scope: "personal", name: "Modellbau" });
+    expect((await book("erika", booking(shared, { category: pets.key }))).id).toBeTruthy();
+    expect((await book("max", booking(maxPrivate, { category: hobby.key }))).id).toBeTruthy();
+    expect((await listAs("max").POST(request("POST", booking(shared, { category: hobby.key })))).status).toBe(400);
+  });
+
+  it("never lets another member or household use or attach someone else's category", async () => {
+    const pets = await own("max", { scope: "household", name: "Haustiere" });
+    const hobby = await own("max", { scope: "personal", name: "Modellbau" });
+    const erikasPrivate = await createAccount("erika", "private", "Erikas Giro");
+    expect((await listAs("erika").POST(request("POST", booking(erikasPrivate, { category: hobby.key })))).status).toBe(400);
+    expect((await listAs("erika").POST(request("POST", booking(shared, { category: hobby.key })))).status).toBe(400);
+    expect((await listAs("dora").POST(request("POST", booking(doras, { category: pets.key })))).status).toBe(400);
+    expect((await oneAs("erika").PATCH(request("PATCH", { category: hobby.key }), ctx(sharedBooking))).status).toBe(400);
+    // Max's personal booking stays invisible to Erika, also through its category.
+    const withHobby = await book("max", booking(maxPrivate, { category: hobby.key }));
+    expect((await oneAs("erika").GET(request("GET"), ctx(withHobby.id))).status).toBe(404);
   });
 });

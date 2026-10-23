@@ -2,10 +2,10 @@ import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, like, lte, ne, or,
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import { isCategoryFor, spendingByGroup, type GroupSpending } from "./categories";
+import { isCategoryFor, ownCategoryId, spendingByGroup, type GroupSpending } from "./categories";
 import type { ClassifiedBy, TransactionKind } from "./kinds";
 import { isMonth, monthOf, monthRange, shiftMonth, today as localToday } from "./months";
-import { transaction } from "./schema";
+import { category, transaction } from "./schema";
 import {
   createTransactionSchema,
   listQuerySchema,
@@ -116,6 +116,48 @@ async function accountIsVisible(tx: RlsTransaction, accountId: string): Promise<
     sql`SELECT 1 AS found WHERE ${accountId} IN (SELECT accounts_visible_account_ids())`,
   )) as unknown as { rows: unknown[] };
   return result.rows.length > 0;
+}
+
+/** Where a category is used: one visible account, or a whole rule scope (shared or private accounts). */
+export type CategoryTarget = string | { visibility: "shared" | "private" };
+
+/**
+ * Whether `key` may be set as the category of a `kind` booking on a visible account (or for a whole
+ * scope): a standard key of that type, or an own category the caller may see (row-level security) of
+ * that type, not archived unless `allowArchived`, with a personal one only on the caller's own
+ * private accounts (accounts' contract: a private account has no household and is visible to its
+ * owner only).
+ */
+async function categoryAllowed(
+  tx: RlsTransaction,
+  target: CategoryTarget,
+  kind: TransactionKind,
+  key: string,
+  { allowArchived = false }: { allowArchived?: boolean } = {},
+): Promise<boolean> {
+  let isPrivate: boolean;
+  if (typeof target === "string") {
+    const scopes = (await tx.execute(
+      sql`SELECT household_id FROM accounts_visible_account_scopes() WHERE account_id = ${target}`,
+    )) as unknown as { rows: { household_id: string | null }[] };
+    const account = scopes.rows[0];
+    if (!account) return false;
+    isPrivate = account.household_id === null;
+  } else {
+    isPrivate = target.visibility === "private";
+  }
+  if (isCategoryFor(kind, key)) return true;
+  const id = ownCategoryId(key);
+  if (!id) return false;
+  const [row] = await tx.select().from(category).where(eq(category.id, id));
+  if (!row || row.kind !== kind || (row.archived && !allowArchived)) return false;
+  if (key !== (row.parentKey ? `${row.parentKey}.c_${row.id}` : `c_${row.id}`)) return false;
+  const parentId = row.parentKey && ownCategoryId(row.parentKey);
+  if (parentId) {
+    const [parent] = await tx.select().from(category).where(eq(category.id, parentId));
+    if (!parent || (parent.archived && !allowArchived)) return false;
+  }
+  return row.ownerUserId === null || isPrivate;
 }
 
 /** The transactions part. Every call is about the caller's own view; their user id comes from the database. */
@@ -307,6 +349,8 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       return withSession(db, caller, async (tx, userId): Promise<SaveTransactionResult> => {
         if (!(await accountIsVisible(tx, parsed.data.accountId))) return { ok: false, reason: "not-found" };
+        const { accountId, kind, category: key } = parsed.data;
+        if (key !== null && !(await categoryAllowed(tx, accountId, kind, key))) return { ok: false, reason: "invalid-input" };
         const [row] = await tx
           .insert(transaction)
           .values({
@@ -334,13 +378,21 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
         const row = await findVisible(tx, id, true);
         if (!row) return { ok: false, reason: "not-found" };
         const merged = { ...toValues(row), ...changes };
-        if (changes.kind && changes.category === undefined && merged.category && !isCategoryFor(merged.kind, merged.category)) {
+        // A new type drops a category that does not fit it (own categories have a fixed type).
+        if (changes.kind && changes.kind !== row.kind && changes.category === undefined && merged.category && !isCategoryFor(merged.kind, merged.category)) {
           merged.category = null;
         }
         const checked = transactionValuesSchema.safeParse(merged);
         if (!checked.success) return { ok: false, reason: "invalid-input" };
         if (checked.data.accountId !== row.accountId && !(await accountIsVisible(tx, checked.data.accountId))) {
           return { ok: false, reason: "not-found" };
+        }
+        // A set or changed category, or a move to another account, is checked again; an unchanged
+        // category may stay even when it was archived in the meantime.
+        const { accountId, kind, category: key } = checked.data;
+        const unchanged = key === row.category;
+        if (key !== null && (!unchanged || accountId !== row.accountId || kind !== row.kind)) {
+          if (!(await categoryAllowed(tx, accountId, kind, key, { allowArchived: unchanged }))) return { ok: false, reason: "invalid-input" };
         }
         const classifiedByHand = checked.data.kind !== row.kind || checked.data.category !== row.category;
         const [updated] = await tx
@@ -414,6 +466,21 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
     },
 
     /**
+     * Whether `key` may be the category of a `kind` booking, budget or rule on the visible account
+     * or rule scope `target`, inside another part's database transaction (budgets, rules). An
+     * archived own category only with `allowArchived` (e.g. unchanged on an edited rule).
+     */
+    async checkCategory(
+      tx: RlsTransaction,
+      target: CategoryTarget,
+      kind: TransactionKind,
+      key: string,
+      options: { allowArchived?: boolean } = {},
+    ): Promise<boolean> {
+      return categoryAllowed(tx, target, kind, key, options);
+    },
+
+    /**
      * Sets the type of the visible bookings among `ids` inside a given database transaction; a
      * category that does not fit the new type is cleared. Only for decisions made by a person
      * (transfers' manual actions), so the bookings count as classified by hand. Returns how many changed.
@@ -421,11 +488,11 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
     async setKind(tx: RlsTransaction, ids: string[], kind: TransactionKind): Promise<number> {
       if (ids.length === 0) return 0;
       const rows = await tx
-        .select({ id: transaction.id, category: transaction.category })
+        .select({ id: transaction.id, kind: transaction.kind, category: transaction.category })
         .from(transaction)
         .where(and(inArray(transaction.id, ids), visible));
       for (const row of rows) {
-        const category = row.category && isCategoryFor(kind, row.category) ? row.category : null;
+        const category = row.category && (row.kind === kind || isCategoryFor(kind, row.category)) ? row.category : null;
         await tx
           .update(transaction)
           .set({ kind, category, classifiedBy: "manual", updatedAt: new Date() })
@@ -484,7 +551,14 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
     async classifyBookings(tx: RlsTransaction, items: Classification[]): Promise<string[]> {
       const changed: string[] = [];
       for (const { id, kind, category } of items) {
-        if (category !== null && !isCategoryFor(kind, category)) throw new Error("Category does not fit the type");
+        if (category !== null && ownCategoryId(category)) {
+          // An own category only where it fits the booking's account; archived ones still apply
+          // (the rule existed before). Otherwise the booking stays as it is.
+          const [booking] = await tx.select({ accountId: transaction.accountId }).from(transaction).where(and(eq(transaction.id, id), visible));
+          if (!booking || !(await categoryAllowed(tx, booking.accountId, kind, category, { allowArchived: true }))) continue;
+        } else if (category !== null && !isCategoryFor(kind, category)) {
+          throw new Error("Category does not fit the type");
+        }
         const rows = await tx
           .update(transaction)
           .set({ kind, category, classifiedBy: "rule", updatedAt: new Date() })

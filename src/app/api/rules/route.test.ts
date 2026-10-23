@@ -15,7 +15,7 @@ import { createRules, type Rules } from "@/rules/server";
 import { createFieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
-import { createTransactions, type Transactions } from "@/transactions/server";
+import { createCategories, createTransactions, type Transactions } from "@/transactions/server";
 import { createTransfers, type Transfers } from "@/transfers/server";
 
 // Privacy tests for every rules route: a member never sees, changes, deletes or applies another
@@ -332,5 +332,33 @@ describe("learning from corrections", () => {
     const seenByMax = (await (await listAs("max")).json()).rules;
     expect(seenByMax).toHaveLength(1);
     expect(seenByMax[0]).toMatchObject({ scope: { type: "account", accountId: shared }, createdByMe: false });
+  });
+});
+
+describe("/api/rules with own categories", () => {
+  async function own(userId: string, input: Record<string, unknown>) {
+    const result = await createCategories({ db }).createCategory(await caller(userId), { kind: "expense", ...input });
+    if (!result.ok) throw new Error(result.reason);
+    return result.category;
+  }
+
+  it("saves household categories in every scope and personal ones only for private accounts", async () => {
+    const pets = await own("max", { scope: "household", name: "Haustiere" });
+    const hobby = await own("max", { scope: "personal", name: "Modellbau" });
+    expect((await createAs("erika", rule(shared, { category: pets.key }))).status).toBe(201);
+    expect((await createAs("max", rule(maxIng, { category: hobby.key }))).status).toBe(201);
+    expect((await createAs("max", { ...rule(maxIng, { category: hobby.key }), scope: { type: "private" } })).status).toBe(201);
+    expect((await createAs("max", rule(shared, { category: hobby.key }))).status).toBe(400);
+    expect((await createAs("max", { ...rule(maxIng, { category: hobby.key }), scope: { type: "shared" } })).status).toBe(400);
+  });
+
+  it("never lets another member or household use someone else's category", async () => {
+    const pets = await own("max", { scope: "household", name: "Haustiere" });
+    const hobby = await own("max", { scope: "personal", name: "Modellbau" });
+    expect((await createAs("erika", rule(shared, { category: hobby.key }))).status).toBe(400);
+    expect((await createAs("erika", { ...rule(shared, { category: hobby.key }), scope: { type: "private" } })).status).toBe(400);
+    expect((await createAs("dora", rule(doras, { category: pets.key }))).status).toBe(400);
+    const { id } = await created("max", rule(maxIng, { category: hobby.key }));
+    expect((await getAs("erika", id)).status).toBe(404);
   });
 });

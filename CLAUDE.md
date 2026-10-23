@@ -31,7 +31,8 @@ src/db/             Postgres connection (server only)        → nothing
 src/auth/           login, sessions, invite links, auth UI   → nothing (db is injected via createAuth)
 src/households/     households, members, account visibility  → shared (db is injected via createHouseholds)
 src/accounts/       accounts, role (everyday/savings)        → shared (household membership via SQL)
-src/transactions/   bookings, categories, who classified     → shared (account access via accounts' SQL function accounts_visible_account_ids)
+src/transactions/   bookings, categories (standard + own per household or person), who classified
+                                                             → shared (account access via accounts' SQL function accounts_visible_account_ids; household categories via households' households_current_user_household_ids)
 src/transfers/      transfer matching, manual linking        → shared, transactions (matching across the household in its own SECURITY DEFINER SQL functions, via accounts' accounts_household_accounts(); the app starts it after each import)
 src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank, sets the opening balance and starts transfer matching)
 src/rules/          rules, auto-categorization, learning     → shared, transactions (scope via accounts' SQL function accounts_visible_account_scopes; the app applies rules after each import, before transfer matching)
@@ -51,6 +52,7 @@ src/insights/       dashboard and statistics figures, balances, account choice i
 - **Logging:** never log booking data, IBANs, names or amounts, including in error messages.
 - **Transfers:** a transfer is two linked bookings with type "Umbuchung"; it is neither income nor expense. Manual decisions (link, unlink, type) always win over automatic matching and are never overwritten by later imports.
 - **Rules:** a booking records who set its type and category (`classified_by`: auto, rule, manual). Rules never change a manual classification; matching may link a rule-typed booking but never overrides a rule with its own hints. Rule patterns are encrypted like counterparty names. A rule's scope is one account, the household's shared accounts, or the owner's private accounts.
+- **Categories:** standard categories are fixed and translated; own categories belong to a household (every member, all accounts) or to one person (only them, only their private accounts). Their keys are `c_<id>` (group) or `<group key>.c_<id>` (subcategory). Standard ones can be hidden per scope, own ones are archived, never deleted.
 - **Savings:** money moving from an everyday account to a savings account (e.g. Trade Republic depot) counts as saving.
 
 ## Tests

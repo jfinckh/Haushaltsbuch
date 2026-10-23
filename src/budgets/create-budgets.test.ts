@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { createFieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
-import { createTransactions, type Transactions } from "@/transactions/server";
+import { createCategories, createTransactions, type Transactions } from "@/transactions/server";
 import { createBudgets, type Budgets } from "./create-budgets";
 import { budget } from "./schema";
 
@@ -211,5 +211,36 @@ describe("a stored budget", () => {
     expect((await budgets.updateBudget(erika, created.id, { limit: "350,00" })).ok).toBe(true);
     const [stored] = await storedBudgets();
     expect(stored).toMatchObject({ accountId: "home-shared", createdByUserId: "max", limitCents: 35000 });
+  });
+});
+
+describe("budgets for own categories", () => {
+  async function own(caller: Caller, input: Record<string, unknown>) {
+    const result = await createCategories({ db }).createCategory(caller, { scope: "household", kind: "expense", ...input });
+    if (!result.ok) throw new Error(result.reason);
+    return result.category;
+  }
+
+  it("accepts household categories everywhere and personal ones on the owner's private account, with their spending", async () => {
+    const pets = await own(max, { name: "Haustiere" });
+    const vet = await own(max, { parentKey: pets.key, name: "Tierarzt" });
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    await book(max, "home-shared", "2026-10-03", "-30,00", "expense", vet.key);
+    const shared = await budgets.createBudget(erika, { accountId: "home-shared", category: pets.key, limit: "100,00" });
+    expect(shared).toMatchObject({ ok: true, budget: { category: pets.key, spentCents: 3000 } });
+    expect(await budgets.createBudget(max, { accountId: "max-private", category: hobby.key, limit: "50,00" })).toMatchObject({ ok: true });
+  });
+
+  it("rejects personal categories on shared accounts, other people's categories, income and archived ones", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const pets = await own(max, { name: "Haustiere" });
+    const bonus = await own(max, { kind: "income", parentKey: "salary", name: "Bonus" });
+    const invalid = { ok: false, reason: "invalid-input" };
+    expect(await budgets.createBudget(max, { accountId: "home-shared", category: hobby.key, limit: "1,00" })).toEqual(invalid);
+    expect(await budgets.createBudget(dora, { accountId: "dora-shared", category: pets.key, limit: "1,00" })).toEqual(invalid);
+    expect(await budgets.createBudget(max, { accountId: "max-private", category: bonus.key, limit: "1,00" })).toEqual(invalid);
+    expect(await budgets.createBudget(max, { accountId: "max-private", category: "salary", limit: "1,00" })).toEqual(invalid);
+    await createCategories({ db }).setArchived(max, pets.id, true);
+    expect(await budgets.createBudget(max, { accountId: "max-private", category: pets.key, limit: "1,00" })).toEqual(invalid);
   });
 });

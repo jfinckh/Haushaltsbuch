@@ -2,10 +2,10 @@ import { useTranslations } from "next-intl";
 import { useCategoryName } from "@/transactions";
 import type { RuleAccount, RuleScope, RuleView } from "../types";
 
-/** Describes a rule's scope, condition and result in words. */
-export function useRuleTexts(accounts: readonly RuleAccount[]) {
+/** Describes a rule's scope, condition and result in words; own categories take their names from `categoryNames`. */
+export function useRuleTexts(accounts: readonly RuleAccount[], categoryNames?: Record<string, string>) {
   const t = useTranslations("rules");
-  const categoryName = useCategoryName();
+  const categoryName = useCategoryName(categoryNames);
   /** "Lebensmittel › Supermarkt" for a subcategory, the group's name for a group. */
   const fullCategoryName = (key: string) => {
     const [group, sub] = key.split(".");

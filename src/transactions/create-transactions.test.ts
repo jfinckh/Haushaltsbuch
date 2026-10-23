@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { withSession, type Caller } from "@/shared/rls";
+import { createCategories } from "./create-categories";
 import { createTransactions, type TransactionView } from "./create-transactions";
 import type { TransactionValues } from "./validation";
 import { transaction } from "./schema";
@@ -879,5 +880,109 @@ describe("merging imported data into a booking entered by hand", () => {
     const previous = await withSession(setup.db, max, (tx) => transactions.mergeImported(tx, booking.id, imported));
     expect(await withSession(setup.db, erika, (tx) => transactions.restoreMerged(tx, booking.id, previous!))).toBe(false);
     expect(await transactions.getTransaction(max, booking.id)).toMatchObject({ date: "2026-10-09" });
+  });
+});
+
+describe("own categories on bookings", () => {
+  let categories: ReturnType<typeof createCategories>;
+
+  async function own(caller: Caller, input: Record<string, unknown>) {
+    const result = await categories.createCategory(caller, { scope: "household", kind: "expense", ...input });
+    if (!result.ok) throw new Error(result.reason);
+    return result.category;
+  }
+
+  beforeEach(async () => {
+    categories = createCategories({ db: setup.db });
+    await setup.addAccount("erika-private", "erika");
+  });
+
+  it("accepts household categories on every account and personal ones on the owner's private accounts", async () => {
+    const bakery = await own(max, { parentKey: "groceries", name: "Bäcker" });
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    expect(await create(max, { category: bakery.key })).toMatchObject({ category: bakery.key });
+    expect(await create(erika, { accountId: "home-shared", category: bakery.key })).toMatchObject({ category: bakery.key });
+    expect(await create(max, { category: hobby.key })).toMatchObject({ category: hobby.key });
+    const bonus = await own(max, { scope: "personal", kind: "income", parentKey: "salary", name: "Bonus" });
+    expect(await create(max, { amount: "100,00", kind: "income", category: bonus.key })).toMatchObject({ category: bonus.key });
+  });
+
+  it("rejects personal categories on shared accounts, other people's categories, wrong types and archived ones", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const pets = await own(max, { name: "Haustiere" });
+    const invalid = { ok: false, reason: "invalid-input" };
+    expect(await transactions.createTransaction(max, input({ accountId: "home-shared", category: hobby.key }))).toEqual(invalid);
+    expect(await transactions.createTransaction(erika, input({ accountId: "erika-private", category: hobby.key }))).toEqual(invalid);
+    expect(await transactions.createTransaction(dora, input({ accountId: "dora-shared", category: pets.key }))).toEqual(invalid);
+    expect(await transactions.createTransaction(max, input({ amount: "5,00", kind: "income", category: pets.key }))).toEqual(invalid);
+    expect(await transactions.createTransaction(max, input({ category: `groceries.c_${pets.id}` }))).toEqual(invalid);
+    expect(await transactions.createTransaction(max, input({ category: "c_00000000-0000-4000-8000-000000000000" }))).toEqual(invalid);
+    await categories.setArchived(max, pets.id, true);
+    expect(await transactions.createTransaction(max, input({ category: pets.key }))).toEqual(invalid);
+  });
+
+  it("checks the category again when a booking moves or its category changes, but keeps an unchanged archived one", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const pets = await own(max, { name: "Haustiere" });
+    const booking = await create(max, { category: hobby.key });
+    expect(await transactions.updateTransaction(max, booking.id, { accountId: "home-shared" })).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await transactions.updateTransaction(erika, booking.id, { category: pets.key })).toEqual({ ok: false, reason: "not-found" });
+    const withPets = await create(max, { category: pets.key });
+    await categories.setArchived(max, pets.id, true);
+    expect(await transactions.updateTransaction(max, withPets.id, { amount: "-9,99" })).toMatchObject({ ok: true, transaction: { category: pets.key } });
+    expect(await transactions.updateTransaction(max, booking.id, { category: pets.key })).toEqual({ ok: false, reason: "invalid-input" });
+  });
+
+  it("drops an own category when the type changes, and keeps it when the type stays", async () => {
+    const pets = await own(max, { name: "Haustiere" });
+    const booking = await create(max, { category: pets.key });
+    expect(await transactions.updateTransaction(max, booking.id, { kind: "expense" })).toMatchObject({ transaction: { category: pets.key } });
+    expect(await transactions.updateTransaction(max, booking.id, { kind: "income" })).toMatchObject({ transaction: { kind: "income", category: null } });
+    const other = await create(max, { category: pets.key });
+    await withSession(setup.db, max, (tx) => transactions.setKind(tx, [other.id], "expense"));
+    expect((await storedRow(other.id)).category).toBe(pets.key);
+    await withSession(setup.db, max, (tx) => transactions.setKind(tx, [other.id], "transfer"));
+    expect((await storedRow(other.id)).category).toBeNull();
+  });
+
+  it("checks a category for a whole rule scope, and keeps an archived one only when asked", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const pets = await own(max, { name: "Haustiere" });
+    const check = (caller: Caller, visibility: "shared" | "private", key: string, allowArchived = false) =>
+      withSession(setup.db, caller, (tx) => transactions.checkCategory(tx, { visibility }, "expense", key, { allowArchived }));
+    expect(await check(max, "private", hobby.key)).toBe(true);
+    expect(await check(max, "shared", hobby.key)).toBe(false);
+    expect(await check(max, "shared", pets.key)).toBe(true);
+    expect(await check(erika, "private", hobby.key)).toBe(false);
+    expect(await check(dora, "shared", pets.key)).toBe(false);
+    await categories.setArchived(max, pets.id, true);
+    expect(await check(max, "shared", pets.key)).toBe(false);
+    expect(await check(max, "shared", pets.key, true)).toBe(true);
+  });
+
+  it("lets rules set an own category only where it fits the booking's account", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const pets = await own(max, { name: "Haustiere" });
+    const onPrivate = await create(max, { category: null });
+    const onShared = await create(max, { accountId: "home-shared", category: null });
+    const classify = (items: { id: string; category: string }[]) =>
+      withSession(setup.db, max, (tx) => transactions.classifyBookings(tx, items.map((i) => ({ ...i, kind: "expense" as const }))));
+    expect(await classify([{ id: onPrivate.id, category: hobby.key }, { id: onShared.id, category: hobby.key }])).toEqual([onPrivate.id]);
+    expect((await storedRow(onShared.id)).category).toBeNull();
+    await categories.setArchived(max, pets.id, true);
+    expect(await classify([{ id: onShared.id, category: pets.key }])).toEqual([onShared.id]);
+    expect((await storedRow(onShared.id)).category).toBe(pets.key);
+  });
+
+  it("offers the check to other parts inside their database transaction", async () => {
+    const hobby = await own(max, { scope: "personal", name: "Modellbau" });
+    const check = (caller: Caller, accountId: string, key: string) =>
+      withSession(setup.db, caller, (tx) => transactions.checkCategory(tx, accountId, "expense", key));
+    expect(await check(max, "max-private", hobby.key)).toBe(true);
+    expect(await check(max, "max-private", "groceries")).toBe(true);
+    expect(await check(max, "max-private", "salary")).toBe(false);
+    expect(await check(max, "home-shared", hobby.key)).toBe(false);
+    expect(await check(erika, "erika-private", hobby.key)).toBe(false);
+    expect(await check(erika, "max-private", "groceries")).toBe(false);
   });
 });

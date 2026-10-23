@@ -13,12 +13,14 @@ type Props = {
   totalCents: number;
   /** Spending per category group, largest first; `group: null` is expenses without category. */
   groups: GroupSpending[];
+  /** Names of own categories (the page's catalog). */
+  categoryNames?: Record<string, string>;
 };
 
 /** A month's expenses per category group: a bar per group, each linking to the account's bookings if one is given. */
-export function CategorySpending({ accountId, month, totalCents, groups }: Props) {
+export function CategorySpending({ accountId, month, totalCents, groups, categoryNames }: Props) {
   const t = useTranslations("transactions.spending");
-  const categoryName = useCategoryName();
+  const categoryName = useCategoryName(categoryNames);
   return (
     <section className="flex flex-col gap-3">
       <h2 className="text-lg font-semibold">{t("title")}</h2>

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, date, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, date, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { CLASSIFIED_BY, TRANSACTION_KINDS } from "./kinds";
 
 // Table of the transactions part: one row per booking. account_id is plain text in this file, so
@@ -47,4 +47,50 @@ export const transaction = pgTable(
   ],
 );
 
-export const transactionTables = { transaction };
+/**
+ * Own categories of a household (every member) or of one person (only them). Exactly one of
+ * household_id and owner_user_id is set. A group has no parent_key; a subcategory's parent_key is a
+ * standard group key or an own group's key (`c_<id>`) of the same scope and kind. Names are not
+ * encrypted (categories stay unencrypted). Grants and row-level security: drizzle/0023_categories.sql.
+ */
+export const category = pgTable(
+  "category",
+  {
+    id: text("id").primaryKey(),
+    householdId: text("household_id"),
+    ownerUserId: text("owner_user_id"),
+    kind: text("kind", { enum: ["expense", "income"] }).notNull(),
+    parentKey: text("parent_key"),
+    name: text("name").notNull(),
+    archived: boolean("archived").notNull().default(false),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("category_household_idx").on(table.householdId),
+    index("category_owner_idx").on(table.ownerUserId),
+    check("category_scope_check", sql`(${table.householdId} IS NULL) <> (${table.ownerUserId} IS NULL)`),
+    check("category_kind_check", sql`${table.kind} IN ('expense', 'income')`),
+  ],
+);
+
+/** Standard category keys hidden for a household or for one person (exactly one of the two is set). */
+export const hiddenCategory = pgTable(
+  "hidden_category",
+  {
+    id: text("id").primaryKey(),
+    householdId: text("household_id"),
+    ownerUserId: text("owner_user_id"),
+    key: text("key").notNull(),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("hidden_category_household_key_idx").on(table.householdId, table.key),
+    uniqueIndex("hidden_category_owner_key_idx").on(table.ownerUserId, table.key),
+    check("hidden_category_scope_check", sql`(${table.householdId} IS NULL) <> (${table.ownerUserId} IS NULL)`),
+  ],
+);
+
+export const transactionTables = { transaction, category, hiddenCategory };

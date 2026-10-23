@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
+import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { transactions } from "@/app/_lib/transactions";
 import { householdMembers, transfers } from "@/app/_lib/transfers";
@@ -30,14 +31,15 @@ async function EditTransaction({ params }: Params) {
   // A booking of another member's private account does not exist for this caller.
   const transaction = await transactions.getTransaction(caller, (await params).id);
   if (!transaction) notFound();
-  const [visible, transferStatus] = await Promise.all([
+  const [visible, transferStatus, catalog] = await Promise.all([
     accounts.listAccounts(caller),
     householdMembers(caller).then((members) => transfers.statusOf(caller, transaction.id, members)),
+    categories.catalog(caller),
   ]);
   // Active accounts, plus the booking's own account even if it is archived.
   const bookable = visible
     .filter((a) => !a.archived || a.id === transaction.accountId)
-    .map(({ id, name }) => ({ id, name }));
+    .map(({ id, name, visibility }) => ({ id, name, visibility }));
   const t = await getTranslations("app.transactions");
   const accountHref = `/accounts/${transaction.accountId}`;
   return (
@@ -48,7 +50,7 @@ async function EditTransaction({ params }: Params) {
           {t("back")}
         </Link>
       </div>
-      <TransactionForm accounts={bookable} transaction={transaction} offerRule />
+      <TransactionForm accounts={bookable} transaction={transaction} categories={catalog} offerRule />
       {transferStatus && (
         <>
           <div className="divider my-0" />

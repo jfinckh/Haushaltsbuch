@@ -2,9 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, type ComponentProps, type FormEvent } from "react";
 import { useTranslateKey } from "@/shared/use-translate-key";
-import { CategorySelect, isCategoryFor, TRANSACTION_KINDS, type TransactionKind } from "@/transactions";
+import { CategorySelect, isCategoryFor, isOwnCategoryKey, TRANSACTION_KINDS, type TransactionKind } from "@/transactions";
 import type { RuleAccount, RuleScope, RuleView } from "../types";
 import { ruleInputSchema } from "../validation";
 import { useRuleTexts } from "./use-rule-texts";
@@ -12,6 +12,8 @@ import { useRuleTexts } from "./use-rule-texts";
 type Props = {
   /** The accounts the user may see (passed by the app). */
   accounts: RuleAccount[];
+  /** The page's category catalog; without it only the standard categories are offered. */
+  categories?: { names: Record<string, string>; shared: CategoryGroups; private: CategoryGroups };
   /** The rule to edit; without it the form creates a new one. */
   rule?: RuleView;
   /** Endpoint for rules. Default: /api/rules */
@@ -22,6 +24,8 @@ type Props = {
 
 type Errors = Record<string, string>;
 
+type CategoryGroups = NonNullable<ComponentProps<typeof CategorySelect>["groups"]>;
+
 const scopeValue = (scope: RuleScope) => (scope.type === "account" ? `account:${scope.accountId}` : scope.type);
 
 function scopeFrom(value: string): RuleScope {
@@ -30,11 +34,11 @@ function scopeFrom(value: string): RuleScope {
 }
 
 /** Creates or edits a rule: where it applies, what it looks for and what it sets. */
-export function RuleForm({ accounts, rule, action = "/api/rules", rulesHref = "/rules" }: Props) {
+export function RuleForm({ accounts, categories, rule, action = "/api/rules", rulesHref = "/rules" }: Props) {
   const t = useTranslations("rules.form");
   const tKinds = useTranslations("rules.kinds");
   const tk = useTranslateKey();
-  const texts = useRuleTexts(accounts);
+  const texts = useRuleTexts(accounts, categories?.names);
   const router = useRouter();
   const [scope, setScope] = useState(rule ? scopeValue(rule.scope) : accounts[0] ? `account:${accounts[0].id}` : "shared");
   const [kind, setKind] = useState<TransactionKind>(rule?.kind ?? "expense");
@@ -51,9 +55,28 @@ export function RuleForm({ accounts, rule, action = "/api/rules", rulesHref = "/
   const hasCategory = kind === "expense" || kind === "income";
   const hasTarget = kind === "transfer" || kind === "saving";
 
+  /**
+   * The categories a rule in this scope may set: one account's choice, the household's shared accounts
+   * (never personal categories) or the caller's private accounts.
+   */
+  const groupsFor = (value: string) => {
+    if (!categories) return undefined;
+    const target = scopeFrom(value);
+    const shared = target.type === "account" ? accounts.find((a) => a.id === target.accountId)?.visibility === "shared" : target.type === "shared";
+    return shared ? categories.shared : categories.private;
+  };
+
+  function chooseScope(next: string) {
+    setScope(next);
+    const offered = groupsFor(next)?.some((g) => g.key === category || g.subcategories.some((s) => s.key === category));
+    if (isOwnCategoryKey(category) && !offered) setCategory("");
+  }
+
   function chooseKind(next: TransactionKind) {
+    if (next === kind) return;
     setKind(next);
-    if (category && !isCategoryFor(next, category)) setCategory("");
+    // Own categories have a fixed type, so they never fit another one.
+    if (category && (isOwnCategoryKey(category) || !isCategoryFor(next, category))) setCategory("");
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -98,7 +121,7 @@ export function RuleForm({ accounts, rule, action = "/api/rules", rulesHref = "/
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-2">
       <fieldset className="fieldset">
         <label className="fieldset-legend" htmlFor="rule-scope">{t("scope")}</label>
-        <select id="rule-scope" className="select w-full" value={scope} onChange={(e) => setScope(e.target.value)}>
+        <select id="rule-scope" className="select w-full" value={scope} onChange={(e) => chooseScope(e.target.value)}>
           {scopes.map((s) => (
             <option key={scopeValue(s)} value={scopeValue(s)}>
               {texts.scope(s)}
@@ -144,7 +167,15 @@ export function RuleForm({ accounts, rule, action = "/api/rules", rulesHref = "/
         {hasCategory && (
           <fieldset className="fieldset">
             <label className="fieldset-legend" htmlFor="rule-category">{t("category")}</label>
-            <CategorySelect id="rule-category" kinds={[kind]} value={category} onChange={setCategory} emptyLabel={t("noCategory")} />
+            <CategorySelect
+              id="rule-category"
+              kinds={[kind]}
+              value={category}
+              onChange={setCategory}
+              emptyLabel={t("noCategory")}
+              groups={groupsFor(scope)}
+              names={categories?.names}
+            />
             {error("category")}
           </fieldset>
         )}

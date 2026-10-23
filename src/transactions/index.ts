@@ -1,5 +1,6 @@
 // Entry point of transactions: other parts import transactions only through this file.
-export { isCategoryFor } from "./categories";
+export { isCategoryFor, isOwnCategoryKey } from "./categories";
+export { CategoryManager } from "./components/category-manager";
 export { CategorySelect } from "./components/category-select";
 export { CategorySpending } from "./components/category-spending";
 export { DeleteTransactionButton } from "./components/delete-transaction-button";

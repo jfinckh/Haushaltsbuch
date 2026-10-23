@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
+import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { RuleForm } from "@/rules";
 
@@ -21,7 +22,8 @@ export default function NewRulePage() {
 
 async function NewRule() {
   const { caller } = await requireCaller("/sign-in");
-  const visible = (await accounts.listAccounts(caller)).filter((a) => !a.archived).map(({ id, name }) => ({ id, name }));
+  const [listed, catalog] = await Promise.all([accounts.listAccounts(caller), categories.catalog(caller)]);
+  const visible = listed.filter((a) => !a.archived).map(({ id, name, visibility }) => ({ id, name, visibility }));
   const t = await getTranslations("app.rules");
   return (
     <>
@@ -31,7 +33,7 @@ async function NewRule() {
           {t("back")}
         </Link>
       </div>
-      <RuleForm accounts={visible} />
+      <RuleForm accounts={visible} categories={catalog} />
     </>
   );
 }

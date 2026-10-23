@@ -6,8 +6,8 @@ import { createBudgetSchema, monthSchema, updateBudgetSchema } from "./validatio
 
 export type BudgetsOptions = {
   db: RlsDatabase;
-  /** Reads the monthly expense totals of an account. */
-  transactions: Pick<Transactions, "expenseTotals">;
+  /** Reads the monthly expense totals of an account and checks a budget's category. */
+  transactions: Pick<Transactions, "expenseTotals" | "checkCategory">;
 };
 
 /** A budget as callers see it, with its spending in the listed month. No user ids. */
@@ -89,6 +89,8 @@ export function createBudgets({ db, transactions }: BudgetsOptions) {
       const { accountId, category, limit } = parsed.data;
       return withSession(db, caller, async (tx, userId): Promise<SaveBudgetResult> => {
         if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        // A standard or own expense category that fits the account (own ones: visible, active, personal only on private accounts).
+        if (!(await transactions.checkCategory(tx, accountId, "expense", category))) return { ok: false, reason: "invalid-input" };
         const [row] = await tx
           .insert(budget)
           .values({ id: crypto.randomUUID(), accountId, category, limitCents: limit, createdByUserId: userId })

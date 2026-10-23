@@ -7,6 +7,7 @@ import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
+import { categories as categoryService } from "@/app/_lib/categories";
 import { insights } from "@/app/_lib/insights";
 import { ALL_MINE, selectAccount } from "@/insights";
 import type { Insights } from "@/insights/server";
@@ -91,7 +92,10 @@ async function Year({ searchParams }: Props) {
 
 /** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
 async function YearFigures({ caller, accountId, year }: { caller: Caller; accountId: string | null; year: number }) {
-  const overview = await insights.yearOverview(caller, accountId ?? { ownPrivate: true }, year);
+  const [overview, { names }] = await Promise.all([
+    insights.yearOverview(caller, accountId ?? { ownPrivate: true }, year),
+    categoryService.catalog(caller),
+  ]);
   if (!overview.ok) return null;
   return (
     <>
@@ -99,7 +103,7 @@ async function YearFigures({ caller, accountId, year }: { caller: Caller; accoun
       <div className="divider my-0" />
       <MonthTable overview={overview} />
       <div className="divider my-0" />
-      <YearCategories categories={overview.categories} />
+      <YearCategories categories={overview.categories} categoryNames={names} />
     </>
   );
 }
@@ -193,10 +197,17 @@ async function MonthTable({ overview: { months, totals } }: { overview: Overview
 }
 
 /** The year's spending per category group with its share of the total. */
-function YearCategories({ categories: { totalCents, groups } }: { categories: Overview["categories"] }) {
+function YearCategories({
+  categories: { totalCents, groups },
+  categoryNames,
+}: {
+  categories: Overview["categories"];
+  /** Names of own categories (the page's catalog). */
+  categoryNames: Record<string, string>;
+}) {
   const t = useTranslations("app.statistics");
   const uncategorized = useTranslations("transactions.spending")("uncategorized");
-  const categoryName = useCategoryName();
+  const categoryName = useCategoryName(categoryNames);
   return (
     <section className="flex flex-col gap-2">
       <h2 className="text-lg font-semibold">{t("categories")}</h2>

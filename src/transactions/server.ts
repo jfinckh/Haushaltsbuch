@@ -1,5 +1,6 @@
 // Server entry point of transactions: other parts import transactions' server code only through this file.
 import "server-only";
 
+export { createCategories, type Categories } from "./create-categories";
 export { createTransactions, type Transactions, type TransactionView } from "./create-transactions";
 export type { TransactionValues } from "./validation";
