@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
-import { SignOutButton } from "@/auth";
+import { Suspense, type ReactNode } from "react";
 import { BudgetSection } from "@/budgets";
 import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
@@ -13,6 +12,7 @@ import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
 import { insights } from "@/app/_lib/insights";
 import { transactions } from "@/app/_lib/transactions";
+import { AppShell, PageHeader, Section } from "@/app/_lib/app-shell";
 import { ALL_MINE, selectAccount } from "@/insights";
 import { formatEuro } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
@@ -25,11 +25,11 @@ const LATEST = 8;
 
 export default function Home(props: Props) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
+    <AppShell>
       <Suspense fallback={<span className="loading loading-spinner" />}>
         <Dashboard {...props} />
       </Suspense>
-    </main>
+    </AppShell>
   );
 }
 
@@ -55,17 +55,18 @@ async function Dashboard({ searchParams }: Props) {
   const t = await getTranslations("app.home");
 
   return (
-    <div className="card bg-base-100 w-full max-w-md shadow-md">
-      <div className="card-body gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="card-title text-2xl">{t("greeting", { name: user.name })}</h1>
-          <div className="flex shrink-0 gap-1">
-            <Link href="/household" className="btn btn-ghost btn-sm">
-              {t("manage")}
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title={t("greeting", { name: user.name })}
+        actions={
+          selected && (
+            <Link href={`/statistics?account=${selectedId}`} className="btn btn-ghost btn-sm">
+              {t("statistics")}
             </Link>
-            <SignOutButton redirectTo="/sign-in" />
-          </div>
-        </div>
+          )
+        }
+      />
+      <div className="flex flex-col gap-6">
         {keptReason && inviter && (
           <div role="status" className="alert alert-info alert-soft">
             <span>
@@ -78,9 +79,6 @@ async function Dashboard({ searchParams }: Props) {
         {selected ? (
           <>
             <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/" />
-            <Link href={`/statistics?account=${selectedId}`} className="link link-hover self-end text-sm">
-              {t("statistics")}
-            </Link>
             {selected === ALL_MINE ? (
               <CombinedDashboard
                 caller={caller}
@@ -114,45 +112,59 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
   const t = await getTranslations("app.home");
 
   return (
-    <>
-      {summary.ok && (
-        <MonthFigures
-          availableCents={summary.availableCents}
-          figures={[
-            ["income", summary.incomeCents],
-            ["expenses", summary.expenseCents],
-            ["saving", summary.savingCents],
-          ]}
-        />
-      )}
-      {budgetList.ok && (
+    <DashboardColumns
+      main={
         <>
-          <div className="divider my-0" />
-          <BudgetSection accountId={accountId} month={budgetList.month} budgets={budgetList.budgets} readOnly categoryNames={names} />
-          <Link href={`/accounts/${accountId}`} className="link link-hover self-end text-sm">
-            {t("editBudgets")}
-          </Link>
+          {summary.ok && (
+            <MonthFigures
+              availableCents={summary.availableCents}
+              figures={[
+                ["income", summary.incomeCents],
+                ["expenses", summary.expenseCents],
+                ["saving", summary.savingCents],
+              ]}
+            />
+          )}
+          {budgetList.ok && (
+            <Section>
+              <BudgetSection accountId={accountId} month={budgetList.month} budgets={budgetList.budgets} readOnly categoryNames={names} />
+              <Link href={`/accounts/${accountId}`} className="link link-hover self-start text-sm text-base-content/70">
+                {t("editBudgets")}
+              </Link>
+            </Section>
+          )}
+          {spending.ok && (
+            <Section>
+              <CategorySpending accountId={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
+            </Section>
+          )}
         </>
-      )}
-      {spending.ok && (
-        <>
-          <div className="divider my-0" />
-          <CategorySpending accountId={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
-        </>
-      )}
-      {latest.ok && (
-        <>
-          <div className="divider my-0" />
-          <section className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">{t("latest")}</h2>
+      }
+      side={
+        latest.ok && (
+          <Section
+            title={t("latest")}
+            actions={
+              <Link href={`/accounts/${accountId}`} className="link link-hover text-sm text-base-content/70">
+                {t("allBookings")}
+              </Link>
+            }
+          >
             <TransactionList transactions={latest.transactions} categoryNames={names} />
-            <Link href={`/accounts/${accountId}`} className="btn btn-ghost btn-sm self-end">
-              {t("allBookings")}
-            </Link>
-          </section>
-        </>
-      )}
-    </>
+          </Section>
+        )
+      }
+    />
+  );
+}
+
+/** Figures and charts on the left, newest bookings on the right (stacked on phones). */
+function DashboardColumns({ main, side }: { main: ReactNode; side: ReactNode }) {
+  return (
+    <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-10">
+      <div className="flex min-w-0 flex-col gap-8">{main}</div>
+      <div className="min-w-0">{side}</div>
+    </div>
   );
 }
 
@@ -162,14 +174,18 @@ type FigureKey = "income" | "expenses" | "saving" | "contribution";
 async function MonthFigures({ availableCents, figures }: { availableCents: number; figures: [FigureKey, number][] }) {
   const t = await getTranslations("app.home");
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-sm opacity-70">{t("available")}</h2>
-      <p className={`text-4xl font-semibold tabular-nums ${availableCents < 0 ? "text-error" : ""}`}>{formatEuro(availableCents)}</p>
-      <dl className={`grid gap-2 text-sm ${figures.length > 3 ? "grid-cols-2" : "grid-cols-3"}`}>
+    <section className="flex flex-col gap-5">
+      <div>
+        <h2 className="text-sm text-base-content/60">{t("available")}</h2>
+        <p className={`mt-1 text-4xl font-semibold tracking-tight sm:text-5xl ${availableCents < 0 ? "text-error" : ""}`}>
+          {formatEuro(availableCents)}
+        </p>
+      </div>
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-box border border-base-300 bg-base-300 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
         {figures.map(([key, cents]) => (
-          <div key={key}>
-            <dt className="opacity-70">{t(key)}</dt>
-            <dd className="tabular-nums">{formatEuro(cents)}</dd>
+          <div key={key} className="min-w-0 bg-base-100 px-4 py-3">
+            <dt className="text-xs leading-snug text-base-content/60">{t(key)}</dt>
+            <dd className="mt-0.5 font-medium">{formatEuro(cents)}</dd>
           </div>
         ))}
       </dl>
@@ -189,33 +205,34 @@ async function CombinedDashboard({ caller, accountNames }: { caller: Caller; acc
   const t = await getTranslations("app.home");
 
   return (
-    <>
-      {summary.ok && (
-        <MonthFigures
-          availableCents={summary.availableCents}
-          figures={[
-            ["income", summary.incomeCents],
-            ["expenses", summary.expenseCents],
-            ["saving", summary.savingCents],
-            ["contribution", summary.contributionCents ?? 0],
-          ]}
-        />
-      )}
-      {spending.ok && (
+    <DashboardColumns
+      main={
         <>
-          <div className="divider my-0" />
-          <CategorySpending month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
+          {summary.ok && (
+            <MonthFigures
+              availableCents={summary.availableCents}
+              figures={[
+                ["income", summary.incomeCents],
+                ["expenses", summary.expenseCents],
+                ["saving", summary.savingCents],
+                ["contribution", summary.contributionCents ?? 0],
+              ]}
+            />
+          )}
+          {spending.ok && (
+            <Section>
+              <CategorySpending month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
+            </Section>
+          )}
         </>
-      )}
-      {latest.ok && (
-        <>
-          <div className="divider my-0" />
-          <section className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">{t("latest")}</h2>
+      }
+      side={
+        latest.ok && (
+          <Section title={t("latest")}>
             <TransactionList transactions={latest.transactions} accountNames={accountNames} categoryNames={names} />
-          </section>
-        </>
-      )}
-    </>
+          </Section>
+        )
+      }
+    />
   );
 }

@@ -1,16 +1,17 @@
 import { Suspense } from "react";
 import { SignUpForm } from "@/auth";
 import { inviteReturn } from "@/app/_lib/invite-return";
+import { AuthFrame } from "@/app/_lib/app-shell";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default function SignUpPage({ searchParams }: Props) {
   return (
-    <main className="flex flex-1 items-center justify-center p-4">
+    <AuthFrame>
       <Suspense fallback={<span className="loading loading-spinner" />}>
         <SignUp searchParams={searchParams} />
       </Suspense>
-    </main>
+    </AuthFrame>
   );
 }
 

@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { AccountList } from "@/accounts";
 import { InviteShareButton } from "@/auth";
 import { HouseholdNameEditor, LeaveHouseholdButton } from "@/households";
+import { AppShell, PageHeader, Section } from "@/app/_lib/app-shell";
 import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
 import { requireCaller } from "@/app/_lib/caller";
@@ -14,11 +15,11 @@ import { describeMembers } from "@/app/_lib/member-names";
 
 export default function HouseholdPage() {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
+    <AppShell>
       <Suspense fallback={<span className="loading loading-spinner" />}>
         <Household />
       </Suspense>
-    </main>
+    </AppShell>
   );
 }
 
@@ -48,50 +49,56 @@ async function Household() {
     (items) => format.list(items, { type: "conjunction" }),
   );
 
+  const links = [
+    ["/imports", t("home.importCsv")],
+    ["/rules", t("home.rules")],
+    ["/categories", t("home.categories")],
+  ] as const;
+
   return (
-    <div className="card bg-base-100 w-full max-w-md shadow-md">
-      <div className="card-body gap-4">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="card-title text-2xl">{t("home.manage")}</h1>
-          <Link href="/" className="btn btn-ghost btn-sm">
-            {t("household.back")}
-          </Link>
-        </div>
-        <div>
-          <HouseholdNameEditor name={household.name} />
-          <p className="opacity-70">
-            {memberLine}
-            {invitedHere && ` · ${t("home.invitedBy", { name: inviter.name })}`}
-          </p>
-        </div>
-        <div className="divider my-0" />
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-semibold">{t("home.accounts")}</h2>
-          <div className="flex gap-2">
-            <Link href="/imports" className="btn btn-ghost btn-sm">
-              {t("home.importCsv")}
-            </Link>
-            <Link href="/rules" className="btn btn-ghost btn-sm">
-              {t("home.rules")}
-            </Link>
-            <Link href="/categories" className="btn btn-ghost btn-sm">
-              {t("home.categories")}
-            </Link>
-            <Link href="/accounts/new" className="btn btn-primary btn-sm">
-              {t("home.addAccount")}
-            </Link>
+    <div className="flex flex-col gap-6">
+      <PageHeader title={t("home.manage")} />
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:gap-10">
+        <div className="flex min-w-0 flex-col gap-8">
+          <div>
+            <HouseholdNameEditor name={household.name} />
+            <p className="text-sm text-base-content/60">
+              {memberLine}
+              {invitedHere && ` · ${t("home.invitedBy", { name: inviter.name })}`}
+            </p>
           </div>
+          <Section
+            title={t("home.accounts")}
+            actions={
+              <Link href="/accounts/new" className="btn btn-primary btn-sm">
+                {t("home.addAccount")}
+              </Link>
+            }
+          >
+            <AccountList accounts={visibleAccounts} balances={balances} />
+          </Section>
         </div>
-        <AccountList accounts={visibleAccounts} balances={balances} />
-        <div className="divider my-0" />
-        <h2 className="font-semibold">{t("home.invitePartner")}</h2>
-        <InviteShareButton shareText={t("home.shareText")} />
-        <div className="divider my-0" />
-        <div className="flex justify-end">
-          <LeaveHouseholdButton
-            lastMember={lastMember}
-            note={lastMember ? t("home.leaveNoteLastMember") : t("home.leaveNoteOthers")}
-          />
+        <div className="flex min-w-0 flex-col gap-8">
+          <Section title={t("home.invitePartner")}>
+            <InviteShareButton shareText={t("home.shareText")} />
+          </Section>
+          <Section>
+            <ul className="flex flex-col text-sm">
+              {links.map(([href, label]) => (
+                <li key={href}>
+                  <Link href={href} className="flex items-center justify-between py-1.5 hover:text-primary">
+                    {label}
+                    <span aria-hidden="true" className="text-base-content/40">
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Section>
+          <Section>
+            <LeaveHouseholdButton lastMember={lastMember} note={lastMember ? t("home.leaveNoteLastMember") : t("home.leaveNoteOthers")} />
+          </Section>
         </div>
       </div>
     </div>

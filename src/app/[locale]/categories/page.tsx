@@ -1,21 +1,19 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { requireCaller } from "@/app/_lib/caller";
 import { categories } from "@/app/_lib/categories";
 import { CategoryManager } from "@/transactions";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 export default function CategoriesPage() {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
-      <div className="card bg-base-100 w-full max-w-2xl shadow-md">
-        <div className="card-body gap-4">
+    <AppShell>
+      <div className="flex flex-col gap-6">
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <Categories />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 
@@ -26,13 +24,7 @@ async function Categories() {
   const t = await getTranslations("app.categories");
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="card-title text-2xl">{t("title")}</h1>
-        <Link href="/household" className="btn btn-ghost btn-sm">
-          {t("back")}
-        </Link>
-      </div>
-      <p className="text-base-content/70 text-sm">{t("intro")}</p>
+      <PageHeader title={t("title")} subtitle={t("intro")} />
       <CategoryManager household={household} personal={personal} />
     </>
   );

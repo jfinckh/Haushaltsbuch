@@ -113,5 +113,16 @@
     "title": "Categories",
     "back": "Back",
     "intro": "Add your own categories, rename them or hide standard ones."
+  },
+  "nav": {
+    "appName": "Haushaltsbuch",
+    "label": "Main navigation",
+    "overview": "Overview",
+    "statistics": "Statistics",
+    "imports": "Import",
+    "rules": "Rules",
+    "categories": "Categories",
+    "household": "Household",
+    "householdLong": "Household & accounts"
   }
 }

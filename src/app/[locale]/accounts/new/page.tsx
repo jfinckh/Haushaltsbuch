@@ -1,29 +1,22 @@
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AccountForm } from "@/accounts";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 export default function NewAccountPage() {
   const t = useTranslations("app.accounts");
   return (
-    <main className="flex flex-1 items-start justify-center p-4 sm:items-center">
-      <div className="card bg-base-100 w-full max-w-md shadow-md">
-        <div className="card-body gap-4">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="card-title text-2xl">{t("addTitle")}</h1>
-            <Link href="/household" className="btn btn-ghost btn-sm">
-              {t("back")}
-            </Link>
-          </div>
+    <AppShell narrow>
+      <div className="flex flex-col gap-6">
+          <PageHeader title={t("addTitle")} back={{ href: "/household", label: t("back") }} />
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <NewAccount />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 

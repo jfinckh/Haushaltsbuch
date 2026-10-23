@@ -1,24 +1,22 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { ImportList, ImportUpload } from "@/import";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
 import { imports } from "@/app/_lib/imports";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default function ImportsPage(props: Props) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
-      <div className="card bg-base-100 w-full max-w-3xl shadow-md">
-        <div className="card-body gap-4">
+    <AppShell>
+      <div className="flex flex-col gap-6">
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <Imports {...props} />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 
@@ -35,14 +33,9 @@ async function Imports({ searchParams }: Props) {
   const t = await getTranslations("app.imports");
   return (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="card-title text-2xl">{t("title")}</h1>
-        <Link href={accountId ? `/accounts/${accountId}` : "/"} className="btn btn-ghost btn-sm">
-          {t("back")}
-        </Link>
-      </div>
+      <PageHeader title={t("title")} back={accountId ? { href: `/accounts/${accountId}`, label: t("back") } : undefined} />
       <ImportUpload accounts={importable} accountId={accountId} />
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <h2 className="font-semibold">{t("past")}</h2>
       <ImportList imports={past} accountNames={accountNames} />
     </>

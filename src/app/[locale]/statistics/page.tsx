@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -14,6 +13,7 @@ import { formatEuro } from "@/shared/money";
 import { CategoryTrends } from "./category-trends";
 import { ViewTabs } from "./view-tabs";
 import type { Caller } from "@/shared/rls";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -22,11 +22,11 @@ const MONTHS = 12;
 
 export default function StatisticsPage(props: Props) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
+    <AppShell>
       <Suspense fallback={<span className="loading loading-spinner" />}>
         <Statistics {...props} />
       </Suspense>
-    </main>
+    </AppShell>
   );
 }
 
@@ -42,14 +42,8 @@ async function Statistics({ searchParams }: Props) {
   const t = await getTranslations("app.statistics");
 
   return (
-    <div className="card bg-base-100 w-full max-w-md shadow-md">
-      <div className="card-body gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="card-title text-2xl">{t("title")}</h1>
-          <Link href={selected ? `/?account=${selected === ALL_MINE ? ALL_MINE : selected.id}` : "/"} className="btn btn-ghost btn-sm">
-            {t("back")}
-          </Link>
-        </div>
+    <div className="flex flex-col gap-6">
+        <PageHeader title={t("title")} />
         {selected ? (
           <>
             <ViewTabs view="months" accountId={selected === ALL_MINE ? ALL_MINE : selected.id} />
@@ -60,7 +54,6 @@ async function Statistics({ searchParams }: Props) {
           <p className="opacity-70">{t("noAccounts")}</p>
         )}
       </div>
-    </div>
   );
 }
 
@@ -80,11 +73,11 @@ async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: s
       {comparison && <Comparison comparison={comparison} previousMonth={rows[1].month} />}
       {trends.ok && (
         <>
-          <div className="divider my-0" />
+          <hr className="border-base-300" />
           <CategoryTrends trends={trends} accountId={accountId} categoryNames={names} />
         </>
       )}
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <ol className="flex flex-col gap-4">
         {rows.map((row) => (
           <MonthRow key={row.month} row={row} scale={scale} />

@@ -15,6 +15,7 @@ import { formatCents, formatEuro } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
 import { useCategoryName } from "@/transactions";
 import { ViewTabs } from "../view-tabs";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -25,11 +26,11 @@ const FIRST_YEAR = 1970;
 
 export default function YearPage(props: Props) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
+    <AppShell>
       <Suspense fallback={<span className="loading loading-spinner" />}>
         <Year {...props} />
       </Suspense>
-    </main>
+    </AppShell>
   );
 }
 
@@ -51,14 +52,8 @@ async function Year({ searchParams }: Props) {
   const t = await getTranslations("app.statistics");
 
   return (
-    <div className="card bg-base-100 w-full max-w-md shadow-md">
-      <div className="card-body gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="card-title text-2xl">{t("title")}</h1>
-          <Link href={selected ? `/?account=${selectedId}` : "/"} className="btn btn-ghost btn-sm">
-            {t("back")}
-          </Link>
-        </div>
+    <div className="flex flex-col gap-6">
+        <PageHeader title={t("title")} />
         {selected ? (
           <>
             <ViewTabs view="year" accountId={selectedId} />
@@ -86,7 +81,6 @@ async function Year({ searchParams }: Props) {
           <p className="opacity-70">{t("noAccounts")}</p>
         )}
       </div>
-    </div>
   );
 }
 
@@ -100,9 +94,9 @@ async function YearFigures({ caller, accountId, year }: { caller: Caller; accoun
   return (
     <>
       <Totals overview={overview} />
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <MonthTable overview={overview} />
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <YearCategories categories={overview.categories} categoryNames={names} />
     </>
   );

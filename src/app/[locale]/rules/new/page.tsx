@@ -1,22 +1,20 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
 import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { RuleForm } from "@/rules";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 export default function NewRulePage() {
   return (
-    <main className="flex flex-1 items-start justify-center p-4 sm:items-center">
-      <div className="card bg-base-100 w-full max-w-md shadow-md">
-        <div className="card-body gap-4">
+    <AppShell narrow>
+      <div className="flex flex-col gap-6">
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <NewRule />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 
@@ -27,12 +25,7 @@ async function NewRule() {
   const t = await getTranslations("app.rules");
   return (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="card-title text-2xl">{t("newTitle")}</h1>
-        <Link href="/rules" className="btn btn-ghost btn-sm">
-          {t("back")}
-        </Link>
-      </div>
+      <PageHeader title={t("newTitle")} back={{ href: "/rules", label: t("back") }} />
       <RuleForm accounts={visible} categories={catalog} />
     </>
   );

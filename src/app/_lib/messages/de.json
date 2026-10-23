@@ -113,5 +113,16 @@
     "title": "Kategorien",
     "back": "Zurück",
     "intro": "Lege eigene Kategorien an, benenne sie um oder blende Standardkategorien aus."
+  },
+  "nav": {
+    "appName": "Haushaltsbuch",
+    "label": "Hauptnavigation",
+    "overview": "Übersicht",
+    "statistics": "Statistik",
+    "imports": "Import",
+    "rules": "Regeln",
+    "categories": "Kategorien",
+    "household": "Haushalt",
+    "householdLong": "Haushalt & Konten"
   }
 }

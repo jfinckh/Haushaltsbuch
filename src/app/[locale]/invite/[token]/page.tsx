@@ -1,14 +1,15 @@
 import { Suspense } from "react";
 import { InviteAcceptance } from "@/auth";
 import { inviteReturn } from "@/app/_lib/invite-return";
+import { AuthFrame } from "@/app/_lib/app-shell";
 
 export default function InvitePage({ params }: PageProps<"/[locale]/invite/[token]">) {
   return (
-    <main className="flex flex-1 items-center justify-center p-4">
+    <AuthFrame>
       <Suspense fallback={<span className="loading loading-spinner" />}>
         <Invite params={params} />
       </Suspense>
-    </main>
+    </AuthFrame>
   );
 }
 

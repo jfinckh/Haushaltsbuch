@@ -1,24 +1,22 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { AccountActions, AccountForm } from "@/accounts";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Params = { params: Promise<{ id: string }> };
 
 export default function EditAccountPage({ params }: Params) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4 sm:items-center">
-      <div className="card bg-base-100 w-full max-w-md shadow-md">
-        <div className="card-body gap-4">
+    <AppShell narrow>
+      <div className="flex flex-col gap-6">
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <EditAccount params={params} />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 
@@ -30,19 +28,14 @@ async function EditAccount({ params }: Params) {
   const t = await getTranslations("app.accounts");
   return (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="card-title text-2xl">{t("editTitle")}</h1>
-        <Link href={`/accounts/${account.id}`} className="btn btn-ghost btn-sm">
-          {t("back")}
-        </Link>
-      </div>
+      <PageHeader title={t("editTitle")} back={{ href: `/accounts/${account.id}`, label: t("back") }} />
       {account.archived && (
         <div role="status" className="alert alert-soft">
           <span>{t("archived")}</span>
         </div>
       )}
       <AccountForm account={account} redirectTo={`/accounts/${account.id}`} />
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <AccountActions id={account.id} archived={account.archived} shared={account.visibility === "shared"} />
     </>
   );

@@ -13,6 +13,7 @@ import { BudgetSection } from "@/budgets";
 import { formatEuro } from "@/shared/money";
 import { TransactionFilters, TransactionList } from "@/transactions";
 import { TransferInbox } from "@/transfers";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -21,15 +22,13 @@ type Props = {
 
 export default function AccountPage(props: Props) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4">
-      <div className="card bg-base-100 w-full max-w-md shadow-md">
-        <div className="card-body gap-4">
+    <AppShell>
+      <div className="flex flex-col gap-6">
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <AccountBookings {...props} />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 
@@ -59,12 +58,7 @@ async function AccountBookings({ params, searchParams }: Props) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="card-title truncate text-2xl">{account.name}</h1>
-        <Link href={`/?account=${account.id}`} className="btn btn-ghost btn-sm">
-          {t("back")}
-        </Link>
-      </div>
+      <PageHeader title={account.name} back={{ href: `/?account=${account.id}`, label: t("back") }} />
       {account.archived && (
         <div role="status" className="alert alert-soft">
           <span>{t("archived")}</span>
@@ -97,7 +91,7 @@ async function AccountBookings({ params, searchParams }: Props) {
       )}
       {budgetList.ok && (
         <>
-          <div className="divider my-0" />
+          <hr className="border-base-300" />
           <BudgetSection
             accountId={account.id}
             month={budgetList.month}
@@ -107,7 +101,7 @@ async function AccountBookings({ params, searchParams }: Props) {
           />
         </>
       )}
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <TransactionFilters values={filters} categoryGroups={groups} categoryNames={catalog.names} />
       {listed.ok ? (
         <TransactionList transactions={listed.transactions} categoryNames={catalog.names} />

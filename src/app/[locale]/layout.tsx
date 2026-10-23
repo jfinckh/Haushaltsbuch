@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { LOCALES } from "@/shared/i18n";
-import { LocaleSwitcher } from "@/shared/locale-switcher";
 import "../globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 // One static version of every page per language.
@@ -27,19 +28,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: "Haushaltsbuch", description: t("description") };
 }
 
+// Each page brings its own frame (AppShell or AuthFrame from app/_lib/app-shell).
 export default async function RootLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
   if (!hasLocale(LOCALES, locale)) notFound();
 
   return (
-    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-base-200">
-        <NextIntlClientProvider>
-          <header className="flex justify-end px-4 pt-2">
-            <LocaleSwitcher />
-          </header>
-          {children}
-        </NextIntlClientProvider>
+    <html lang={locale} className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}>
+      <body className="min-h-full bg-base-100 text-base-content">
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

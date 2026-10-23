@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -9,20 +8,19 @@ import { transactions } from "@/app/_lib/transactions";
 import { householdMembers, transfers } from "@/app/_lib/transfers";
 import { DeleteTransactionButton, TransactionForm } from "@/transactions";
 import { TransferPanel } from "@/transfers";
+import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Params = { params: Promise<{ id: string }> };
 
 export default function TransactionPage({ params }: Params) {
   return (
-    <main className="flex flex-1 items-start justify-center p-4 sm:items-center">
-      <div className="card bg-base-100 w-full max-w-md shadow-md">
-        <div className="card-body gap-4">
+    <AppShell narrow>
+      <div className="flex flex-col gap-6">
           <Suspense fallback={<span className="loading loading-spinner" />}>
             <EditTransaction params={params} />
           </Suspense>
         </div>
-      </div>
-    </main>
+    </AppShell>
   );
 }
 
@@ -44,16 +42,11 @@ async function EditTransaction({ params }: Params) {
   const accountHref = `/accounts/${transaction.accountId}`;
   return (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="card-title text-2xl">{t("editTitle")}</h1>
-        <Link href={accountHref} className="btn btn-ghost btn-sm">
-          {t("back")}
-        </Link>
-      </div>
+      <PageHeader title={t("editTitle")} back={{ href: accountHref, label: t("back") }} />
       <TransactionForm accounts={bookable} transaction={transaction} categories={catalog} offerRule />
       {transferStatus && (
         <>
-          <div className="divider my-0" />
+          <hr className="border-base-300" />
           <TransferPanel
             status={transferStatus}
             accounts={visible.filter((a) => !a.archived || a.id === transaction.accountId).map(({ id, name }) => ({ id, name }))}
@@ -61,7 +54,7 @@ async function EditTransaction({ params }: Params) {
           />
         </>
       )}
-      <div className="divider my-0" />
+      <hr className="border-base-300" />
       <DeleteTransactionButton id={transaction.id} redirectTo={accountHref} />
     </>
   );
