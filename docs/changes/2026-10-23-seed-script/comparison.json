@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "base": "c9511e67195db401efc571b62f5bf8978d31ef94",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "scripts/seed.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "scripts/tsconfig.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "package.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "package-lock.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "README.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "tsx",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "package-new:tsx",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

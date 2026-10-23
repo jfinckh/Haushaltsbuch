@@ -17,7 +17,29 @@ npm run dev                       # http://localhost:3000
 - `npm test` runs the Vitest suite (in-memory Postgres via PGlite, no Docker needed)
 - `npm run db:generate -- --name <name>` creates a migration from the Drizzle tables
 - `npm run db:migrate` applies migrations to `DATABASE_URL`
+- `npm run db:seed` fills the local database with test data (see below)
 - `npm run lint` runs ESLint, including the architecture boundaries
+
+## Test data
+
+`npm run db:seed` (after `npm run db:migrate`) creates a ready-to-use household from the concept:
+
+| User | Email | Password |
+| --- | --- | --- |
+| Max Mustermann | `max@example.test` | `haushalt-test-1234` |
+| Erika Mustermann | `erika@example.test` | `haushalt-test-1234` |
+
+Both are members of the household "Mustermann". Max has a private ING Giro and a private Trade
+Republic (clearing account and depot); there is a shared ING Gemeinschaftskonto, and Erika has a
+private Girokonto. `test-data/ing_testdaten.csv` is imported into the ING Giro (balance afterwards
+703,26 €) and `test-data/traderepublic_testdaten.csv` into the Trade Republic clearing account, the
+same way an upload does (rules, then transfer matching).
+
+The seed only adds data. If one of the two users already exists it refuses and changes nothing. To
+seed again, reset the database `DATABASE_URL` points to (with the Compose setup:
+`docker compose down -v`, `docker compose up -d`, `npm run db:migrate`); never point it at a
+database you want to keep. The script reads `.env`, so `BETTER_AUTH_URL` must match the port the
+dev server runs on.
 
 ## Auth module
 

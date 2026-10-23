@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx --tsconfig scripts/tsconfig.json --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.12",
@@ -36,6 +37,7 @@
     "eslint-config-next": "16.4.2",
     "eslint-plugin-boundaries": "^7.2.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.5"
   }

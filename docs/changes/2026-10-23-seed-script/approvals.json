@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "package-new:tsx",
+      "itemHash": "sha256:433d730269bf246b68f4d0affa3cf9465c132a59b89f8ff2c3fe8665ea612521",
+      "decision": "approve",
+      "at": "2026-10-23T08:01:14Z",
+      "source": "hook"
+    }
+  ]
+}

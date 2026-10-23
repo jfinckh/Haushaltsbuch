@@ -72,6 +72,16 @@ export async function findUserNames(auth: BetterAuthInstance, ids: readonly stri
   return new Map(users.map((user) => [user.id, user.name]));
 }
 
+/** Whether a user with this email exists (emails are stored in lower case). */
+export async function hasUserWithEmail(auth: BetterAuthInstance, email: string): Promise<boolean> {
+  const { adapter } = await auth.$context;
+  const user = await adapter.findOne<{ id: string }>({
+    model: "user",
+    where: [{ field: "email", value: email.trim().toLowerCase() }],
+  });
+  return user !== null;
+}
+
 export type Inviter = {
   id: string;
   name: string;
@@ -123,6 +133,8 @@ export function createAuth(options: AuthOptions) {
      * a user may see and pass only those ids.
      */
     getUserNames: (ids: readonly string[]) => findUserNames(auth, ids),
+    /** Whether a user with this email exists. Server only, e.g. for the dev seed. */
+    userExists: (email: string) => hasUserWithEmail(auth, email),
   };
 }
 

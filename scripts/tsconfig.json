@@ -1,0 +1,12 @@
+{
+  // For tsx (npm run db:seed): the app's server code imports "server-only", which throws outside
+  // Next.js. Map it to the stub the tests use; everything else as in the root config.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["./src/*"],
+      "server-only": ["./test/server-only-stub.ts"]
+    }
+  }
+}

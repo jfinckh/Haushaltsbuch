@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { findInviter, findUserNames } from "./create-auth";
+import { findInviter, findUserNames, hasUserWithEmail } from "./create-auth";
 import { createBrowser, createTestAuth, tokenFromUrl } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestAuth>>;
@@ -28,6 +28,15 @@ describe("findUserNames", () => {
   it("returns nothing for no ids", async () => {
     await signUp("Max Muster", "max@example.com");
     expect((await findUserNames(setup.auth, [])).size).toBe(0);
+  });
+});
+
+describe("hasUserWithEmail", () => {
+  it("tells whether a user with the email exists, ignoring case", async () => {
+    await signUp("Max Muster", "max@example.com");
+    expect(await hasUserWithEmail(setup.auth, "max@example.com")).toBe(true);
+    expect(await hasUserWithEmail(setup.auth, "Max@Example.com")).toBe(true);
+    expect(await hasUserWithEmail(setup.auth, "erika@example.com")).toBe(false);
   });
 });
 
