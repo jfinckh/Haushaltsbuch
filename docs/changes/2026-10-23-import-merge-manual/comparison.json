@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "base": "6bbf6031f44b27d1bebced3241103dbabf1e6ff3",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0022_import_merge.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0022_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/merge.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/merge.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-upload.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "import->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->import",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:src/import/schema.ts",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0022_import_merge.sql",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0022_snapshot.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

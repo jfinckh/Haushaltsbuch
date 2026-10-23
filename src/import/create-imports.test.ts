@@ -141,7 +141,7 @@ describe("confirm", () => {
 
   it("creates nothing when the same file is imported twice", async () => {
     await confirm(max, upload("max-private"));
-    expect((await preview(max, upload("max-private"))).counts).toEqual({ rows: 29, new: 0, duplicate: 29, skipped: 0 });
+    expect((await preview(max, upload("max-private"))).counts).toEqual({ rows: 29, new: 0, duplicate: 29, merge: 0, skipped: 0 });
     const second = await confirm(max, upload("max-private"));
     expect(second.import).toMatchObject({ newCount: 0, duplicateCount: 29, remainingCount: 0 });
     expect(await setup.bookingsOf("max-private")).toHaveLength(29);
@@ -248,5 +248,142 @@ describe("privacy between members", () => {
     expect(await imports.undoImport(erika, shared.import.id)).toBe(true);
     expect(await setup.bookingsOf("home-shared")).toEqual([]);
     expect(await imports.listImports(dora)).toEqual([]);
+  });
+});
+
+describe("merging bookings entered by hand", () => {
+  /** A booking entered by hand: the Trade Republic debit of line 15 (−200,00 on 2026-10-15), two days early. */
+  async function manual(caller: Caller, accountId = "max-private", overrides: Record<string, unknown> = {}) {
+    const result = await setup.transactions.createTransaction(caller, {
+      accountId,
+      date: "2026-10-13",
+      amount: "-200,00",
+      kind: "saving",
+      category: null,
+      counterparty: "Depot",
+      reference: null,
+      ...overrides,
+    });
+    if (!result.ok) throw new Error(result.reason);
+    return result.transaction;
+  }
+
+  it("proposes the merge in the preview with the booking entered by hand", async () => {
+    const booking = await manual(max);
+    const result = await preview(max, upload("max-private"));
+    expect(result.counts).toEqual({ rows: 29, new: 28, duplicate: 0, merge: 1, skipped: 0 });
+    expect(result.rows.find((row) => row.line === 15)).toMatchObject({
+      status: "merge",
+      merge: { transactionId: booking.id, date: "2026-10-13", counterparty: "Depot", reference: null, kind: "saving", category: null },
+    });
+    expect(result.rows.filter((row) => row.status === "merge")).toHaveLength(1);
+  });
+
+  it("merges an accepted proposal: the booking takes the bank's data and keeps what was decided by hand", async () => {
+    const booking = await manual(max);
+    const result = await confirm(max, { ...upload("max-private"), merges: [{ line: 15, transactionId: booking.id }] });
+    expect(result.import).toMatchObject({ newCount: 28, mergedCount: 1, duplicateCount: 0, remainingCount: 28, mergedRemainingCount: 1 });
+    expect(result.mergedIds).toEqual([booking.id]);
+    expect(result.bookingIds).not.toContain(booking.id);
+    expect(await setup.bookingsOf("max-private")).toHaveLength(29);
+    expect(await setup.transactions.getTransaction(max, booking.id)).toMatchObject({
+      date: "2026-10-15",
+      amountCents: -20000,
+      kind: "saving",
+      category: null,
+      counterparty: "Trade Republic",
+      reference: "Trade Republic 1a2b3c4d-0000-4000-8000-000000000003",
+      createdByMe: true,
+    });
+    // The merged booking now has the row's fingerprint.
+    expect((await preview(max, upload("max-private"))).counts).toMatchObject({ new: 0, duplicate: 29, merge: 0 });
+  });
+
+  it("imports a declined proposal as a new booking", async () => {
+    const booking = await manual(max);
+    const result = await confirm(max, upload("max-private"));
+    expect(result.import).toMatchObject({ newCount: 29, mergedCount: 0 });
+    expect(await setup.bookingsOf("max-private")).toHaveLength(30);
+    expect(await setup.transactions.getTransaction(max, booking.id)).toMatchObject({ date: "2026-10-13", counterparty: "Depot" });
+  });
+
+  it("refuses an accepted pair that is not a proposal any more, and stores nothing", async () => {
+    const booking = await manual(max);
+    const other = await manual(max, "max-private", { date: "2026-10-01" });
+    expect(await imports.confirm(max, { ...upload("max-private"), merges: [{ line: 15, transactionId: other.id }] })).toEqual({
+      ok: false,
+      reason: "preview-outdated",
+    });
+    await setup.transactions.deleteTransaction(max, booking.id);
+    expect(await imports.confirm(max, { ...upload("max-private"), merges: [{ line: 15, transactionId: booking.id }] })).toEqual({
+      ok: false,
+      reason: "preview-outdated",
+    });
+    expect(await setup.bookingsOf("max-private")).toHaveLength(1);
+    expect(await imports.listImports(max)).toEqual([]);
+  });
+
+  it("rejects a line accepted twice", async () => {
+    const booking = await manual(max);
+    const merges = [
+      { line: 15, transactionId: booking.id },
+      { line: 15, transactionId: booking.id },
+    ];
+    expect(await imports.confirm(max, { ...upload("max-private"), merges })).toEqual({ ok: false, reason: "invalid-input" });
+  });
+
+  it("never proposes a booking that came from an import", async () => {
+    await confirm(max, upload("max-private"));
+    // The same debit a day later with another reference: a new row next to an imported booking of
+    // the same amount, which has a fingerprint and so is no candidate.
+    const changed = ING.toString("utf8").replace(
+      "15.10.2026;15.10.2026;Trade Republic;Lastschrift;Trade Republic 1a2b3c4d-0000-4000-8000-000000000003",
+      "16.10.2026;16.10.2026;Trade Republic;Lastschrift;Trade Republic 1a2b3c4d-0000-4000-8000-000000000009",
+    );
+    const result = await preview(max, upload("max-private", new TextEncoder().encode(changed)));
+    expect(result.counts).toMatchObject({ new: 1, merge: 0 });
+  });
+
+  it("undo restores the merged booking as it was and deletes only the bookings the import created", async () => {
+    const booking = await manual(max);
+    const result = await confirm(max, { ...upload("max-private"), merges: [{ line: 15, transactionId: booking.id }] });
+    expect(await imports.undoImport(max, result.import.id)).toBe(true);
+    expect(await setup.transactions.getTransaction(max, booking.id)).toEqual(booking);
+    expect(await setup.bookingsOf("max-private")).toEqual([expect.objectContaining({ id: booking.id })]);
+    // A manual booking again: the next preview proposes the merge again.
+    expect((await preview(max, upload("max-private"))).counts).toMatchObject({ new: 28, merge: 1 });
+  });
+
+  it("stores the values from before the merge only encrypted", async () => {
+    const booking = await manual(max);
+    await confirm(max, { ...upload("max-private"), merges: [{ line: 15, transactionId: booking.id }] });
+    const result = (await setup.db.execute(
+      sql`SELECT merged_from_encrypted FROM import_row WHERE transaction_id = ${booking.id}`,
+    )) as unknown as { rows: { merged_from_encrypted: string }[] };
+    expect(result.rows[0].merged_from_encrypted).toBeTruthy();
+    expect(result.rows[0].merged_from_encrypted).not.toContain("Depot");
+  });
+
+  it("never proposes or changes another member's private bookings", async () => {
+    await setup.addAccount("erika-private", "erika");
+    const hidden = await manual(erika, "erika-private");
+    const result = await preview(max, upload("max-private"));
+    expect(result.counts.merge).toBe(0);
+    expect(await imports.confirm(max, { ...upload("max-private"), merges: [{ line: 15, transactionId: hidden.id }] })).toEqual({
+      ok: false,
+      reason: "preview-outdated",
+    });
+    expect(await setup.transactions.getTransaction(erika, hidden.id)).toEqual(hidden);
+  });
+
+  it("proposes a booking another member entered in a shared account, and either may undo", async () => {
+    const booking = await manual(erika, "home-shared");
+    const result = await preview(max, upload("home-shared"));
+    expect(result.rows.find((row) => row.line === 15)?.merge?.transactionId).toBe(booking.id);
+    const done = await confirm(max, { ...upload("home-shared"), merges: [{ line: 15, transactionId: booking.id }] });
+    expect(await setup.transactions.getTransaction(erika, booking.id)).toMatchObject({ date: "2026-10-15", createdByMe: true });
+    expect(await imports.undoImport(erika, done.import.id)).toBe(true);
+    expect(await setup.transactions.getTransaction(erika, booking.id)).toEqual(booking);
+    expect(await imports.preview(dora, upload("home-shared"))).toEqual({ ok: false, reason: "not-found" });
   });
 });

@@ -804,3 +804,80 @@ describe("who set a booking's type and category", () => {
     expect(found).toHaveLength(2);
   });
 });
+
+describe("merging imported data into a booking entered by hand", () => {
+  const imported = {
+    bookingDate: "2026-10-09",
+    counterparty: "BAECKEREI MUELLER GMBH",
+    counterpartyIban: "DE02120300000000202051",
+    reference: "Kartenzahlung 09.10.",
+  };
+
+  it("takes over date, counterparty, IBAN and reference and keeps type, category, creator and who classified", async () => {
+    const booking = await create(max);
+    const previous = await withSession(setup.db, max, (tx) => transactions.mergeImported(tx, booking.id, imported));
+    expect(previous).toEqual({
+      bookingDate: "2026-10-08",
+      counterparty: "Bäckerei Müller",
+      counterpartyIban: IBAN,
+      reference: "Brötchen",
+      kind: "expense",
+      category: "groceries.supermarket",
+      classifiedBy: "manual",
+    });
+    const merged = await transactions.getTransaction(max, booking.id);
+    expect(merged).toMatchObject({
+      id: booking.id,
+      date: "2026-10-09",
+      amountCents: -350,
+      kind: "expense",
+      category: "groceries.supermarket",
+      classifiedBy: "manual",
+      counterparty: "BAECKEREI MUELLER GMBH",
+      counterpartyIban: "DE02 1203 0000 0000 2020 51",
+      reference: "Kartenzahlung 09.10.",
+      createdByMe: true,
+    });
+    const row = await storedRow(booking.id);
+    expect(row.counterpartyEncrypted).not.toContain("BAECKEREI");
+    expect(row.counterpartyIbanIndex).toBe(setup.crypto.blindIndex("DE02120300000000202051", "transaction.counterpartyIban"));
+  });
+
+  it("returns null and changes nothing for a booking the caller may not see", async () => {
+    const booking = await create(max);
+    const previous = await withSession(setup.db, erika, (tx) => transactions.mergeImported(tx, booking.id, imported));
+    expect(previous).toBeNull();
+    expect(await transactions.getTransaction(max, booking.id)).toEqual(booking);
+  });
+
+  it("restores the values from before the merge", async () => {
+    const booking = await create(max, { category: "", counterpartyIban: "" });
+    expect(booking.classifiedBy).toBe("auto");
+    const previous = await withSession(setup.db, max, (tx) => transactions.mergeImported(tx, booking.id, imported));
+    // A rule sorts the merged booking after the import.
+    await withSession(setup.db, max, (tx) => transactions.classifyBookings(tx, [{ id: booking.id, kind: "expense", category: "leisure" }]));
+    const restored = await withSession(setup.db, max, (tx) => transactions.restoreMerged(tx, booking.id, previous!));
+    expect(restored).toBe(true);
+    expect(await transactions.getTransaction(max, booking.id)).toEqual(booking);
+  });
+
+  it("keeps a classification made by hand after the merge", async () => {
+    const booking = await create(max, { category: "" });
+    const previous = await withSession(setup.db, max, (tx) => transactions.mergeImported(tx, booking.id, imported));
+    await transactions.updateTransaction(max, booking.id, { category: "leisure" });
+    await withSession(setup.db, max, (tx) => transactions.restoreMerged(tx, booking.id, previous!));
+    expect(await transactions.getTransaction(max, booking.id)).toMatchObject({
+      date: "2026-10-08",
+      counterparty: "Bäckerei Müller",
+      category: "leisure",
+      classifiedBy: "manual",
+    });
+  });
+
+  it("restores nothing the caller may not see", async () => {
+    const booking = await create(max);
+    const previous = await withSession(setup.db, max, (tx) => transactions.mergeImported(tx, booking.id, imported));
+    expect(await withSession(setup.db, erika, (tx) => transactions.restoreMerged(tx, booking.id, previous!))).toBe(false);
+    expect(await transactions.getTransaction(max, booking.id)).toMatchObject({ date: "2026-10-09" });
+  });
+});

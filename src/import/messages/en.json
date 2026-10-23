@@ -17,7 +17,7 @@
     "preview": "Show preview",
     "confirm": "Import",
     "cancel": "Cancel",
-    "summary": "{rows, plural, one {# row} other {# rows}}: {new} new, {duplicate} already there",
+    "summary": "{rows, plural, one {# row} other {# rows}}: {new} new, {duplicate} already there{merge, plural, =0 {} other {, # to merge}}",
     "skipped": "{count, plural, one {# row} other {# rows}} without an amount skipped",
     "period": "{bank}, {from} to {to}",
     "openingBalance": "The account has no bookings yet. Its opening balance will be set to {opening} € so that its balance matches the file's balance ({closing} €).",
@@ -29,9 +29,12 @@
     "status": "Status",
     "new": "New",
     "duplicate": "Already there",
-    "done": "Import finished: {count, plural, one {# new booking} other {# new bookings}}.",
+    "done": "Import finished: {count, plural, one {# new booking} other {# new bookings}}{merged, plural, =0 {} other {, # merged}}.",
     "rulesApplied": "{applied, plural, one {# booking sorted by a rule.} other {# bookings sorted by rules.}}",
-    "transfersFound": "{linked, plural, one {# transfer linked} other {# transfers linked}}, {proposed} proposed."
+    "transfersFound": "{linked, plural, one {# transfer linked} other {# transfers linked}}, {proposed} proposed.",
+    "merge": "Merge",
+    "mergeNote": "{count, plural, one {One row matches} other {# rows match}} a booking entered by hand (same amount, date ± 3 days). Merging keeps the booking's type and category and takes the bank's data. Untick a row to add it as a new booking.",
+    "mergeWith": "Entered by hand: {date}{text, select, none {} other { · {text}}}"
   },
   "errors": {
     "invalid-input": "Choose an account and a file.",
@@ -42,17 +45,18 @@
     "invalid-row": "The file has a row that cannot be read (line {line}).",
     "unsupported-currency": "The file has a booking in a currency other than euro (line {line}).",
     "wrong-bank": "This file does not fit the bank of the chosen account.",
-    "failed": "That did not work. Please try again."
+    "failed": "That did not work. Please try again.",
+    "preview-outdated": "A booking changed since the preview. Please show the preview again."
   },
   "list": {
     "title": "Past imports",
     "empty": "No imports yet.",
-    "counts": "{new} new, {duplicate} already there",
+    "counts": "{new} new, {duplicate} already there{merged, plural, =0 {} other {, # merged}}",
     "remaining": "{count} still there",
     "byOther": "by another member",
     "undo": "Undo",
     "undoTitle": "Undo this import?",
-    "undoText": "{count, plural, =0 {No bookings from this import are left.} one {# booking from this import will be deleted.} other {# bookings from this import will be deleted.}} The file can be imported again afterwards.",
+    "undoText": "{count, plural, =0 {No new bookings from this import are left.} one {# booking from this import will be deleted.} other {# bookings from this import will be deleted.}}{merged, plural, =0 {} one { # merged booking gets its data from before the import back.} other { # merged bookings get their data from before the import back.}} The file can be imported again afterwards.",
     "undoFailed": "That did not work. Please try again.",
     "cancel": "Cancel",
     "close": "Close"

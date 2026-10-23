@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-23",
+  "slug": "import-merge-manual",
+  "description": "Merge hand-entered bookings on import",
+  "plan": {
+    "path": "docs/plans/2026-10-22-import-merge-manual.md",
+    "sha256": "8d0a4d4ab51661d52edb4eaef619d74f6e7bbb997496a32edcb07b4db7d9c19e"
+  },
+  "status": "final",
+  "base": "6bbf6031f44b27d1bebced3241103dbabf1e6ff3",
+  "report": "Finalized import-merge-manual (6bbf603..working-tree)\nFiles: 17 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 4 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-23-import-merge-manual/map.html\n",
+  "shownAt": "2026-10-23T07:05:27Z"
+}

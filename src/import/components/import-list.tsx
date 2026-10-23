@@ -59,8 +59,9 @@ function ImportRow({ item, accountName, action }: { item: ImportView; accountNam
         </div>
         <div className="text-sm">
           {item.periodFrom && item.periodTo && `${day(item.periodFrom)} – ${day(item.periodTo)} · `}
-          {t("counts", { new: item.newCount, duplicate: item.duplicateCount })}
-          {item.remainingCount !== item.newCount && ` · ${t("remaining", { count: item.remainingCount })}`}
+          {t("counts", { new: item.newCount, duplicate: item.duplicateCount, merged: item.mergedCount })}
+          {item.remainingCount + item.mergedRemainingCount !== item.newCount + item.mergedCount &&
+            ` · ${t("remaining", { count: item.remainingCount + item.mergedRemainingCount })}`}
         </div>
       </div>
       <button type="button" className="btn btn-ghost btn-sm text-error" onClick={() => dialog.current?.showModal()}>
@@ -69,7 +70,7 @@ function ImportRow({ item, accountName, action }: { item: ImportView; accountNam
       <dialog ref={dialog} className="modal">
         <div className="modal-box">
           <h3 className="text-lg font-bold">{t("undoTitle")}</h3>
-          <p className="py-4">{t("undoText", { count: item.remainingCount })}</p>
+          <p className="py-4">{t("undoText", { count: item.remainingCount, merged: item.mergedRemainingCount })}</p>
           {failed && <p className="text-error">{t("undoFailed")}</p>}
           <div className="modal-action">
             <form method="dialog">

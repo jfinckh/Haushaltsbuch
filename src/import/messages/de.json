@@ -17,7 +17,7 @@
     "preview": "Vorschau anzeigen",
     "confirm": "Importieren",
     "cancel": "Abbrechen",
-    "summary": "{rows, plural, one {# Zeile} other {# Zeilen}}: {new} neu, {duplicate} bereits vorhanden",
+    "summary": "{rows, plural, one {# Zeile} other {# Zeilen}}: {new} neu, {duplicate} bereits vorhanden{merge, plural, =0 {} other {, # zusammenführen}}",
     "skipped": "{count, plural, one {# Zeile} other {# Zeilen}} ohne Betrag übersprungen",
     "period": "{bank}, {from} bis {to}",
     "openingBalance": "Das Konto hat noch keine Buchungen. Der Startsaldo wird auf {opening} € gesetzt, damit der Kontostand dem Saldo der Datei ({closing} €) entspricht.",
@@ -29,9 +29,12 @@
     "status": "Status",
     "new": "Neu",
     "duplicate": "Vorhanden",
-    "done": "Import abgeschlossen: {count, plural, one {# neue Buchung} other {# neue Buchungen}}.",
+    "done": "Import abgeschlossen: {count, plural, one {# neue Buchung} other {# neue Buchungen}}{merged, plural, =0 {} one {, # zusammengeführt} other {, # zusammengeführt}}.",
     "rulesApplied": "{applied, plural, one {# Buchung per Regel zugeordnet.} other {# Buchungen per Regel zugeordnet.}}",
-    "transfersFound": "{linked, plural, one {# Umbuchung verknüpft} other {# Umbuchungen verknüpft}}, {proposed} vorgeschlagen."
+    "transfersFound": "{linked, plural, one {# Umbuchung verknüpft} other {# Umbuchungen verknüpft}}, {proposed} vorgeschlagen.",
+    "merge": "Zusammenführen",
+    "mergeNote": "{count, plural, one {Eine Zeile passt} other {# Zeilen passen}} zu einer von Hand erfassten Buchung (gleicher Betrag, Datum ± 3 Tage). Zusammenführen behält Art und Kategorie der Buchung und übernimmt die Daten der Bank. Entferne das Häkchen, um die Zeile als neue Buchung anzulegen.",
+    "mergeWith": "Von Hand erfasst: {date}{text, select, none {} other { · {text}}}"
   },
   "errors": {
     "invalid-input": "Wähle ein Konto und eine Datei.",
@@ -42,17 +45,18 @@
     "invalid-row": "Die Datei enthält eine Zeile, die nicht gelesen werden kann (Zeile {line}).",
     "unsupported-currency": "Die Datei enthält eine Buchung in einer anderen Währung als Euro (Zeile {line}).",
     "wrong-bank": "Diese Datei passt nicht zur Bank des gewählten Kontos.",
-    "failed": "Das hat nicht geklappt. Bitte versuche es noch einmal."
+    "failed": "Das hat nicht geklappt. Bitte versuche es noch einmal.",
+    "preview-outdated": "Eine Buchung hat sich seit der Vorschau geändert. Bitte zeige die Vorschau neu an."
   },
   "list": {
     "title": "Bisherige Importe",
     "empty": "Noch keine Importe.",
-    "counts": "{new} neu, {duplicate} vorhanden",
+    "counts": "{new} neu, {duplicate} vorhanden{merged, plural, =0 {} other {, # zusammengeführt}}",
     "remaining": "{count} noch da",
     "byOther": "von einem anderen Mitglied",
     "undo": "Rückgängig",
     "undoTitle": "Import rückgängig machen?",
-    "undoText": "{count, plural, =0 {Es gibt keine Buchungen mehr aus diesem Import.} one {# Buchung aus diesem Import wird gelöscht.} other {# Buchungen aus diesem Import werden gelöscht.}} Die Datei kann danach erneut importiert werden.",
+    "undoText": "{count, plural, =0 {Es gibt keine neuen Buchungen mehr aus diesem Import.} one {# Buchung aus diesem Import wird gelöscht.} other {# Buchungen aus diesem Import werden gelöscht.}}{merged, plural, =0 {} one { # zusammengeführte Buchung bekommt ihre Daten von vor dem Import zurück.} other { # zusammengeführte Buchungen bekommen ihre Daten von vor dem Import zurück.}} Die Datei kann danach erneut importiert werden.",
     "undoFailed": "Das hat nicht geklappt. Bitte versuche es noch einmal.",
     "cancel": "Abbrechen",
     "close": "Schließen"

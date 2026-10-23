@@ -51,6 +51,12 @@ export type FindBookingsCriteria = {
   uncategorized?: boolean;
 };
 
+/** What an import gives a booking entered by hand when it merges a bank row into it. */
+type ImportedDetails = Pick<TransactionValues, "bookingDate" | "counterparty" | "counterpartyIban" | "reference">;
+
+/** A booking's values before an import merged into it (undo restores them). */
+type MergedFrom = ImportedDetails & Pick<TransactionValues, "kind" | "category"> & { classifiedBy: ClassifiedBy };
+
 /** What a rule sets on a booking. */
 export type Classification = { id: string; kind: TransactionKind; category: string | null };
 
@@ -426,6 +432,48 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
           .where(and(eq(transaction.id, row.id), visible));
       }
       return rows.length;
+    },
+
+    /**
+     * Merges an imported bank row into a visible booking entered by hand, inside the import's database
+     * transaction: the booking takes over date, counterparty, IBAN and reference; amount, type,
+     * category, who classified it, its creator and its id (so its transfer links) stay. Returns the
+     * values before, for undo, or null if the caller may not see the booking. Invalid values throw.
+     */
+    async mergeImported(tx: RlsTransaction, id: string, details: ImportedDetails): Promise<MergedFrom | null> {
+      const row = await findVisible(tx, id, true);
+      if (!row) return null;
+      const before = toValues(row);
+      const merged = transactionValuesSchema.parse({ ...before, ...details });
+      await tx
+        .update(transaction)
+        .set({ ...toColumns(merged), updatedAt: new Date() })
+        .where(and(eq(transaction.id, id), visible));
+      const { bookingDate, counterparty, counterpartyIban, reference, kind, category } = before;
+      return { bookingDate, counterparty, counterpartyIban, reference, kind, category, classifiedBy: row.classifiedBy };
+    },
+
+    /**
+     * Undoes mergeImported on a visible booking, inside a given database transaction: date,
+     * counterparty, IBAN and reference go back. Type, category and who classified go back too, unless
+     * a person classified the booking after the merge (their decision stays). False if the caller may
+     * not see the booking.
+     */
+    async restoreMerged(tx: RlsTransaction, id: string, previous: MergedFrom): Promise<boolean> {
+      const row = await findVisible(tx, id, true);
+      if (!row) return false;
+      const keepClassification = row.classifiedBy === "manual" && previous.classifiedBy !== "manual";
+      const { classifiedBy, ...values } = previous;
+      const restored = transactionValuesSchema.parse({
+        ...toValues(row),
+        ...values,
+        ...(keepClassification ? { kind: row.kind, category: row.category } : {}),
+      });
+      await tx
+        .update(transaction)
+        .set({ ...toColumns(restored), ...(keepClassification ? {} : { classifiedBy }), updatedAt: new Date() })
+        .where(and(eq(transaction.id, id), visible));
+      return true;
     },
 
     /**

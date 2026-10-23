@@ -8,6 +8,7 @@ import { importPreviewRoute, importRoute, importsRoute, MAX_UPLOAD_BYTES } from 
 import { createAccounts, type Accounts } from "@/accounts/server";
 import { createHouseholds } from "@/households/server";
 import { createImports, type Imports } from "@/import/server";
+import { createRules, type Rules } from "@/rules/server";
 import { createFieldCrypto } from "@/shared/field-crypto";
 import type { Caller, RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
@@ -24,6 +25,7 @@ let db: RlsDatabase;
 let accounts: Accounts;
 let transactions: Transactions;
 let imports: Imports;
+let rules: Rules;
 let callers: Map<string, Promise<Caller>>;
 
 function sessionOf(userId: string | null) {
@@ -87,6 +89,7 @@ beforeEach(async () => {
   accounts = createAccounts({ db, crypto });
   transactions = createTransactions({ db, crypto });
   imports = createImports({ db, crypto, transactions });
+  rules = createRules({ db, crypto, transactions });
   const households = createHouseholds({ db, householdHoldsData: accounts.householdHasSharedAccounts });
   await households.createHousehold(await caller("max"), { name: "Mustermann" });
   await households.joinInvitersHousehold(await caller("erika"), { inviterId: "max", invitedAt: new Date() });
@@ -103,7 +106,7 @@ describe("acceptance: ING test file", () => {
     const response = await previewAs("max", maxPrivate);
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.preview.counts).toEqual({ rows: 29, new: 29, duplicate: 0, skipped: 0 });
+    expect(body.preview.counts).toEqual({ rows: 29, new: 29, duplicate: 0, merge: 0, skipped: 0 });
     expect(body.openingBalance).toEqual({ willSet: true, cents: 180000 });
   });
 
@@ -333,5 +336,119 @@ describe("a shared account", () => {
   it("lets every member import into it", async () => {
     expect((await importAs("erika", shared)).status).toBe(201);
     expect((await importAs("dora", doras, TR)).status).toBe(400);
+  });
+});
+
+describe("merging bookings entered by hand", () => {
+  /** The Trade Republic debit of the ING file's line 15 (−200,00 on 2026-10-15), entered by hand two days early. */
+  async function manual(userId: string, accountId: string, overrides: Record<string, unknown> = {}) {
+    const result = await transactions.createTransaction(await caller(userId), {
+      accountId,
+      date: "2026-10-13",
+      amount: "-200,00",
+      kind: "expense",
+      category: "leisure.hobbies",
+      counterparty: "Hand-Notiz",
+      ...overrides,
+    });
+    if (!result.ok) throw new Error(result.reason);
+    return result.transaction;
+  }
+
+  function uploadWith(accountId: string, merges: unknown) {
+    const body = new FormData();
+    body.set("accountId", accountId);
+    body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
+    body.set("merges", typeof merges === "string" ? merges : JSON.stringify(merges));
+    return new Request("http://localhost/api/imports", { method: "POST", body });
+  }
+
+  it("previews the proposal, merges the accepted one and hands it to rules and matching", async () => {
+    const booking = await manual("max", maxPrivate);
+    const preview = await (await previewAs("max", maxPrivate)).json();
+    expect(preview.preview.counts).toMatchObject({ new: 28, merge: 1 });
+    expect(preview.preview.rows.find((row: { line: number }) => row.line === 15).merge.transactionId).toBe(booking.id);
+
+    // A real rule for Trade Republic debits: it may sort new bookings, never the one classified by hand.
+    const rule = await rules.createRule(await caller("max"), {
+      scope: { type: "account", accountId: maxPrivate },
+      counterparty: "Trade Republic",
+      reference: null,
+      amountSign: null,
+      kind: "expense",
+      category: "groceries.supermarket",
+      transferTarget: null,
+    });
+    expect(rule.ok).toBe(true);
+    const seen: { rules: string[]; matching: string[] } = { rules: [], matching: [] };
+    const response = await importsRoute({
+      ...deps("max"),
+      applyRules: async (who, ids) => {
+        seen.rules = ids;
+        return rules.applyToBookings(who, ids);
+      },
+      afterImport: async (_who, ids) => {
+        seen.matching = ids;
+        return { linked: 0, proposed: 0 };
+      },
+    }).POST(uploadWith(maxPrivate, [{ line: 15, transactionId: booking.id }]));
+    expect(response.status).toBe(201);
+    expect((await response.json()).import).toMatchObject({ newCount: 28, mergedCount: 1 });
+    expect(seen.rules).toContain(booking.id);
+    expect(seen.matching).toContain(booking.id);
+    expect(seen.matching).toHaveLength(29);
+    expect(await transactions.getTransaction(await caller("max"), booking.id)).toMatchObject({
+      date: "2026-10-15",
+      counterparty: "Trade Republic",
+      kind: "expense",
+      category: "leisure.hobbies",
+      classifiedBy: "manual",
+    });
+    expect(await balanceOf("max", maxPrivate)).toBe(-109674);
+  });
+
+  it("rejects malformed merges", async () => {
+    for (const merges of ["not json", '[{"line":"x"}]', '{"line":15}']) {
+      const response = await importsRoute(deps("max")).POST(uploadWith(maxPrivate, merges));
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: "invalid-input" });
+    }
+  });
+
+  it("answers 409 when the preview is outdated, and stores nothing", async () => {
+    const booking = await manual("max", maxPrivate);
+    await transactions.deleteTransaction(await caller("max"), booking.id);
+    const response = await importsRoute(deps("max")).POST(uploadWith(maxPrivate, [{ line: 15, transactionId: booking.id }]));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "preview-outdated" });
+    expect((await (await listAs("max")).json()).imports).toEqual([]);
+  });
+
+  it("never shows or changes another member's private bookings", async () => {
+    const erikas = await createAccount("erika", "private", "Erikas Giro");
+    const hidden = await manual("erika", erikas, { counterparty: "Erikas Geheimnis" });
+    const preview = await previewAs("max", maxPrivate);
+    const text = await preview.text();
+    expect(text).not.toContain(hidden.id);
+    expect(text).not.toContain("Erikas Geheimnis");
+    expect(JSON.parse(text).preview.counts.merge).toBe(0);
+    const response = await importsRoute(deps("max")).POST(uploadWith(maxPrivate, [{ line: 15, transactionId: hidden.id }]));
+    expect(response.status).toBe(409);
+    expect(await transactions.getTransaction(await caller("erika"), hidden.id)).toEqual(hidden);
+    // Erika's own account stays closed to Max, also for previews.
+    expect((await previewAs("max", erikas)).status).toBe(404);
+  });
+
+  it("merges a booking another member entered in a shared account; both may undo, other households see nothing", async () => {
+    const booking = await manual("erika", shared);
+    const preview = await (await previewAs("max", shared)).json();
+    expect(preview.preview.counts.merge).toBe(1);
+    const response = await importsRoute(deps("max")).POST(uploadWith(shared, [{ line: 15, transactionId: booking.id }]));
+    expect(response.status).toBe(201);
+    const { import: done } = await response.json();
+    expect((await previewAs("dora", shared)).status).toBe(404);
+    expect((await undoAs("dora", done.id)).status).toBe(404);
+    expect((await undoAs("erika", done.id)).status).toBe(200);
+    expect(await transactions.getTransaction(await caller("erika"), booking.id)).toEqual(booking);
   });
 });

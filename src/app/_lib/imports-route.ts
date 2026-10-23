@@ -48,13 +48,30 @@ const FITTING_BANKS = {
   cash: [],
 } as const;
 
+/** The merge proposals the user accepted, as a JSON form field; the import part checks them against its own. */
+const mergesSchema = z
+  .string()
+  .max(500_000)
+  .transform((text, ctx) => {
+    try {
+      return JSON.parse(text) as unknown;
+    } catch {
+      ctx.addIssue({ code: "custom", message: "invalid-json" });
+      return z.NEVER;
+    }
+  })
+  .pipe(z.array(z.object({ line: z.number().int().positive(), transactionId: z.string().min(1).max(100) })).max(10000));
+
 const uploadSchema = z.object({
   accountId: z.string().min(1).max(100),
   file: z.instanceof(File),
+  merges: mergesSchema.optional(),
 });
 
 const failed = (reason: string, line?: number) =>
-  reason === "not-found" ? notFound() : json({ error: reason, ...(line ? { line } : {}) }, 400);
+  reason === "not-found"
+    ? notFound()
+    : json({ error: reason, ...(line ? { line } : {}) }, reason === "preview-outdated" ? 409 : 400);
 
 /**
  * The request's form data, read only up to MAX_UPLOAD_BYTES: a larger declared size is refused at
@@ -85,9 +102,13 @@ async function readLimitedForm(request: Request): Promise<FormData | "too-large"
 async function readUpload({ accounts, transactions }: Deps, caller: Caller, request: Request) {
   const form = await readLimitedForm(request);
   if (form === "too-large") return { ok: false as const, error: failed("too-large") };
-  const parsed = uploadSchema.safeParse({ accountId: form?.get("accountId"), file: form?.get("file") });
+  const parsed = uploadSchema.safeParse({
+    accountId: form?.get("accountId"),
+    file: form?.get("file"),
+    merges: form?.get("merges") ?? undefined,
+  });
   if (!parsed.success) return { ok: false as const, error: failed("invalid-input") };
-  const { accountId, file } = parsed.data;
+  const { accountId, file, merges } = parsed.data;
   // Another member's private account does not exist for this caller: same 404 as an unknown id.
   const account = await accounts.getAccount(caller, accountId);
   if (!account) return { ok: false as const, error: notFound() };
@@ -97,6 +118,7 @@ async function readUpload({ accounts, transactions }: Deps, caller: Caller, requ
     fileName: file.name,
     bytes: new Uint8Array(await file.arrayBuffer()),
     banks: [...FITTING_BANKS[account.bank]],
+    merges,
   };
   return { ok: true as const, input, hasBookings };
 }
@@ -117,8 +139,9 @@ export function importsRoute(deps: Deps) {
     },
 
     /**
-     * Confirms an import (multipart: accountId, file). Into an account without bookings it also sets
-     * the opening balance, so the account's balance matches the file's saldo.
+     * Confirms an import (multipart: accountId, file, merges: the accepted merge proposals as JSON).
+     * Into an account without bookings it also sets the opening balance, so the account's balance
+     * matches the file's saldo. 409 `preview-outdated` when an accepted merge is no longer proposed.
      */
     async POST(request: Request) {
       return asCaller(getCaller, async (caller) => {
@@ -134,11 +157,13 @@ export function importsRoute(deps: Deps) {
           if (updated.ok) openingBalanceCents = updated.account.openingBalanceCents;
         }
         // Rules first, then matching: matching may still link a booking a rule typed, but never
-        // overrides a rule with its weaker "looks like a transfer" hint.
+        // overrides a rule with its weaker "looks like a transfer" hint. Merged bookings go along: both
+        // leave what a person decided as it is.
+        const bookingIds = [...result.bookingIds, ...result.mergedIds];
         let rules: RulesApplied | null = null;
         if (deps.applyRules) {
           try {
-            rules = await deps.applyRules(caller, result.bookingIds);
+            rules = await deps.applyRules(caller, bookingIds);
           } catch (error) {
             // The import is done; rules can be applied again on the rules page. Log no booking data.
             console.error("Applying rules after import failed", error instanceof Error ? error.name : "unknown");
@@ -147,7 +172,7 @@ export function importsRoute(deps: Deps) {
         let transfers: { linked: number; proposed: number } | null = null;
         if (deps.afterImport) {
           try {
-            transfers = await deps.afterImport(caller, result.bookingIds, rules?.transfers ?? []);
+            transfers = await deps.afterImport(caller, bookingIds, rules?.transfers ?? []);
           } catch (error) {
             // The import is done; matching can be redone by hand. Log no booking data.
             console.error("Transfer matching after import failed", error instanceof Error ? error.name : "unknown");

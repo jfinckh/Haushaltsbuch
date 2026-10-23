@@ -162,7 +162,11 @@ Jede Buchung bekommt beim Import einen **Fingerabdruck**, und die Datenbank läs
 - **Sonst ein Hash** aus Konto, Buchungsdatum, Betrag, Gegenpartei und Verwendungszweck, vorher normalisiert (Leerzeichen, Groß-/Kleinschreibung).
 - **Gleiche Buchungen am selben Tag** (zweimal 3,50 € beim selben Bäcker) werden durchgezählt: die zweite gleiche Zeile bekommt Zähler 2. Ein späterer Export mit denselben zwei Zeilen erkennt beide als vorhanden, ein dritter Kauf wird als neu erkannt.
 - **Von Hand erfasste Buchungen** haben keinen Fingerabdruck. Findet der Import eine passende Buchung (gleicher Betrag, gleiches Konto, Datum ± 3 Tage), schlägt er vor, beide zusammenzuführen, statt sie doppelt anzulegen.
-- Die Vorschau zeigt z. B. „40 Zeilen: 28 neu, 12 bereits vorhanden“, damit man sieht, was passiert.
+  - Gibt es mehrere passende Buchungen, gewinnt das nächste Datum; eine Buchung wird nie mit zwei Zeilen zusammengeführt. Vorgeschlagen werden nur Buchungen des Zielkontos, das man sehen darf.
+  - In der Vorschau hat jeder Vorschlag ein Häkchen (vorausgewählt). Ohne Häkchen wird die Zeile als neue Buchung angelegt.
+  - Beim Zusammenführen bleibt die von Hand erfasste Buchung bestehen: Art, Kategorie, wer sie eingeordnet hat und Umbuchungs-Verknüpfungen bleiben. Datum, Gegenpartei, IBAN und Verwendungszweck kommen von der Bank, dazu Fingerabdruck und Rohzeile. Regeln und Umbuchungs-Abgleich behandeln sie danach wie die Handbuchung (von Hand Entschiedenes bleibt).
+  - **Rückgängig** setzt die Buchung auf den Stand vor dem Import zurück (Datum, Texte, Art und Kategorie; eine danach von Hand gesetzte Art oder Kategorie bleibt). Eine Umbuchungs-Verknüpfung, die der Abgleich nach dem Import gesetzt hat, bleibt bestehen und lässt sich von Hand lösen.
+- Die Vorschau zeigt z. B. „40 Zeilen: 26 neu, 12 bereits vorhanden, 2 zusammenführen“, damit man sieht, was passiert.
 
 ## Datenschutz & Sicherheit
 

@@ -22,6 +22,8 @@ export const importBatch = pgTable(
     newCount: integer("new_count").notNull(),
     duplicateCount: integer("duplicate_count").notNull(),
     skippedCount: integer("skipped_count").notNull(),
+    // Rows merged into a booking entered by hand (not counted in newCount).
+    mergedCount: integer("merged_count").notNull().default(0),
     createdByUserId: text("created_by_user_id").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
@@ -32,9 +34,9 @@ export const importBatch = pgTable(
 );
 
 /**
- * One booking an import created, with its fingerprint (blind index) and the raw row (encrypted). The
- * fingerprint is unique per account, so the same booking is never imported twice. Deleting the
- * booking by hand deletes this row too, so a later import brings the booking back.
+ * One booking an import created or merged into, with its fingerprint (blind index) and the raw row
+ * (encrypted). The fingerprint is unique per account, so the same booking is never imported twice.
+ * Deleting the booking by hand deletes this row too, so a later import brings the booking back.
  */
 export const importRow = pgTable(
   "import_row",
@@ -46,6 +48,9 @@ export const importRow = pgTable(
     fingerprint: text("fingerprint").notNull(),
     line: integer("line").notNull(),
     rawEncrypted: text("raw_encrypted").notNull(),
+    // Merged into a booking entered by hand: its values before the merge as encrypted JSON (undo
+    // restores them). Null when the import created the booking.
+    mergedFromEncrypted: text("merged_from_encrypted"),
   },
   (table) => [
     uniqueIndex("import_row_account_fingerprint_idx").on(table.accountId, table.fingerprint),

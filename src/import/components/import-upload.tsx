@@ -18,7 +18,7 @@ type Props = {
 type PreviewResponse = { preview: ImportPreview; openingBalance: { willSet: boolean; cents: number | null } };
 type Failure = { reason: string; line?: number };
 
-const ERROR_KEYS = ["invalid-input", "not-found", "too-large", "empty", "unknown-format", "invalid-row", "unsupported-currency", "wrong-bank"];
+const ERROR_KEYS = ["invalid-input", "not-found", "too-large", "empty", "unknown-format", "invalid-row", "unsupported-currency", "wrong-bank", "preview-outdated"];
 
 async function failureOf(response: Response): Promise<Failure> {
   const body = (await response.json().catch(() => null)) as { error?: string; line?: number } | null;
@@ -38,8 +38,11 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewResponse | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
+  // Lines whose merge proposal the user declined (imported as new bookings instead).
+  const [declined, setDeclined] = useState<Set<number>>(new Set());
   const [done, setDone] = useState<{
     count: number;
+    merged: number;
     transfers: { linked: number; proposed: number } | null;
     rules: { applied: number } | null;
   } | null>(null);
@@ -53,7 +56,7 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     setFailure(null);
   }
 
-  async function send(path: string): Promise<Response | null> {
+  async function send(path: string, merges?: { line: number; transactionId: string }[]): Promise<Response | null> {
     if (!account || !file) {
       setFailure({ reason: "invalid-input" });
       return null;
@@ -61,12 +64,16 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     const body = new FormData();
     body.set("accountId", account);
     body.set("file", file);
+    if (merges) body.set("merges", JSON.stringify(merges));
     setPending(true);
     setFailure(null);
     try {
       const response = await fetch(path, { method: "POST", body });
       if (!response.ok) {
-        setFailure(await failureOf(response));
+        const failed = await failureOf(response);
+        setFailure(failed);
+        // The proposals changed: show the preview button again.
+        if (failed.reason === "preview-outdated") setPreview(null);
         return null;
       }
       return response;
@@ -82,19 +89,23 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     event.preventDefault();
     setDone(null);
     setPreview(null);
+    setDeclined(new Set());
     const response = await send(`${action}/preview`);
     if (response) setPreview((await response.json()) as PreviewResponse);
   }
 
   async function onConfirm() {
-    const response = await send(action);
+    const merges = (preview?.preview.rows ?? []).flatMap((row) =>
+      row.merge && !declined.has(row.line) ? [{ line: row.line, transactionId: row.merge.transactionId }] : [],
+    );
+    const response = await send(action, merges);
     if (!response) return;
     const body = (await response.json()) as {
-      import: { newCount: number };
+      import: { newCount: number; mergedCount: number };
       transfers?: { linked: number; proposed: number } | null;
       rules?: { applied: number } | null;
     };
-    setDone({ count: body.import.newCount, transfers: body.transfers ?? null, rules: body.rules ?? null });
+    setDone({ count: body.import.newCount, merged: body.import.mergedCount, transfers: body.transfers ?? null, rules: body.rules ?? null });
     setPreview(null);
     setFile(null);
     (document.getElementById("import-file") as HTMLInputElement | null)?.form?.reset();
@@ -104,6 +115,15 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
   if (accounts.length === 0) return <p className="opacity-70">{t("noAccounts")}</p>;
 
   const summary = preview?.preview;
+  const accepted = summary ? summary.counts.merge - declined.size : 0;
+
+  function toggle(line: number) {
+    setDeclined((current) => {
+      const next = new Set(current);
+      if (!next.delete(line)) next.add(line);
+      return next;
+    });
+  }
   return (
     <div className="flex flex-col gap-4">
       <form onSubmit={onPreview} className="flex flex-col gap-3">
@@ -147,7 +167,7 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
         )}
         {done !== null && (
           <div role="status" className="alert alert-success">
-            {t("done", { count: done.count })}
+            {t("done", { count: done.count, merged: done.merged })}
             {done.rules && done.rules.applied > 0 && <> {t("rulesApplied", done.rules)}</>}
             {done.transfers && done.transfers.linked + done.transfers.proposed > 0 && (
               <> {t("transfersFound", done.transfers)}</>
@@ -165,7 +185,12 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
       {summary && preview && (
         <section className="flex flex-col gap-3" aria-label={t("preview")}>
           <p className="font-semibold">
-            {t("summary", { rows: summary.counts.rows, new: summary.counts.new, duplicate: summary.counts.duplicate })}
+            {t("summary", {
+              rows: summary.counts.rows,
+              new: summary.counts.new + declined.size,
+              duplicate: summary.counts.duplicate,
+              merge: accepted,
+            })}
           </p>
           {summary.periodFrom && summary.periodTo && (
             <p className="text-sm opacity-70">
@@ -181,7 +206,12 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
               })}
             </div>
           )}
-          {summary.counts.new === 0 && <div className="alert">{t("nothingNew")}</div>}
+          {summary.counts.merge > 0 && (
+            <div role="note" className="alert alert-info">
+              {t("mergeNote", { count: summary.counts.merge })}
+            </div>
+          )}
+          {summary.counts.new + summary.counts.merge === 0 && <div className="alert">{t("nothingNew")}</div>}
           <div className="flex gap-2">
             <button type="button" className="btn btn-primary" onClick={onConfirm} disabled={pending}>
               {pending && <span className="loading loading-spinner loading-sm" />}
@@ -209,15 +239,36 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
                     <td className="max-w-xs">
                       <div className="truncate">{row.counterparty}</div>
                       <div className="truncate text-xs opacity-70">{row.reference}</div>
+                      {row.merge && (
+                        <label className="mt-1 flex cursor-pointer items-center gap-2 text-xs text-info">
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-xs checkbox-info"
+                            checked={!declined.has(row.line)}
+                            onChange={() => toggle(row.line)}
+                            aria-label={t("merge")}
+                          />
+                          <span className="truncate">
+                            {t("mergeWith", {
+                              date: date(row.merge.date),
+                              text: row.merge.counterparty ?? row.merge.reference ?? "none",
+                            })}
+                          </span>
+                        </label>
+                      )}
                     </td>
                     <td>{tKinds(row.kind)}</td>
                     <td className={`whitespace-nowrap text-right ${row.amountCents < 0 ? "" : "text-success"}`}>
                       {formatCents(row.amountCents)} €
                     </td>
                     <td>
-                      <span className={`badge badge-sm ${row.status === "new" ? "badge-primary" : "badge-ghost"}`}>
-                        {t(row.status)}
-                      </span>
+                      {row.merge && !declined.has(row.line) ? (
+                        <span className="badge badge-sm badge-info whitespace-nowrap">{t("merge")}</span>
+                      ) : (
+                        <span className={`badge badge-sm ${row.status === "duplicate" ? "badge-ghost" : "badge-primary"}`}>
+                          {t(row.status === "duplicate" ? "duplicate" : "new")}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
