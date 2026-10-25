@@ -85,3 +85,15 @@ export function applyRulesRoute({ rules, afterApply, getCaller }: Deps) {
     },
   };
 }
+
+/** Handlers for /api/rules/suggestions/dismiss. */
+export function dismissSuggestionRoute({ rules, getCaller }: Deps) {
+  return {
+    /** Body: { field, pattern }. Hides the suggestion for the caller only. */
+    async POST(request: Request) {
+      return asCaller(getCaller, async (caller) =>
+        (await rules.dismissSuggestion(caller, await readJson(request))) ? new Response(null, { status: 204 }) : invalidInput(),
+      );
+    },
+  };
+}

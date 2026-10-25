@@ -32,6 +32,8 @@
   "form": {
     "scope": "Gilt für",
     "scopeHint": "Regeln gemeinsamer Konten sehen und ändern alle im Haushalt. Regeln privater Konten siehst nur du.",
+    "scopeAccounts": "Betroffene Konten",
+    "noIban": "ohne IBAN",
     "scopeNoShared": "Im Haushalt gibt es noch kein gemeinsames Konto. Diese Regel greift erst, wenn es eins gibt. Für dein privates Konto wähle „Alle meine privaten Konten“ oder das Konto selbst.",
     "scopeNoPrivate": "Du hast noch kein privates Konto. Diese Regel greift erst, wenn es eins gibt. Für ein gemeinsames Konto wähle „Alle gemeinsamen Konten“ oder das Konto selbst.",
     "condition": "Wenn",
@@ -66,5 +68,16 @@
     "patternTooLong": "Höchstens 200 Zeichen.",
     "categoryNotForKind": "Diese Kategorie passt nicht zur Art.",
     "targetNotForKind": "Ein externes Konto gibt es nur bei Umbuchung und Sparen."
+  },
+  "suggestions": {
+    "title": "Vorschläge für Regeln",
+    "intro": "Diese Texte kommen in mehreren Buchungen vor, für die es noch keine Regel gibt. Die Kategorie wählst du selbst.",
+    "counterparty": "Gegenpartei „{text}“ kommt in {count, plural, one {einer Buchung} other {# Buchungen}} vor",
+    "reference": "Verwendungszweck „{text}“ kommt in {count, plural, one {einer Buchung} other {# Buchungen}} vor",
+    "example": "z. B. bei {text}",
+    "create": "Regel anlegen",
+    "close": "Schließen",
+    "dismiss": "Nicht mehr vorschlagen",
+    "dismissFailed": "Das hat nicht geklappt."
   }
 }

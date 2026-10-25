@@ -72,3 +72,8 @@ export const learnRuleSchema = z.object({
 export type LearnRule = z.output<typeof learnRuleSchema>;
 
 export const applyRulesSchema = z.object({ accountId: id });
+
+/** "Nicht mehr vorschlagen": which suggestion the member hides. */
+export const dismissSuggestionSchema = learnRuleSchema;
+
+export type DismissSuggestion = z.output<typeof dismissSuggestionSchema>;

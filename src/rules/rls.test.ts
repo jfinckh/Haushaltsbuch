@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { withSession } from "@/shared/rls";
-import { bookingRule } from "./schema";
+import { bookingRule, ruleSuggestionDismissal } from "./schema";
 import { createTestDatabase } from "./test-utils";
 
 // The database itself shows each member only the rules they may see: rules of visible accounts, the
@@ -90,5 +90,36 @@ describe("who created a rule", () => {
       tx.update(bookingRule).set({ resultKind: "income" }).where(sql`${bookingRule.id} = 'household'`).returning({ id: bookingRule.id }),
     );
     expect(changed).toEqual([{ id: "household" }]);
+  });
+});
+
+describe("row-level security on rule_suggestion_dismissal", () => {
+  beforeEach(async () => {
+    // Signing in creates the users the rows point to.
+    await Promise.all(["max", "erika", "dora"].map((id) => setup.as(id)));
+    await setup.db.insert(ruleSuggestionDismissal).values([
+      { id: "max-hidden", ownerUserId: "max", field: "counterparty", patternIndex: "a" },
+      { id: "erika-hidden", ownerUserId: "erika", field: "reference", patternIndex: "b" },
+    ]);
+  });
+
+  const hidden = (userId: string) =>
+    asUser(userId, async (tx) => (await tx.select({ id: ruleSuggestionDismissal.id }).from(ruleSuggestionDismissal)).map((r) => r.id));
+
+  it("shows each member only their own hidden suggestions", async () => {
+    expect(await hidden("max")).toEqual(["max-hidden"]);
+    expect(await hidden("erika")).toEqual(["erika-hidden"]);
+    expect(await hidden("dora")).toEqual([]);
+  });
+
+  it("does not let a member hide or delete for someone else", async () => {
+    await expect(
+      asUser("erika", (tx) => tx.insert(ruleSuggestionDismissal).values({ id: "x", ownerUserId: "max", field: "counterparty", patternIndex: "c" })),
+    ).rejects.toThrow();
+    const result = (await asUser("erika", (tx) =>
+      tx.execute(sql`DELETE FROM rule_suggestion_dismissal WHERE id = 'max-hidden'`),
+    )) as unknown as { rowCount: number | null; affectedRows?: number };
+    expect(result.affectedRows ?? result.rowCount).toBe(0);
+    expect(await hidden("max")).toEqual(["max-hidden"]);
   });
 });

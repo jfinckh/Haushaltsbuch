@@ -27,4 +27,6 @@ export type ApplyResult = { applied: number; transfers: { id: string; target: "e
 
 /** An account as the rules forms show it. */
 /** An account the user may see; its visibility picks the categories a rule on it may set. */
-export type RuleAccount = { id: string; name: string; visibility?: "private" | "shared" };
+export type RuleAccount = { id: string; name: string; visibility?: "private" | "shared"; iban?: string | null };
+
+export type { RuleSuggestion, SuggestionField } from "./suggestions";

@@ -32,6 +32,8 @@
   "form": {
     "scope": "Applies to",
     "scopeHint": "Everyone in the household sees and edits rules of shared accounts. Only you see rules of private accounts.",
+    "scopeAccounts": "Accounts affected",
+    "noIban": "no IBAN",
     "scopeNoShared": "The household has no shared account yet. This rule only applies once there is one. For your private account, choose “All my private accounts” or the account itself.",
     "scopeNoPrivate": "You have no private account yet. This rule only applies once there is one. For a shared account, choose “All shared accounts” or the account itself.",
     "condition": "If",
@@ -66,5 +68,16 @@
     "patternTooLong": "At most 200 characters.",
     "categoryNotForKind": "This category does not fit the type.",
     "targetNotForKind": "An external account only exists for transfers and saving."
+  },
+  "suggestions": {
+    "title": "Suggested rules",
+    "intro": "These texts appear in several bookings that no rule covers yet. You choose the category.",
+    "counterparty": "Counterparty “{text}” appears in {count, plural, one {one booking} other {# bookings}}",
+    "reference": "Reference “{text}” appears in {count, plural, one {one booking} other {# bookings}}",
+    "example": "e.g. from {text}",
+    "create": "Create rule",
+    "close": "Close",
+    "dismiss": "Don't suggest again",
+    "dismissFailed": "That didn't work."
   }
 }

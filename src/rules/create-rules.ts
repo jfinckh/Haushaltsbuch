@@ -3,9 +3,10 @@ import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { Transactions, TransactionView } from "@/transactions/server";
 import { normalizeText, pickRule, type MatchableRule, type RuleLevel } from "./matching";
-import { bookingRule } from "./schema";
+import { bookingRule, ruleSuggestionDismissal } from "./schema";
+import { findSuggestions, type RuleSuggestion, type SuggestionField } from "./suggestions";
 import type { ApplyResult, RuleScope, RuleView } from "./types";
-import { applyRulesSchema, learnRuleSchema, ruleInputSchema, type RuleValues } from "./validation";
+import { applyRulesSchema, dismissSuggestionSchema, learnRuleSchema, ruleInputSchema, type RuleValues } from "./validation";
 
 export type RulesOptions = {
   db: RlsDatabase;
@@ -39,6 +40,14 @@ const textArray = (ids: readonly string[]) =>
 const levelOf = (row: RuleRow): RuleLevel => (row.accountId ? "account" : row.ownerUserId ? "private" : "shared");
 
 const isTransferKind = (kind: string) => kind === "transfer" || kind === "saving";
+
+const suggestionContext = (field: SuggestionField) => `rule-suggestion.${field}`;
+
+/** The same calendar day a year before `today` (YYYY-MM-DD). */
+function yearBefore(today: string): string {
+  const [year, rest] = [Number(today.slice(0, 4)), today.slice(4)];
+  return `${year - 1}${rest === "-02-29" ? "-02-28" : rest}`;
+}
 
 /**
  * The rules part. Every call is about the caller's own view; their user id comes from the database.
@@ -135,8 +144,8 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
    * Applies the rules that fit each booking's account, as the caller may see them. Bookings someone
    * classified by hand are skipped by transactions.
    */
-  async function apply(tx: RlsTransaction, userId: string, bookings: TransactionView[]): Promise<ApplyResult> {
-    if (bookings.length === 0) return { applied: 0, transfers: [] };
+  /** For each booking the visible rule that wins, if any; bookings on invisible accounts get none. */
+  async function winningRules(tx: RlsTransaction, userId: string, bookings: TransactionView[]) {
     const scopes = await accountScopes(tx, [...new Set(bookings.map((b) => b.accountId))]);
     const visibleRules = await tx.select().from(bookingRule);
     const matchable = visibleRules.map((row) => ({ row, view: toView(row, userId) }));
@@ -146,7 +155,7 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       (row.householdId !== null && row.householdId === scope.household_id) ||
       (row.ownerUserId !== null && row.ownerUserId === userId && scope.household_id === null);
 
-    const decisions = bookings.flatMap((booking) => {
+    return bookings.flatMap((booking) => {
       const scope = scopes.get(booking.accountId);
       if (!scope) return [];
       const candidates = matchable
@@ -163,6 +172,11 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       const winner = pickRule(candidates, booking);
       return winner ? [{ booking, rule: winner.view }] : [];
     });
+  }
+
+  async function apply(tx: RlsTransaction, userId: string, bookings: TransactionView[]): Promise<ApplyResult> {
+    if (bookings.length === 0) return { applied: 0, transfers: [] };
+    const decisions = await winningRules(tx, userId, bookings);
 
     const changed = new Set(
       await transactions.classifyBookings(
@@ -260,6 +274,44 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
         });
         if (!values.success) return { ok: false, reason: "invalid-input" };
         return insertRule(tx, userId, values.data);
+      });
+    },
+
+    /**
+     * Rule suggestions from the caller's visible expenses and income of the last 12 months that no
+     * visible rule covers; hidden ones are left out. `today` (YYYY-MM-DD) is for tests.
+     */
+    async listSuggestions(caller: Caller, { today = new Date().toISOString().slice(0, 10) }: { today?: string } = {}): Promise<RuleSuggestion[]> {
+      return withSession(db, caller, async (tx, userId) => {
+        const found = await transactions.findBookings(tx, userId, { from: yearBefore(today), to: today });
+        const open = found.filter((b) => b.kind === "expense" || b.kind === "income");
+        const covered = new Set((await winningRules(tx, userId, open)).map(({ booking }) => booking.id));
+        const dismissed = new Set(
+          (await tx.select().from(ruleSuggestionDismissal)).map((row) => `${row.field}:${row.patternIndex}`),
+        );
+        return findSuggestions(
+          open.filter((b) => !covered.has(b.id)),
+          (field, pattern) => dismissed.has(`${field}:${fieldCrypto.blindIndex(pattern, suggestionContext(field))}`),
+        );
+      });
+    },
+
+    /** "Nicht mehr vorschlagen": hides a suggestion for the caller only. Repeating it changes nothing. */
+    async dismissSuggestion(caller: Caller, input: unknown): Promise<boolean> {
+      const parsed = dismissSuggestionSchema.safeParse(input);
+      if (!parsed.success) return false;
+      const { field, pattern } = parsed.data;
+      return withSession(db, caller, async (tx, userId) => {
+        await tx
+          .insert(ruleSuggestionDismissal)
+          .values({
+            id: crypto.randomUUID(),
+            ownerUserId: userId,
+            field,
+            patternIndex: fieldCrypto.blindIndex(normalizeText(pattern), suggestionContext(field)),
+          })
+          .onConflictDoNothing();
+        return true;
       });
     },
 

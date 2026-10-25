@@ -338,3 +338,53 @@ describe("rules with own categories", () => {
     });
   });
 });
+
+describe("rule suggestions", () => {
+  const TODAY = "2026-10-25";
+  const edeka = (date: string) => ({ date, amountCents: -3506, counterparty: "VISA EDEKA MUSTERMARKT", reference: "NR XXXX 1234 STUTTGART DE KAUFUMSATZ" });
+  const threeEdeka = [edeka("2026-10-13"), edeka("2026-10-06"), edeka("2026-09-29")];
+  const patterns = async (caller: Caller) => (await setup.rules.listSuggestions(caller, { today: TODAY })).map((s) => s.pattern);
+
+  it("suggests a repeated counterparty with the account it comes from", async () => {
+    await setup.importBookings("max", "max-ing", threeEdeka);
+    expect(await setup.rules.listSuggestions(max, { today: TODAY })).toEqual([
+      { field: "counterparty", pattern: "EDEKA MUSTERMARKT", count: 3, example: "VISA EDEKA MUSTERMARKT", accountId: "max-ing", kind: "expense" },
+    ]);
+  });
+
+  it("leaves out bookings a rule covers, transfers and bookings older than 12 months", async () => {
+    await setup.importBookings("max", "max-ing", [
+      ...threeEdeka,
+      ...["2026-10-01", "2026-09-01", "2026-08-01"].map((date) => ({ date, amountCents: -120000, counterparty: "Max Mustermann", kind: "transfer" as const })),
+      ...["2025-09-01", "2025-08-01", "2026-10-01"].map((date) => ({ date, amountCents: -4000, counterparty: "VISA ARAL STATION" })),
+    ]);
+    await create(max, { counterparty: "edeka" });
+    expect(await patterns(max)).toEqual([]);
+  });
+
+  it("never builds suggestions from another member's private bookings", async () => {
+    await setup.importBookings("erika", "erika-ing", threeEdeka);
+    expect(await patterns(max)).toEqual([]);
+    expect(await patterns(erika)).toEqual(["EDEKA MUSTERMARKT"]);
+  });
+
+  it("hides a suggestion for good, only for the member who hid it", async () => {
+    await setup.importBookings("max", "shared", threeEdeka);
+    expect(await setup.rules.dismissSuggestion(max, { field: "counterparty", pattern: "  edeka   Mustermarkt " })).toBe(true);
+    expect(await setup.rules.dismissSuggestion(max, { field: "counterparty", pattern: "EDEKA MUSTERMARKT" })).toBe(true);
+    expect(await patterns(max)).toEqual([]);
+    expect(await patterns(erika)).toEqual(["EDEKA MUSTERMARKT"]);
+  });
+
+  it("stores only a blind index of a hidden pattern", async () => {
+    await setup.rules.dismissSuggestion(max, { field: "counterparty", pattern: "EDEKA MUSTERMARKT" });
+    const rows = await setup.dismissalRows();
+    expect(rows).toHaveLength(1);
+    expect(JSON.stringify(rows).toLowerCase()).not.toContain("edeka");
+  });
+
+  it("rejects invalid input when hiding", async () => {
+    expect(await setup.rules.dismissSuggestion(max, { field: "category", pattern: "x" })).toBe(false);
+    expect(await setup.rules.dismissSuggestion(max, { field: "counterparty", pattern: " " })).toBe(false);
+  });
+});

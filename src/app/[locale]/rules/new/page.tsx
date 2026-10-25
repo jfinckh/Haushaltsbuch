@@ -21,7 +21,7 @@ export default function NewRulePage() {
 async function NewRule() {
   const { caller } = await requireCaller("/sign-in");
   const [listed, catalog] = await Promise.all([accounts.listAccounts(caller), categories.catalog(caller)]);
-  const visible = listed.filter((a) => !a.archived).map(({ id, name, visibility }) => ({ id, name, visibility }));
+  const visible = listed.filter((a) => !a.archived).map(({ id, name, visibility, iban }) => ({ id, name, visibility, iban }));
   const t = await getTranslations("app.rules");
   return (
     <>

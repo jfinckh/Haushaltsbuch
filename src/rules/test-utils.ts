@@ -97,7 +97,13 @@ export async function createTestDatabase() {
     return result.rows;
   }
 
-  return { db, crypto, transactions, rules, as, householdOf, addAccount, makePrivate, importBookings, stored, ruleRows };
+  /** All hidden suggestions, straight from the table. */
+  async function dismissalRows() {
+    const result = (await db.execute(sql`SELECT * FROM rule_suggestion_dismissal`)) as unknown as { rows: Record<string, unknown>[] };
+    return result.rows;
+  }
+
+  return { db, crypto, transactions, rules, as, householdOf, addAccount, makePrivate, importBookings, stored, ruleRows, dismissalRows };
 }
 
 /** The cases of test-data/ing_testdaten.csv the rules tests use. */

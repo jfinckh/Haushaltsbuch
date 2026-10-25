@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "base": "055f50198c0fc38fb6855958e0b604f03778006b",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/rules/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0024_rule_suggestions.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0024_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/suggestions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/suggestions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/types.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-suggestions.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/rules-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/suggestions/dismiss/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/suggestions/dismiss/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/rules/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/rules/[id]/page.tsx",
+      "status": "divergence",
+      "note": "Changed but not in the plan."
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/rules/new/page.tsx",
+      "status": "divergence",
+      "note": "Changed but not in the plan."
+    },
+    {
+      "kind": "edge",
+      "id": "rules->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "rules->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->rules",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "ruleSuggestionDismissal",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:client:RuleSuggestions",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "table-new:ruleSuggestionDismissal",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:client:RuleSuggestions",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

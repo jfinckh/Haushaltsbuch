@@ -20,7 +20,14 @@ type Props = {
   action?: string;
   /** Where to go after saving. Default: /rules */
   rulesHref?: string;
+  /** Start values for a new rule, e.g. from a suggestion. */
+  initial?: RuleStart;
+  /** Called after saving instead of going to `rulesHref`. */
+  onSaved?: () => void;
 };
+
+/** What a new rule may start with. */
+export type RuleStart = Partial<Pick<RuleView, "scope" | "counterparty" | "reference" | "amountSign" | "kind">>;
 
 type Errors = Record<string, string>;
 
@@ -34,14 +41,15 @@ function scopeFrom(value: string): RuleScope {
 }
 
 /** Creates or edits a rule: where it applies, what it looks for and what it sets. */
-export function RuleForm({ accounts, categories, rule, action = "/api/rules", rulesHref = "/rules" }: Props) {
+export function RuleForm({ accounts, categories, rule, action = "/api/rules", rulesHref = "/rules", initial, onSaved }: Props) {
   const t = useTranslations("rules.form");
   const tKinds = useTranslations("rules.kinds");
   const tk = useTranslateKey();
   const texts = useRuleTexts(accounts, categories?.names);
   const router = useRouter();
-  const [scope, setScope] = useState(rule ? scopeValue(rule.scope) : accounts[0] ? `account:${accounts[0].id}` : "shared");
-  const [kind, setKind] = useState<TransactionKind>(rule?.kind ?? "expense");
+  const start = rule ?? initial;
+  const [scope, setScope] = useState(start?.scope ? scopeValue(start.scope) : accounts[0] ? `account:${accounts[0].id}` : "shared");
+  const [kind, setKind] = useState<TransactionKind>(start?.kind ?? "expense");
   const [category, setCategory] = useState(rule?.category ?? "");
   const [external, setExternal] = useState(rule?.transferTarget === "external");
   const [errors, setErrors] = useState<Errors>({});
@@ -57,6 +65,12 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
   const knowsVisibility = accounts.every((a) => a.visibility !== undefined);
   const scopeEmpty =
     knowsVisibility && scopeType !== "account" && !accounts.some((a) => a.visibility === scopeType);
+  // The accounts the chosen scope covers right now (private accounts here are always the caller's own).
+  const covered = (() => {
+    const target = scopeFrom(scope);
+    if (target.type === "account") return accounts.filter((a) => a.id === target.accountId);
+    return knowsVisibility ? accounts.filter((a) => a.visibility === target.type) : [];
+  })();
   const hasCategory = kind === "expense" || kind === "income";
   const hasTarget = kind === "transfer" || kind === "saving";
 
@@ -116,7 +130,8 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
         response?.status === 404 ? "rules.form.notFound" : reason === "no-household" ? "rules.form.noHousehold" : "rules.form.saveFailed";
       return setErrors({ form: message });
     }
-    router.push(rulesHref);
+    if (onSaved) onSaved();
+    else router.push(rulesHref);
     router.refresh();
   }
 
@@ -134,6 +149,19 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
           ))}
         </select>
         <p className="label whitespace-normal">{t("scopeHint")}</p>
+        {covered.length > 0 && (
+          <div className="mt-1">
+            <p className="text-xs font-medium text-base-content/70">{t("scopeAccounts")}</p>
+            <ul className="mt-1 divide-y divide-base-300 rounded-box border border-base-300 text-sm">
+              {covered.map((a) => (
+                <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-x-3 px-3 py-1.5">
+                  <span className="font-medium">{a.name}</span>
+                  <span className="font-mono text-xs text-base-content/60">{a.iban ?? t("noIban")}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {scopeEmpty && (
           <p role="status" className="label text-warning whitespace-normal">
             {t(scopeType === "shared" ? "scopeNoShared" : "scopeNoPrivate")}
@@ -144,18 +172,18 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
       <h2 className="mt-2 font-semibold">{t("condition")}</h2>
       <fieldset className="fieldset">
         <label className="fieldset-legend" htmlFor="rule-counterparty">{t("counterparty")}</label>
-        <input id="rule-counterparty" name="counterparty" type="text" defaultValue={rule?.counterparty ?? ""} className="input w-full" maxLength={200} />
+        <input id="rule-counterparty" name="counterparty" type="text" defaultValue={start?.counterparty ?? ""} className="input w-full" maxLength={200} />
         {error("counterparty")}
       </fieldset>
       <fieldset className="fieldset">
         <label className="fieldset-legend" htmlFor="rule-reference">{t("reference")}</label>
-        <input id="rule-reference" name="reference" type="text" defaultValue={rule?.reference ?? ""} className="input w-full" maxLength={200} />
+        <input id="rule-reference" name="reference" type="text" defaultValue={start?.reference ?? ""} className="input w-full" maxLength={200} />
         <p className="label whitespace-normal">{t("patternHint")}</p>
         {error("reference")}
       </fieldset>
       <fieldset className="fieldset">
         <label className="fieldset-legend" htmlFor="rule-sign">{t("amountSign")}</label>
-        <select id="rule-sign" name="amountSign" className="select w-full" defaultValue={rule?.amountSign ?? ""}>
+        <select id="rule-sign" name="amountSign" className="select w-full" defaultValue={start?.amountSign ?? ""}>
           <option value="">{t("anySign")}</option>
           <option value="negative">{t("negative")}</option>
           <option value="positive">{t("positive")}</option>

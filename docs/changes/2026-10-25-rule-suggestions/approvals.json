@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "table-new:ruleSuggestionDismissal",
+      "itemHash": "sha256:3ed88d22dcf5ff9ddc9a2d0eb89442506de5baee10ff5f60ab51cf3933082726",
+      "decision": "approve",
+      "at": "2026-10-25T11:53:44Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:client:RuleSuggestions",
+      "itemHash": "sha256:ab32fa51e3ed1969b2a63317920962b376a7a7d15df3bf60a0ec7c5fb55fa56e",
+      "decision": "approve",
+      "at": "2026-10-25T11:53:44Z",
+      "source": "hook"
+    }
+  ]
+}

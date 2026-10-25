@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { check, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 // Table of the rules part. Account, household and user ids are plain text in this file, so the part
 // stays independent of accounts, households and auth; the foreign keys (cascade on delete), the
@@ -53,4 +53,24 @@ export const bookingRule = pgTable(
   ],
 );
 
-export const ruleTables = { bookingRule };
+/**
+ * A rule suggestion a member hid ("Nicht mehr vorschlagen"). Only a blind index of the normalized
+ * pattern is kept, never the pattern. Each member sees only their own rows
+ * (drizzle/0024_rule_suggestions.sql).
+ */
+export const ruleSuggestionDismissal = pgTable(
+  "rule_suggestion_dismissal",
+  {
+    id: text("id").primaryKey(),
+    ownerUserId: text("owner_user_id").notNull(),
+    field: text("field", { enum: ["counterparty", "reference"] }).notNull(),
+    patternIndex: text("pattern_index").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("rule_suggestion_dismissal_owner_idx").on(table.ownerUserId, table.field, table.patternIndex),
+    check("rule_suggestion_dismissal_field_check", sql`${table.field} IN ('counterparty', 'reference')`),
+  ],
+);
+
+export const ruleTables = { bookingRule, ruleSuggestionDismissal };

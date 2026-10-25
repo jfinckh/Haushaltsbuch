@@ -31,7 +31,7 @@ async function EditRule({ params }: Params) {
   // Active accounts, plus the rule's own account even if it is archived.
   const options = visible
     .filter((a) => !a.archived || (rule.scope.type === "account" && a.id === rule.scope.accountId))
-    .map(({ id, name, visibility }) => ({ id, name, visibility }));
+    .map(({ id, name, visibility, iban }) => ({ id, name, visibility, iban }));
   const t = await getTranslations("app.rules");
   return (
     <>
