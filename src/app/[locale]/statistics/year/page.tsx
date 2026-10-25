@@ -94,9 +94,7 @@ async function YearFigures({ caller, accountId, year }: { caller: Caller; accoun
   return (
     <>
       <Totals overview={overview} />
-      <hr className="border-base-300" />
       <MonthTable overview={overview} />
-      <hr className="border-base-300" />
       <YearCategories categories={overview.categories} categoryNames={names} />
     </>
   );
@@ -113,11 +111,11 @@ async function Totals({ overview: { totals } }: { overview: Overview }) {
     ...(totals.contributionCents === null ? [] : ([[t("contribution"), formatEuro(totals.contributionCents)]] as [string, string][])),
   ];
   return (
-    <dl className="grid grid-cols-2 gap-2 text-sm">
+    <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
       {figures.map(([label, value]) => (
-        <div key={label}>
-          <dt className="opacity-70">{label}</dt>
-          <dd className="text-base tabular-nums">{value}</dd>
+        <div key={label} className="flex-[1_1_9rem] min-w-0 bg-base-100 px-4 py-3">
+          <dt className="text-xs leading-snug text-base-content/60">{label}</dt>
+          <dd className="mt-0.5 text-xl font-semibold tracking-tight">{value}</dd>
         </div>
       ))}
     </dl>
@@ -140,13 +138,13 @@ async function MonthTable({ overview: { months, totals } }: { overview: Overview
     </>
   );
   return (
-    <section className="flex flex-col gap-2">
+    <section className="flex min-w-0 flex-col gap-3 border-t border-base-300 pt-5">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-lg font-semibold">{t("byMonth")}</h2>
-        <span className="text-xs opacity-70">{t("amountsInEuro")}</span>
+        <span className="text-xs text-base-content/50">{t("amountsInEuro")}</span>
       </div>
       {/* Fits a phone; only the table would scroll sideways on an even narrower screen. */}
-      <div className="-mx-4 overflow-x-auto">
+      <div className="-mx-4 overflow-x-auto sm:mx-0">
         <table className="table-xs table w-full tabular-nums [&_td]:px-1 [&_th]:px-1 [&_tfoot]:text-xs">
           <thead>
             <tr>
@@ -203,12 +201,12 @@ function YearCategories({
   const uncategorized = useTranslations("transactions.spending")("uncategorized");
   const categoryName = useCategoryName(categoryNames);
   return (
-    <section className="flex flex-col gap-2">
+    <section className="flex min-w-0 flex-col gap-3 border-t border-base-300 pt-5">
       <h2 className="text-lg font-semibold">{t("categories")}</h2>
       {groups.length === 0 ? (
-        <p className="text-sm opacity-70">{t("noYearSpending")}</p>
+        <p className="text-sm text-base-content/60">{t("noYearSpending")}</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {groups.map(({ group, cents }) => {
             const name = group ? categoryName(group) : uncategorized;
             return (
@@ -216,7 +214,7 @@ function YearCategories({
                 <span className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate font-medium">{name}</span>
                   <span className="shrink-0 tabular-nums">
-                    {formatEuro(cents)} <span className="opacity-70">· {t("share", { percent: Math.round((cents * 100) / totalCents) })}</span>
+                    {formatEuro(cents)} <span className="text-base-content/50">· {t("share", { percent: Math.round((cents * 100) / totalCents) })}</span>
                   </span>
                 </span>
                 <progress className="progress progress-primary w-full" value={cents} max={totalCents} aria-label={name} />

@@ -52,6 +52,11 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
     { type: "shared" },
     { type: "private" },
   ];
+  // A shared or private scope with no such account matches nothing yet; say so.
+  const scopeType = scopeFrom(scope).type;
+  const knowsVisibility = accounts.every((a) => a.visibility !== undefined);
+  const scopeEmpty =
+    knowsVisibility && scopeType !== "account" && !accounts.some((a) => a.visibility === scopeType);
   const hasCategory = kind === "expense" || kind === "income";
   const hasTarget = kind === "transfer" || kind === "saving";
 
@@ -129,6 +134,11 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
           ))}
         </select>
         <p className="label whitespace-normal">{t("scopeHint")}</p>
+        {scopeEmpty && (
+          <p role="status" className="label text-warning whitespace-normal">
+            {t(scopeType === "shared" ? "scopeNoShared" : "scopeNoPrivate")}
+          </p>
+        )}
       </fieldset>
 
       <h2 className="mt-2 font-semibold">{t("condition")}</h2>

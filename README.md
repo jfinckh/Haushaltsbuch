@@ -31,9 +31,19 @@ npm run dev                       # http://localhost:3000
 
 Both are members of the household "Mustermann". Max has a private ING Giro and a private Trade
 Republic (clearing account and depot); there is a shared ING Gemeinschaftskonto, and Erika has a
-private Girokonto. `test-data/ing_testdaten.csv` is imported into the ING Giro (balance afterwards
-703,26 €) and `test-data/traderepublic_testdaten.csv` into the Trade Republic clearing account, the
-same way an upload does (rules, then transfer matching).
+private Girokonto and a private Erika ING Giro. Four test files are imported the same way an upload
+does (rules, then transfer matching):
+
+| File | Account | Balance afterwards |
+| --- | --- | --- |
+| `test-data/ing_testdaten.csv` | ING Giro (Max) | 703,26 € |
+| `test-data/traderepublic_testdaten.csv` | Trade Republic clearing account (Max) | |
+| `test-data/ing_gemeinschaftskonto_testdaten.csv` | ING Gemeinschaftskonto (shared) | 2.008,13 € |
+| `test-data/ing_erika_testdaten.csv` | Erika ING Giro (Erika) | 4.252,21 € |
+
+The shared file has the household's costs (rent, Kita, groceries, a holiday in Italy) from May to
+October 2026; Erika's file her salary and personal spending from July. Their contributions to the
+shared account and Erika's "Anteil Urlaub" to Max are linked as transfers.
 
 The seed only adds data. If one of the two users already exists it refuses and changes nothing. To
 seed again, reset the database `DATABASE_URL` points to (with the Compose setup:

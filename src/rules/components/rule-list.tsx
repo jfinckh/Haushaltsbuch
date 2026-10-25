@@ -35,8 +35,14 @@ export function RuleList({ rules, accounts, categoryNames, action = "/api/rules"
   return (
     <div className="flex flex-col gap-4">
       {[...groups].map(([label, group]) => (
-        <section key={label}>
-          <h2 className="border-b border-base-300 px-1 pb-1 text-xs font-medium tracking-wide text-base-content/55 uppercase">{label}</h2>
+        <details key={label} open className="group">
+          <summary className="flex cursor-pointer list-none items-center gap-2 border-b border-base-300 px-1 pb-1 select-none [&::-webkit-details-marker]:hidden">
+            <svg aria-hidden viewBox="0 0 20 20" fill="currentColor" className="size-3.5 text-base-content/55 transition-transform group-open:rotate-90">
+              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clipRule="evenodd" />
+            </svg>
+            <h2 className="flex-1 text-xs font-medium tracking-wide text-base-content/55 uppercase">{label}</h2>
+            <span className="badge badge-ghost badge-sm">{group.length}</span>
+          </summary>
           <ul className="flex flex-col">
             {group.map((rule) => (
               <li key={rule.id} className="flex flex-col gap-1 border-b border-base-300/70 px-1 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -54,7 +60,7 @@ export function RuleList({ rules, accounts, categoryNames, action = "/api/rules"
               </li>
             ))}
           </ul>
-        </section>
+        </details>
       ))}
     </div>
   );

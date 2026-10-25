@@ -32,6 +32,8 @@
   "form": {
     "scope": "Applies to",
     "scopeHint": "Everyone in the household sees and edits rules of shared accounts. Only you see rules of private accounts.",
+    "scopeNoShared": "The household has no shared account yet. This rule only applies once there is one. For your private account, choose “All my private accounts” or the account itself.",
+    "scopeNoPrivate": "You have no private account yet. This rule only applies once there is one. For a shared account, choose “All shared accounts” or the account itself.",
     "condition": "If",
     "counterparty": "Counterparty contains",
     "reference": "Reference contains",

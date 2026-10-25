@@ -22,6 +22,8 @@ import { SEED_PASSWORD, SEED_USERS, seedAuthFrom, seedDevData, type SeedDeps } f
 const files = {
   ing: new Uint8Array(readFileSync(new URL("../../../test-data/ing_testdaten.csv", import.meta.url))),
   tradeRepublic: new Uint8Array(readFileSync(new URL("../../../test-data/traderepublic_testdaten.csv", import.meta.url))),
+  shared: new Uint8Array(readFileSync(new URL("../../../test-data/ing_gemeinschaftskonto_testdaten.csv", import.meta.url))),
+  erika: new Uint8Array(readFileSync(new URL("../../../test-data/ing_erika_testdaten.csv", import.meta.url))),
 };
 
 let auth: Auth;
@@ -86,7 +88,7 @@ describe("seedDevData", () => {
     expect(await deps.households.listMembers(max)).toHaveLength(2);
     expect(await names(max)).toEqual(["ING Gemeinschaftskonto", "ING Giro", "Trade Republic", "Trade Republic Depot"]);
     // Privacy: Erika sees the shared account and her own, none of Max's private ones.
-    expect(await names(erika)).toEqual(["Erika Girokonto", "ING Gemeinschaftskonto"]);
+    expect(await names(erika)).toEqual(["Erika Girokonto", "Erika ING Giro", "ING Gemeinschaftskonto"]);
   });
 
   it("imports both files like an upload: ING balance 703,26 €, ING ↔ TR transfers linked", async () => {
@@ -99,6 +101,25 @@ describe("seedDevData", () => {
     const max = await signIn(SEED_USERS.max.email);
     const giro = (await accounts.listAccounts(max)).find((a) => a.name === "ING Giro")!;
     expect(await balanceOf(max, giro.id)).toBe(70326);
+  });
+
+  it("imports the shared and Erika's ING file with the files' saldos and links their transfers", async () => {
+    const result = await seedDevData(deps);
+    if (!result.ok) throw new Error(result.reason);
+    expect(result.imports.shared.newCount).toBe(126);
+    expect(result.imports.shared.linked).toBeGreaterThan(0);
+    expect(result.imports.erika.newCount).toBe(47);
+    expect(result.imports.erika.linked).toBeGreaterThan(0);
+
+    const max = await signIn(SEED_USERS.max.email);
+    const erika = await signIn(SEED_USERS.erika.email);
+    const shared = (await accounts.listAccounts(max)).find((a) => a.name === "ING Gemeinschaftskonto")!;
+    const erikaGiro = (await accounts.listAccounts(erika)).find((a) => a.name === "Erika ING Giro")!;
+    expect(await balanceOf(max, shared.id)).toBe(200813);
+    expect(await balanceOf(erika, erikaGiro.id)).toBe(425221);
+    // Privacy: Max never sees Erika's private account or its bookings.
+    expect(await accounts.getAccount(max, erikaGiro.id)).toBeFalsy();
+    expect((await transactions.balances(max))[erikaGiro.id]).toBeUndefined();
   });
 
   it("refuses a second run and changes nothing", async () => {

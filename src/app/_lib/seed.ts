@@ -10,7 +10,7 @@ import type { Transfers } from "@/transfers/server";
 import { importsRoute } from "./imports-route";
 
 // Seed data for local development (docs/konzept.md, "Lokal starten"): two users, their household,
-// the accounts from the concept and both test files, imported like an upload in the browser.
+// the accounts from the concept and the four test files, imported like an upload in the browser.
 // Run with `npm run db:seed`. It only inserts, and refuses when a seed user already exists.
 
 /** The test password of both seed users. Documented in the README; never printed. */
@@ -23,6 +23,9 @@ export const SEED_USERS = {
 
 /** The IBAN of the ING test file (test-data/ing_testdaten.csv), fictional. */
 const ING_GIRO_IBAN = "DE94 1234 5678 1111 1111 11";
+
+/** The IBAN of Erika's ING test file (test-data/ing_erika_testdaten.csv), fictional. */
+const ERIKA_ING_IBAN = "DE50 1234 5678 4444 4444 44";
 
 /** The ING test file's last saldo: after the import the Giro balance must be 703,26 €. */
 const ING_EXPECTED_BALANCE_CENTS = 70326;
@@ -42,14 +45,14 @@ export type SeedDeps = {
   rules: Rules;
   transfers: Transfers;
   householdMembers: (caller: Caller) => Promise<{ userId: string; name: string }[]>;
-  /** The two test files' bytes. */
-  files: { ing: Uint8Array; tradeRepublic: Uint8Array };
+  /** The test files' bytes. */
+  files: { ing: Uint8Array; tradeRepublic: Uint8Array; shared: Uint8Array; erika: Uint8Array };
 };
 
 type ImportSummary = { newCount: number; linked: number };
 
 export type SeedResult =
-  | { ok: true; imports: { ing: ImportSummary; tradeRepublic: ImportSummary } }
+  | { ok: true; imports: Record<keyof SeedDeps["files"], ImportSummary> }
   | { ok: false; reason: "already-seeded" };
 
 /** The seed's view of auth: the check for existing users and sign-up with a session. */
@@ -93,7 +96,7 @@ async function upload(deps: SeedDeps, caller: Caller, accountId: string, name: s
   return { newCount: json.import.newCount as number, linked: (json.transfers?.linked ?? 0) as number };
 }
 
-/** Creates the seed users, household and accounts and imports both test files. */
+/** Creates the seed users, household and accounts and imports the test files. */
 export async function seedDevData(deps: SeedDeps): Promise<SeedResult> {
   const { auth, households, accounts, transactions } = deps;
   for (const user of Object.values(SEED_USERS)) {
@@ -114,20 +117,26 @@ export async function seedDevData(deps: SeedDeps): Promise<SeedResult> {
   const [clearing] = await createAccount(accounts, max.caller, {
     setup: "trade-republic", visibility: "private", clearingOpeningBalance: "0", depotOpeningBalance: "0",
   });
-  await createAccount(accounts, max.caller, {
+  const [shared] = await createAccount(accounts, max.caller, {
     name: "ING Gemeinschaftskonto", bank: "ing", type: "checking", visibility: "shared", ...zero,
   });
   await createAccount(accounts, erika.caller, {
     name: "Erika Girokonto", bank: "other", type: "checking", visibility: "private", ...zero,
   });
+  const [erikaGiro] = await createAccount(accounts, erika.caller, {
+    name: "Erika ING Giro", bank: "ing", type: "checking", visibility: "private", iban: ERIKA_ING_IBAN, ...zero,
+  });
 
   const ing = await upload(deps, max.caller, giro.id, "ing_testdaten.csv", deps.files.ing);
   const tradeRepublic = await upload(deps, max.caller, clearing.id, "traderepublic_testdaten.csv", deps.files.tradeRepublic);
+  // After the ING Giro, so Max's "Miete und co" links; Erika's file last, so her transfers link too.
+  const sharedImport = await upload(deps, max.caller, shared.id, "ing_gemeinschaftskonto_testdaten.csv", deps.files.shared);
+  const erikaImport = await upload(deps, erika.caller, erikaGiro.id, "ing_erika_testdaten.csv", deps.files.erika);
 
   const account = await accounts.getAccount(max.caller, giro.id);
   const balance = (account?.openingBalanceCents ?? 0) + ((await transactions.balances(max.caller))[giro.id] ?? 0);
   // Says only that it differs, never the amount.
   if (balance !== ING_EXPECTED_BALANCE_CENTS) throw new Error("The ING Giro balance after the import is not the file's saldo");
 
-  return { ok: true, imports: { ing, tradeRepublic } };
+  return { ok: true, imports: { ing, tradeRepublic, shared: sharedImport, erika: erikaImport } };
 }

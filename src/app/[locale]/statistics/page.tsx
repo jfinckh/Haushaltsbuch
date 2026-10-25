@@ -13,7 +13,7 @@ import { formatEuro } from "@/shared/money";
 import { CategoryTrends } from "./category-trends";
 import { ViewTabs } from "./view-tabs";
 import type { Caller } from "@/shared/rls";
-import { AppShell, PageHeader } from "@/app/_lib/app-shell";
+import { AppShell, PageHeader, Section } from "@/app/_lib/app-shell";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -67,22 +67,19 @@ async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: s
   ]);
   if (!statistics.ok) return null;
   const { rows, comparison, scaleCents: scale } = statistics;
+  const t = await getTranslations("app.statistics");
 
   return (
     <>
-      {comparison && <Comparison comparison={comparison} previousMonth={rows[1].month} />}
-      {trends.ok && (
-        <>
-          <hr className="border-base-300" />
-          <CategoryTrends trends={trends} accountId={accountId} categoryNames={names} />
-        </>
-      )}
-      <hr className="border-base-300" />
-      <ol className="flex flex-col gap-4">
-        {rows.map((row) => (
-          <MonthRow key={row.month} row={row} scale={scale} />
-        ))}
-      </ol>
+      <CurrentMonth row={rows[0]} comparison={comparison} previousMonth={rows[1]?.month} />
+      {trends.ok && <CategoryTrends trends={trends} accountId={accountId} categoryNames={names} />}
+      <Section title={t("byMonth")}>
+        <ol className="flex flex-col divide-y divide-base-300">
+          {rows.map((row) => (
+            <MonthRow key={row.month} row={row} scale={scale} />
+          ))}
+        </ol>
+      </Section>
     </>
   );
 }
@@ -92,28 +89,77 @@ const monthDate = (month: string) => new Date(`${month}-01T00:00:00Z`);
 
 type MonthComparison = { expenseChangeCents: number; savingsRateChangePoints: number | null };
 
-async function Comparison({ comparison, previousMonth }: { comparison: MonthComparison; previousMonth: string }) {
+type Tone = "good" | "bad" | "same";
+const TONE: Record<Tone, string> = { good: "text-success", bad: "text-error", same: "text-base-content/60" };
+const ARROW: Record<Tone, string> = { good: "↓", bad: "↑", same: "=" };
+
+/** The current month as figure tiles; spending and savings rate compared with the month before. */
+async function CurrentMonth({
+  row,
+  comparison,
+  previousMonth,
+}: {
+  row: StatisticsRow;
+  comparison: MonthComparison | null;
+  previousMonth: string | undefined;
+}) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
-  const { expenseChangeCents, savingsRateChangePoints } = comparison;
-  const previousName = format.dateTime(monthDate(previousMonth), { month: "long", timeZone: "UTC" });
-  const points = (value: number) => format.number(Math.abs(value), { maximumFractionDigits: 1 });
+  const name = format.dateTime(monthDate(row.month), { month: "long", year: "numeric", timeZone: "UTC" });
+  const rate = (value: number | null) => (value === null ? t("noRate") : format.number(value, { style: "percent", maximumFractionDigits: 1 }));
+
+  let expenseNote: { text: string; tone: Tone; arrow: string } | null = null;
+  let rateNote: { text: string; tone: Tone; arrow: string } | null = null;
+  if (comparison && previousMonth) {
+    const month = format.dateTime(monthDate(previousMonth), { month: "long", timeZone: "UTC" });
+    const { expenseChangeCents: change, savingsRateChangePoints: points } = comparison;
+    const expenseTone: Tone = change === 0 ? "same" : change > 0 ? "bad" : "good";
+    expenseNote = {
+      tone: expenseTone,
+      arrow: ARROW[expenseTone],
+      text:
+        change === 0
+          ? t("expensesSame", { month })
+          : t(change > 0 ? "expensesMore" : "expensesLess", { amount: formatEuro(Math.abs(change)), month }),
+    };
+    if (points !== null) {
+      const rateTone: Tone = points === 0 ? "same" : points > 0 ? "good" : "bad";
+      rateNote = {
+        tone: rateTone,
+        arrow: points === 0 ? "=" : points > 0 ? "↑" : "↓",
+        text:
+          points === 0
+            ? t("rateSame", { month })
+            : t(points > 0 ? "rateUp" : "rateDown", { points: format.number(Math.abs(points), { maximumFractionDigits: 1 }), month }),
+      };
+    }
+  }
+
+  const tiles: { label: string; value: string; note?: typeof expenseNote }[] = [
+    { label: t("expenses"), value: formatEuro(-row.expenseCents), note: expenseNote },
+    { label: t("income"), value: formatEuro(row.incomeCents) },
+    { label: t("saved"), value: formatEuro(-row.savingCents) },
+    { label: t("savingsRate"), value: rate(row.savingsRate), note: rateNote },
+    ...(row.contributionCents === null ? [] : [{ label: t("contribution"), value: formatEuro(row.contributionCents) }]),
+  ];
 
   return (
-    <section className="flex flex-col gap-1">
-      <h2 className="text-lg font-semibold">{t("comparison")}</h2>
-      <p className="text-sm">
-        {expenseChangeCents === 0
-          ? t("expensesSame", { month: previousName })
-          : t(expenseChangeCents > 0 ? "expensesMore" : "expensesLess", { amount: formatEuro(Math.abs(expenseChangeCents)), month: previousName })}
-      </p>
-      {savingsRateChangePoints !== null && (
-        <p className="text-sm">
-          {savingsRateChangePoints === 0
-            ? t("rateSame", { month: previousName })
-            : t(savingsRateChangePoints > 0 ? "rateUp" : "rateDown", { points: points(savingsRateChangePoints), month: previousName })}
-        </p>
-      )}
+    <section className="flex flex-col gap-3">
+      <h2 className="text-lg font-semibold">{comparison ? t("comparison") : name}</h2>
+      <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
+        {tiles.map(({ label, value, note }) => (
+          <div key={label} className="flex-[1_1_9rem] flex min-w-0 flex-col bg-base-100 px-4 py-3">
+            <dt className="text-xs leading-snug text-base-content/60">{label}</dt>
+            <dd className="mt-0.5 text-xl font-semibold tracking-tight">{value}</dd>
+            {note && (
+              <dd className={`mt-1 flex gap-1 text-xs leading-snug ${TONE[note.tone]}`}>
+                <span aria-hidden>{note.arrow}</span>
+                <span>{note.text}</span>
+              </dd>
+            )}
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
@@ -123,30 +169,30 @@ async function MonthRow({ row, scale }: { row: StatisticsRow; scale: number }) {
   const format = await getFormatter();
   const name = format.dateTime(monthDate(row.month), { month: "long", year: "numeric", timeZone: "UTC" });
   const spent = -row.expenseCents;
+  const extras: [string, string][] = [
+    [t("saved"), formatEuro(-row.savingCents)],
+    [t("savingsRate"), row.savingsRate === null ? t("noRate") : format.number(row.savingsRate, { style: "percent", maximumFractionDigits: 1 })],
+    ...(row.contributionCents === null ? [] : ([[t("contribution"), formatEuro(row.contributionCents)]] as [string, string][])),
+  ];
 
   return (
-    <li className="flex flex-col gap-1">
-      <h3 className="font-semibold">{name}</h3>
-      <Bar label={t("income")} cents={row.incomeCents} scale={scale} color="bg-success" />
-      <Bar label={t("expenses")} cents={spent} scale={scale} color="bg-error" />
-      <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        <div className="flex gap-1">
-          <dt className="opacity-70">{t("saved")}</dt>
-          <dd className="tabular-nums">{formatEuro(-row.savingCents)}</dd>
-        </div>
-        <div className="flex gap-1">
-          <dt className="opacity-70">{t("savingsRate")}</dt>
-          <dd className="tabular-nums">
-            {row.savingsRate === null ? t("noRate") : format.number(row.savingsRate, { style: "percent", maximumFractionDigits: 1 })}
-          </dd>
-        </div>
-        {row.contributionCents !== null && (
-          <div className="flex gap-1">
-            <dt className="opacity-70">{t("contribution")}</dt>
-            <dd className="tabular-nums">{formatEuro(row.contributionCents)}</dd>
-          </div>
-        )}
-      </dl>
+    // Months without bookings stay in the list but recede.
+    <li className={`flex flex-col gap-2 py-4 first:pt-1 ${row.incomeCents === 0 && spent === 0 ? "opacity-45" : ""}`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-sm font-semibold">{name}</h3>
+        <dl className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs">
+          {extras.map(([label, value]) => (
+            <div key={label} className="flex gap-1">
+              <dt className="text-base-content/60">{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Bar label={t("income")} cents={row.incomeCents} scale={scale} color="bg-success" />
+        <Bar label={t("expenses")} cents={spent} scale={scale} color="bg-error" />
+      </div>
     </li>
   );
 }
@@ -156,12 +202,12 @@ function Bar({ label, cents, scale, color }: { label: string; cents: number; sca
   const percent = Math.min(100, (Math.max(0, cents) / scale) * 100);
   return (
     // Fixed label and amount columns, so every month's bar track has the same width and bars compare.
-    <div className="grid grid-cols-[5.5rem_1fr_6.5rem] items-center gap-2 text-sm">
-      <span className="opacity-70">{label}</span>
-      <div className="bg-base-200 h-3 overflow-hidden rounded-full" aria-hidden>
+    <div className="grid grid-cols-[5.5rem_1fr_6.5rem] items-center gap-3 text-sm">
+      <span className="text-base-content/60">{label}</span>
+      <div className="h-2.5 overflow-hidden rounded-full bg-base-200" aria-hidden>
         <div className={`h-full rounded-full ${color}`} style={{ width: `${percent}%` }} />
       </div>
-      <span className="text-right tabular-nums">{formatEuro(cents)}</span>
+      <span className="text-right">{formatEuro(cents)}</span>
     </div>
   );
 }

@@ -32,6 +32,8 @@
   "form": {
     "scope": "Gilt für",
     "scopeHint": "Regeln gemeinsamer Konten sehen und ändern alle im Haushalt. Regeln privater Konten siehst nur du.",
+    "scopeNoShared": "Im Haushalt gibt es noch kein gemeinsames Konto. Diese Regel greift erst, wenn es eins gibt. Für dein privates Konto wähle „Alle meine privaten Konten“ oder das Konto selbst.",
+    "scopeNoPrivate": "Du hast noch kein privates Konto. Diese Regel greift erst, wenn es eins gibt. Für ein gemeinsames Konto wähle „Alle gemeinsamen Konten“ oder das Konto selbst.",
     "condition": "Wenn",
     "counterparty": "Gegenpartei enthält",
     "reference": "Verwendungszweck enthält",

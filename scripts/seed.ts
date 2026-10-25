@@ -22,7 +22,12 @@ async function main() {
     rules,
     transfers,
     householdMembers,
-    files: { ing: testFile("ing_testdaten.csv"), tradeRepublic: testFile("traderepublic_testdaten.csv") },
+    files: {
+      ing: testFile("ing_testdaten.csv"),
+      tradeRepublic: testFile("traderepublic_testdaten.csv"),
+      shared: testFile("ing_gemeinschaftskonto_testdaten.csv"),
+      erika: testFile("ing_erika_testdaten.csv"),
+    },
   });
   const emails = Object.values(SEED_USERS).map((user) => user.email).join(", ");
   if (!result.ok) {
@@ -32,10 +37,12 @@ async function main() {
     );
     return 1;
   }
-  const { ing, tradeRepublic } = result.imports;
+  const { ing, tradeRepublic, shared, erika } = result.imports;
   console.log(`Seeded users ${emails} (password: see README, "Test data").`);
   console.log(`ING Giro: ${ing.newCount} bookings imported, balance check ok.`);
   console.log(`Trade Republic: ${tradeRepublic.newCount} bookings imported, ${tradeRepublic.linked} transfers linked.`);
+  console.log(`ING Gemeinschaftskonto: ${shared.newCount} bookings imported, ${shared.linked} transfers linked.`);
+  console.log(`Erika ING Giro: ${erika.newCount} bookings imported, ${erika.linked} transfers linked.`);
   return 0;
 }
 
