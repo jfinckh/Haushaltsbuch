@@ -105,6 +105,13 @@ type AccountTarget = string | { ownPrivate: true };
  */
 const ownPrivate: SQL = sql`${transaction.accountId} IN (SELECT account_id FROM accounts_visible_account_scopes() WHERE household_id IS NULL)`;
 
+/**
+ * Bookings outside the caller's visible savings accounts (accounts' database contract). Within the own
+ * private accounts, a saving booking on a savings account is the other side of one on an everyday
+ * account, so only the everyday side counts.
+ */
+const notOnSavingsAccount: SQL = sql`${transaction.accountId} NOT IN (SELECT account_id FROM accounts_visible_account_roles() WHERE role = 'savings')`;
+
 /** The bookings condition for a target, or null if it is a single account the caller cannot see. */
 async function targetFilter(tx: RlsTransaction, target: AccountTarget): Promise<SQL | null> {
   if (typeof target !== "string") return ownPrivate;
@@ -229,6 +236,7 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
             visible,
             accounts,
             inArray(transaction.kind, ["income", "expense", "saving"]),
+            typeof target === "string" ? undefined : or(ne(transaction.kind, "saving"), notOnSavingsAccount),
             gte(transaction.bookingDate, from),
             lte(transaction.bookingDate, to),
           ),
@@ -607,7 +615,9 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
 
     /**
      * The month summaries (as monthSummary) of `count` (1–24) calendar months ending with `until`
-     * (default: the current month), newest first; a month without bookings gives zeros.
+     * (default: the current month), newest first; a month without bookings gives zeros. With
+     * `{ ownPrivate: true }`, saving bookings on savings accounts are left out: they are the other side
+     * of a saving from an everyday account, which counts once.
      */
     monthSummaries,
 

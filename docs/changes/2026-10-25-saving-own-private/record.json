@@ -5,8 +5,10 @@
   "description": "Gespart for all private accounts",
   "plan": {
     "path": "docs/superpowers/plans/2026-10-25-saving-own-private.md",
-    "sha256": "4ba3617f7713d6d62b48c46ecc717f504b01cecc8efc3c603e9d76bde46a0f30"
+    "sha256": "bd96a672a4a5cd7812fed85f887cb84e08a1c260638b292d34572adf2aa1cde9"
   },
-  "status": "approved",
-  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601"
+  "status": "final",
+  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601",
+  "report": "Finalized saving-own-private (1e6c9b7..working-tree)\nFiles: 9 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 4 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-25-saving-own-private/map.html\n",
+  "shownAt": "2026-10-25T22:36:39Z"
 }

@@ -128,4 +128,14 @@ signoff:
     subject: { code: guarded-file-without-signoff, ref: drizzle/meta/_journal.json }
     plain: The list of migrations gets the new migration.
     reason: It belongs to the same migration. Drizzle updates it.
+amendments:
+  - id: A1
+    at: 2026-10-25T22:36:18Z
+    on: file
+    action: add
+    item:
+      path: docs/superpowers/plans/2026-10-25-bookings-page.md
+      change: new
+      purpose: The plan of the next slice, the bookings page.
+    reason: It was written in the same session, right after this plan. It contains no code.
 ```

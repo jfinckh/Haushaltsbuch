@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "drizzle/0025_account_roles.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0025_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/superpowers/plans/2026-10-25-bookings-page.md",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "permission-change:database:account-roles",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0025_account_roles.sql",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0025_snapshot.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

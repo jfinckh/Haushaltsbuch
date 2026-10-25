@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { withSession, type Caller } from "@/shared/rls";
 import { createCategories } from "./create-categories";
@@ -341,6 +341,23 @@ describe("month summaries over a series of months (statistics)", () => {
       months: [zero("2026-10"), { ...zero("2026-09"), expenseCents: -4000, availableCents: -4000 }],
     });
     expect(await transactions.monthSummaries(dora, OWN, 1)).toEqual({ ok: true, months: [zero("2026-10")] });
+  });
+
+  it("counts saving into an own savings account once for the own private accounts", async () => {
+    await setup.addAccount("max-savings", "max");
+    await setup.db.execute(sql`UPDATE account SET role = 'savings' WHERE id = 'max-savings'`);
+    // Both sides of a linked everyday → savings transfer are of kind saving; only the everyday one counts.
+    await create(max, { date: "2026-10-05", amount: "-100,00", kind: "saving", category: null });
+    await create(max, { accountId: "max-savings", date: "2026-10-05", amount: "100,00", kind: "saving", category: null });
+
+    expect(await transactions.monthSummary(max, OWN, "2026-10")).toEqual({
+      ok: true,
+      ...zero("2026-10"),
+      savingCents: -10000,
+      availableCents: -10000,
+    });
+    // The savings account on its own keeps all its bookings.
+    expect(await transactions.monthSummary(max, "max-savings", "2026-10")).toMatchObject({ ok: true, savingCents: 10000 });
   });
 
   it("never sums another member's private account, as if it did not exist", async () => {

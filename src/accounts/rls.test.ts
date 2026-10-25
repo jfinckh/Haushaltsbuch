@@ -178,6 +178,33 @@ describe("accounts_visible_account_scopes (accounts' database contract)", () => 
   });
 });
 
+describe("accounts_visible_account_roles (accounts' database contract)", () => {
+  async function roles(userId: string) {
+    const result = (await asUser(userId, (tx) =>
+      tx.execute(sql`SELECT account_id, role FROM accounts_visible_account_roles() ORDER BY account_id`),
+    )) as unknown as { rows: { account_id: string; role: string }[] };
+    return result.rows;
+  }
+
+  it("lists the visible accounts with their role, never another member's", async () => {
+    await setup.db.insert(account).values([
+      { ...row("max-savings", "max", null), role: "savings" },
+      { ...row("erika-savings", "erika", null), role: "savings" },
+    ]);
+    expect(await roles("max")).toEqual([
+      { account_id: "max-private", role: "everyday" },
+      { account_id: "max-savings", role: "savings" },
+      { account_id: "max-shared", role: "everyday" },
+    ]);
+    expect(await roles("erika")).toEqual([
+      { account_id: "erika-private", role: "everyday" },
+      { account_id: "erika-savings", role: "savings" },
+      { account_id: "max-shared", role: "everyday" },
+    ]);
+    expect(await roles("lone")).toEqual([]);
+  });
+});
+
 describe("who owns an account", () => {
   it("cannot be changed, not even on a shared account every member may change", async () => {
     await expect(

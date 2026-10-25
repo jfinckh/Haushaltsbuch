@@ -33,10 +33,10 @@ async function householdOf(householdId: string, ...userIds: string[]) {
   }
 }
 
-async function addAccount(id: string, owner: string, householdId: string | null = null) {
+async function addAccount(id: string, owner: string, householdId: string | null = null, role: "everyday" | "savings" = "everyday") {
   await db.execute(sql`
     INSERT INTO account (id, owner_user_id, household_id, visibility, name, bank, type, role)
-    VALUES (${id}, ${owner}, ${householdId}, ${householdId ? "shared" : "private"}, ${id}, 'ing', 'checking', 'everyday')`);
+    VALUES (${id}, ${owner}, ${householdId}, ${householdId ? "shared" : "private"}, ${id}, 'ing', 'checking', ${role})`);
 }
 
 async function book(caller: Caller, accountId: string, date: string, amount: string, kind: string, category: string | null = null) {
@@ -56,7 +56,7 @@ beforeEach(async () => {
   await householdOf("home", "max", "erika");
   await householdOf("other", "dora");
   await addAccount("max-giro", "max");
-  await addAccount("max-tr", "max");
+  await addAccount("max-tr", "max", null, "savings");
   await addAccount("shared", "erika", "home");
   await addAccount("erika-giro", "erika");
   await addAccount("dora-giro", "dora");
@@ -94,16 +94,20 @@ describe("month figures", () => {
   });
 
   it("adds the contribution to shared accounts for Alle privaten Konten, lowering what is available", async () => {
-    // The depot's incoming saving offsets the giro's outgoing one within Max's own accounts.
+    // The depot's incoming saving is the other side of the giro's; only the giro's leg counts.
     expect(await insights.monthFigures(max, { ownPrivate: true })).toEqual({
       ok: true,
       month: "2026-10",
       incomeCents: 200000,
       expenseCents: -25000,
-      savingCents: 0,
+      savingCents: -25000,
       contributionCents: -80000,
-      availableCents: 95000,
+      availableCents: 70000,
     });
+  });
+
+  it("keeps all saving bookings of a savings account on its own", async () => {
+    expect(await insights.monthFigures(max, "max-tr")).toMatchObject({ ok: true, savingCents: 25000 });
   });
 
   it("never gives another member's private account, nor the shared account to another household", async () => {
@@ -141,7 +145,7 @@ describe("statistics", () => {
   it("adds each month's contribution for Alle privaten Konten", async () => {
     const result = await insights.statistics(max, { ownPrivate: true }, 2);
     expect(result.ok && result.rows.map((r) => [r.month, r.contributionCents, r.availableCents])).toEqual([
-      ["2026-10", -80000, 95000],
+      ["2026-10", -80000, 70000],
       ["2026-09", 0, 60000],
     ]);
   });
@@ -256,8 +260,10 @@ describe("year overview", () => {
   it("adds the contribution to shared accounts for Alle privaten Konten", async () => {
     expect(await insights.yearOverview(max, { ownPrivate: true }, 2026)).toMatchObject({
       ok: true,
-      totals: { incomeCents: 300000, expenseCents: -65000, savingCents: 0, contributionCents: -80000, availableCents: 155000, savingsRate: 0 },
+      totals: { incomeCents: 300000, expenseCents: -65000, savingCents: -25000, contributionCents: -80000, availableCents: 130000 },
     });
+    const overview = await insights.yearOverview(max, { ownPrivate: true }, 2026);
+    expect(overview.ok && overview.totals.savingsRate).toBeCloseTo(25000 / 300000);
   });
 
   it("rejects a future year or an invalid one", async () => {
