@@ -53,10 +53,10 @@ export function AccountActions({ id, archived, shared, action = "/api/accounts",
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" className="btn btn-sm" onClick={toggleArchived} disabled={pending}>
+        <button type="button" className="btn btn-ghost btn-sm font-normal" onClick={toggleArchived} disabled={pending}>
           {archived ? t("unarchive") : t("archive")}
         </button>
-        <button type="button" className="btn btn-ghost btn-sm text-error" onClick={() => dialog.current?.showModal()}>
+        <button type="button" className="btn btn-ghost btn-sm font-normal text-error" onClick={() => dialog.current?.showModal()}>
           {t("delete")}
         </button>
       </div>

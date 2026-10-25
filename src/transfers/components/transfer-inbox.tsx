@@ -67,16 +67,16 @@ export function TransferInbox({ overview, accounts, href = "/transactions", endp
               <li key={booking.id}>
                 <Link
                   href={`${href}/${booking.id}`}
-                  className="flex items-center justify-between gap-3 rounded-box p-2 hover:bg-base-200"
+                  className="flex items-center justify-between gap-3 border-b border-base-300/70 px-1 py-2.5 transition-colors hover:bg-base-200/60"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">{booking.counterparty ?? booking.reference ?? t("title")}</p>
-                    <p className="flex flex-wrap items-center gap-1 text-sm opacity-70">
+                    <p className="flex flex-wrap items-center gap-1.5 text-sm text-base-content/60">
                       {texts.date(booking.date)}
-                      {booking.overdue && <span className="badge badge-warning badge-sm">{t("inbox.overdue")}</span>}
+                      {booking.overdue && <span className="badge badge-soft badge-warning badge-sm">{t("inbox.overdue")}</span>}
                     </p>
                   </div>
-                  <span className={`shrink-0 tabular-nums ${booking.amountCents < 0 ? "" : "text-success"}`}>
+                  <span className={`shrink-0 font-medium whitespace-nowrap ${booking.amountCents < 0 ? "" : "text-success"}`}>
                     {formatEuro(booking.amountCents)}
                   </span>
                 </Link>

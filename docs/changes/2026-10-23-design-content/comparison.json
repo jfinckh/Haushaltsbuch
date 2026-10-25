@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "base": "dd2424c8a3787c705876c3543f46d5b7f8ec1b13",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/app/globals.css",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-filters.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/category-spending.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/category-manager.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-actions.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/components/budget-section.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-upload.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/components/transfer-inbox.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/page.tsx",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

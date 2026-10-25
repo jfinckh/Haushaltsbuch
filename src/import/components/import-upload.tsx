@@ -263,9 +263,9 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
                     </td>
                     <td>
                       {row.merge && !declined.has(row.line) ? (
-                        <span className="badge badge-sm badge-info whitespace-nowrap">{t("merge")}</span>
+                        <span className="badge badge-soft badge-info badge-sm whitespace-nowrap">{t("merge")}</span>
                       ) : (
-                        <span className={`badge badge-sm ${row.status === "duplicate" ? "badge-ghost" : "badge-primary"}`}>
+                        <span className={`badge badge-sm ${row.status === "duplicate" ? "badge-ghost" : "badge-soft badge-primary"}`}>
                           {t(row.status === "duplicate" ? "duplicate" : "new")}
                         </span>
                       )}

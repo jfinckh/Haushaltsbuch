@@ -41,7 +41,7 @@ export function BudgetSection({ accountId, month, budgets, action = "/api/budget
     <section className="flex flex-col gap-3">
       <h2 className="text-lg font-semibold">{t("title", { month: monthName })}</h2>
       {budgets.length === 0 ? (
-        <p className="text-base-content/70 text-sm">{t("empty")}</p>
+        <p className="text-sm text-base-content/60">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {budgets.map((budget) => (
@@ -103,10 +103,10 @@ function BudgetRow({
   }
 
   return (
-    <li className="flex flex-col gap-1">
+    <li className="flex flex-col gap-1.5 border-b border-base-300/70 pb-3 last:border-b-0 last:pb-0">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="truncate font-medium">{name}</span>
-        <span className="text-sm tabular-nums opacity-80">
+        <span className="min-w-0 truncate text-sm font-medium">{name}</span>
+        <span className="shrink-0 text-sm text-base-content/70">
           {t("spentOf", { spent: formatEuro(budget.spentCents), limit: formatEuro(budget.limitCents) })}
         </span>
       </div>
@@ -117,9 +117,24 @@ function BudgetRow({
           max={budget.limitCents}
           aria-label={name}
         />
-        <span className="w-14 text-right text-sm tabular-nums">{t("percent", { percent })}</span>
+        <span className="w-12 text-right text-xs text-base-content/60">{t("percent", { percent })}</span>
+        {!readOnly && !editing && (
+          <div className="flex shrink-0 gap-0.5">
+            <button type="button" className="btn btn-ghost btn-xs font-normal" onClick={() => setEditing(true)}>
+              {t("edit")}
+            </button>
+            <button
+              type="button"
+              className={`btn btn-xs font-normal ${confirming ? "btn-error" : "btn-ghost text-error"}`}
+              disabled={pending}
+              onClick={() => (confirming ? send("DELETE") : setConfirming(true))}
+            >
+              {confirming ? t("confirmDelete") : t("delete")}
+            </button>
+          </div>
+        )}
       </div>
-      {readOnly ? null : editing ? (
+      {!readOnly && editing && (
         <form onSubmit={onSave} className="flex items-center gap-2">
           <input
             className="input input-sm flex-1"
@@ -135,20 +150,6 @@ function BudgetRow({
             {t("cancel")}
           </button>
         </form>
-      ) : (
-        <div className="flex justify-end gap-1">
-          <button type="button" className="btn btn-ghost btn-xs" onClick={() => setEditing(true)}>
-            {t("edit")}
-          </button>
-          <button
-            type="button"
-            className={`btn btn-xs ${confirming ? "btn-error" : "btn-ghost text-error"}`}
-            disabled={pending}
-            onClick={() => (confirming ? send("DELETE") : setConfirming(true))}
-          >
-            {confirming ? t("confirmDelete") : t("delete")}
-          </button>
-        </div>
       )}
       {error && (
         <p role="alert" className="text-error text-sm">
@@ -199,7 +200,7 @@ function AddBudgetForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-2">
+    <form onSubmit={onSubmit} className="mt-1 flex flex-col gap-1 rounded-box border border-base-300 p-3">
       <h3 className="text-sm font-semibold">{t("add.title")}</h3>
       <div className="flex flex-wrap items-end gap-2">
         <fieldset className="fieldset min-w-40 flex-1">
@@ -222,7 +223,7 @@ function AddBudgetForm({
           </label>
           <input id="budget-limit" className="input w-full" inputMode="decimal" placeholder="400,00" value={limit} onChange={(e) => setLimit(e.target.value)} />
         </fieldset>
-        <button type="submit" className="btn btn-outline" disabled={pending}>
+        <button type="submit" className="btn mb-1" disabled={pending}>
           {pending && <span className="loading loading-spinner loading-sm" />}
           {t("add.submit")}
         </button>

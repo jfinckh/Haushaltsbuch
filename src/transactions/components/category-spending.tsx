@@ -25,9 +25,9 @@ export function CategorySpending({ accountId, month, totalCents, groups, categor
     <section className="flex flex-col gap-3">
       <h2 className="text-lg font-semibold">{t("title")}</h2>
       {groups.length === 0 ? (
-        <p className="text-base-content/70 text-sm">{t("empty")}</p>
+        <p className="text-sm text-base-content/60">{t("empty")}</p>
       ) : (
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-0.5">
           {groups.map(({ group, cents }) => {
             const params = new URLSearchParams({ month, kind: "expense" });
             if (group) params.set("category", group);
@@ -36,9 +36,9 @@ export function CategorySpending({ accountId, month, totalCents, groups, categor
             const content = (
               <>
                 <span className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 truncate font-medium">{name}</span>
-                  <span className="shrink-0 tabular-nums">
-                    {formatEuro(cents)} <span className="opacity-70">· {t("share", { percent })}</span>
+                  <span className="min-w-0 truncate group-hover:text-primary">{name}</span>
+                  <span className="shrink-0 font-medium">
+                    {formatEuro(cents)} <span className="ml-1 text-xs font-normal text-base-content/55">{t("share", { percent })}</span>
                   </span>
                 </span>
                 <progress className="progress progress-primary w-full" value={cents} max={totalCents} aria-label={name} />
@@ -47,11 +47,11 @@ export function CategorySpending({ accountId, month, totalCents, groups, categor
             return (
               <li key={group ?? ""}>
                 {accountId ? (
-                  <Link href={`/accounts/${accountId}?${params}`} className="flex flex-col gap-1 rounded-box p-2 hover:bg-base-200">
+                  <Link href={`/accounts/${accountId}?${params}`} className="group flex flex-col gap-1.5 rounded-box px-1 py-2 [&:hover_progress]:opacity-80">
                     {content}
                   </Link>
                 ) : (
-                  <div className="flex flex-col gap-1 p-2">{content}</div>
+                  <div className="flex flex-col gap-1.5 px-1 py-2">{content}</div>
                 )}
               </li>
             );

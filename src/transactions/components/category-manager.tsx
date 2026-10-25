@@ -198,7 +198,7 @@ function OwnRow({ category, action }: { category: CategoryView; action: string }
         <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-2">
           <span className="flex min-w-32 flex-1 items-center gap-2">
             <span className="truncate">{category.name}</span>
-            <span className="badge badge-ghost badge-sm shrink-0">{t("own")}</span>
+            <span className="badge badge-ghost badge-sm shrink-0 text-base-content/70">{t("own")}</span>
           </span>
           <span className="flex shrink-0 gap-1">
             <button type="button" className="btn btn-ghost btn-xs" onClick={() => setEditing(true)}>

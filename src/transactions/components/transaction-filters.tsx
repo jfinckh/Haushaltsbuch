@@ -63,20 +63,20 @@ export function TransactionFilters({ values: raw, categoryGroups, categoryNames 
   const monthLabel = format.dateTime(new Date(Date.UTC(year, month - 1, 1)), { timeZone: "UTC", month: "long", year: "numeric" });
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-2">
-        <button type="button" className="btn btn-ghost btn-sm" aria-label={t("previousMonth")} onClick={() => go({ ...values, month: shiftMonth(values.month, -1) })}>
-          ‹
-        </button>
-        <span className="font-semibold">{monthLabel}</span>
-        <button type="button" className="btn btn-ghost btn-sm" aria-label={t("nextMonth")} onClick={() => go({ ...values, month: shiftMonth(values.month, 1) })}>
-          ›
-        </button>
-      </div>
-      <form onSubmit={onSubmit} className="flex flex-col gap-2">
-        <div className="grid gap-2 sm:grid-cols-2">
+    <div className="@container min-w-0">
+      <div className="flex flex-col gap-2 @3xl:flex-row @3xl:items-center">
+        <div className="join shrink-0 self-start @3xl:self-auto">
+          <button type="button" className="btn btn-sm join-item" aria-label={t("previousMonth")} onClick={() => go({ ...values, month: shiftMonth(values.month, -1) })}>
+            ‹
+          </button>
+          <span className="join-item flex h-8 min-w-36 items-center justify-center border-y border-base-300 px-3 text-sm font-medium">{monthLabel}</span>
+          <button type="button" className="btn btn-sm join-item" aria-label={t("nextMonth")} onClick={() => go({ ...values, month: shiftMonth(values.month, 1) })}>
+            ›
+          </button>
+        </div>
+        <form onSubmit={onSubmit} className="flex min-w-0 flex-1 flex-col gap-2 @xl:flex-row @xl:flex-wrap @3xl:flex-nowrap">
           <label className="sr-only" htmlFor="filter-kind">{t("kind")}</label>
-          <select id="filter-kind" className="select select-sm w-full" value={kind} onChange={(e) => setKind(e.target.value)}>
+          <select id="filter-kind" className="select select-sm w-full @xl:w-auto @xl:min-w-32 @xl:flex-1" value={kind} onChange={(e) => setKind(e.target.value)}>
             <option value="">{t("allKinds")}</option>
             {TRANSACTION_KINDS.map((k) => (
               <option key={k} value={k}>
@@ -85,24 +85,26 @@ export function TransactionFilters({ values: raw, categoryGroups, categoryNames 
             ))}
           </select>
           <label className="sr-only" htmlFor="filter-category">{t("category")}</label>
-          <CategorySelect
-            id="filter-category"
-            kinds={kind === "expense" || kind === "income" ? [kind] : ["expense", "income"]}
-            value={category}
-            onChange={setCategory}
-            emptyLabel={t("allCategories")}
-            groups={categoryGroups}
-            names={categoryNames}
-          />
-        </div>
-        <div className="join w-full">
-          <label className="sr-only" htmlFor="filter-q">{t("search")}</label>
-          <input id="filter-q" name="q" type="search" defaultValue={values.q ?? ""} placeholder={t("searchPlaceholder")} className="input input-sm join-item w-full" maxLength={100} />
-          <button type="submit" className="btn btn-sm join-item">
-            {t("apply")}
-          </button>
-        </div>
-      </form>
+          <div className="min-w-0 @xl:min-w-40 @xl:flex-1 [&_select]:h-8 [&_select]:min-h-8 [&_select]:text-sm">
+            <CategorySelect
+              id="filter-category"
+              kinds={kind === "expense" || kind === "income" ? [kind] : ["expense", "income"]}
+              value={category}
+              onChange={setCategory}
+              emptyLabel={t("allCategories")}
+              groups={categoryGroups}
+              names={categoryNames}
+            />
+          </div>
+          <div className="join w-full @xl:basis-full @3xl:w-auto @3xl:flex-[1.4] @3xl:basis-auto">
+            <label className="sr-only" htmlFor="filter-q">{t("search")}</label>
+            <input id="filter-q" name="q" type="search" defaultValue={values.q ?? ""} placeholder={t("searchPlaceholder")} className="input input-sm join-item w-full" maxLength={100} />
+            <button type="submit" className="btn btn-sm join-item">
+              {t("apply")}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

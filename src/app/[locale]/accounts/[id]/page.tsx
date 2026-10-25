@@ -55,61 +55,69 @@ async function AccountBookings({ params, searchParams }: Props) {
   const groups = account.visibility === "shared" ? catalog.shared : catalog.private;
   const balance = balances[account.id];
   const t = await getTranslations("app.accounts");
+  const tAccounts = await getTranslations("accounts");
 
   return (
     <>
-      <PageHeader title={account.name} back={{ href: `/?account=${account.id}`, label: t("back") }} />
+      <PageHeader
+        title={account.name}
+        subtitle={`${tAccounts(`banks.${account.bank}`)} · ${tAccounts(`types.${account.type}`)}`}
+        back={{ href: `/?account=${account.id}`, label: t("back") }}
+        actions={
+          <>
+            <Link href={`/accounts/${account.id}/edit`} className="btn btn-ghost btn-sm font-normal">
+              {t("edit")}
+            </Link>
+            {account.bank !== "cash" && (
+              <Link href={`/imports?accountId=${account.id}`} className="btn btn-sm">
+                {t("importCsv")}
+              </Link>
+            )}
+            <Link href={`/transactions/new?accountId=${account.id}`} className="btn btn-primary btn-sm">
+              {t("addBooking")}
+            </Link>
+          </>
+        }
+      />
       {account.archived && (
         <div role="status" className="alert alert-soft">
           <span>{t("archived")}</span>
         </div>
       )}
-      <div className="flex items-end justify-between gap-2">
-        <div>
-          <p className="text-sm opacity-70">{t("balance")}</p>
-          <p className={`text-3xl font-semibold tabular-nums ${balance < 0 ? "text-error" : ""}`}>{formatEuro(balance)}</p>
-        </div>
-        <Link href={`/accounts/${account.id}/edit`} className="btn btn-ghost btn-sm">
-          {t("edit")}
-        </Link>
+      <div>
+        <p className="text-sm text-base-content/60">{t("balance")}</p>
+        <p className={`mt-1 text-4xl font-semibold tracking-tight ${balance < 0 ? "text-error" : ""}`}>{formatEuro(balance)}</p>
       </div>
-      <div className="flex gap-2">
-        <Link href={`/transactions/new?accountId=${account.id}`} className="btn btn-primary flex-1">
-          {t("addBooking")}
-        </Link>
-        {account.bank !== "cash" && (
-          <Link href={`/imports?accountId=${account.id}`} className="btn btn-outline flex-1">
-            {t("importCsv")}
-          </Link>
-        )}
-      </div>
-      {transferOverview && (
-        <TransferInbox
-          overview={transferOverview}
-          accounts={visible.map(({ id, name }) => ({ id, name }))}
-        />
-      )}
-      {budgetList.ok && (
-        <>
-          <hr className="border-base-300" />
-          <BudgetSection
-            accountId={account.id}
-            month={budgetList.month}
-            budgets={budgetList.budgets}
-            categoryGroups={groups}
-            categoryNames={catalog.names}
-          />
-        </>
-      )}
-      <hr className="border-base-300" />
-      <TransactionFilters values={filters} categoryGroups={groups} categoryNames={catalog.names} />
-      {listed.ok ? (
-        <TransactionList transactions={listed.transactions} categoryNames={catalog.names} />
-      ) : (
-        <div role="alert" className="alert alert-warning alert-soft">
-          <span>{t("invalidFilter")}</span>
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:gap-10">
+        <div className="flex min-w-0 flex-col gap-4 border-t border-base-300 pt-5">
+          <TransactionFilters values={filters} categoryGroups={groups} categoryNames={catalog.names} />
+          {listed.ok ? (
+            <TransactionList transactions={listed.transactions} categoryNames={catalog.names} />
+          ) : (
+            <div role="alert" className="alert alert-warning alert-soft">
+              <span>{t("invalidFilter")}</span>
+            </div>
+          )}
         </div>
-      )}
+        <div className="flex min-w-0 flex-col gap-8">
+          {transferOverview && (
+            <div className="border-t border-base-300 pt-5">
+              <TransferInbox overview={transferOverview} accounts={visible.map(({ id, name }) => ({ id, name }))} />
+            </div>
+          )}
+          {budgetList.ok && (
+            <div className="border-t border-base-300 pt-5">
+              <BudgetSection
+                accountId={account.id}
+                month={budgetList.month}
+                budgets={budgetList.budgets}
+                categoryGroups={groups}
+                categoryNames={catalog.names}
+              />
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }

@@ -36,17 +36,17 @@ export function RuleList({ rules, accounts, categoryNames, action = "/api/rules"
     <div className="flex flex-col gap-4">
       {[...groups].map(([label, group]) => (
         <section key={label}>
-          <h2 className="text-base-content/70 mb-1 text-sm font-semibold">{label}</h2>
-          <ul className="list bg-base-100 rounded-box shadow-sm">
+          <h2 className="border-b border-base-300 px-1 pb-1 text-xs font-medium tracking-wide text-base-content/55 uppercase">{label}</h2>
+          <ul className="flex flex-col">
             {group.map((rule) => (
-              <li key={rule.id} className="list-row items-center">
-                <div className="list-col-grow min-w-0">
+              <li key={rule.id} className="flex flex-col gap-1 border-b border-base-300/70 px-1 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <div className="min-w-0">
                   <p className="break-words">{texts.condition(rule)}</p>
-                  <p className="text-base-content/70 text-sm">→ {texts.result(rule)}</p>
+                  <p className="text-sm text-base-content/60">→ {texts.result(rule)}</p>
                 </div>
-                {/* Below the text, so long conditions and category names keep the full width on a phone. */}
-                <div className="list-col-wrap flex justify-end gap-1">
-                  <Link href={`${rulesHref}/${rule.id}`} className="btn btn-ghost btn-sm">
+                {/* Below the text on a phone, so long conditions and category names keep the full width. */}
+                <div className="flex shrink-0 justify-end gap-1">
+                  <Link href={`${rulesHref}/${rule.id}`} className="btn btn-ghost btn-sm font-normal">
                     {t("edit")}
                   </Link>
                   <DeleteRuleButton id={rule.id} action={action} />
@@ -80,7 +80,7 @@ function DeleteRuleButton({ id, action }: { id: string; action: string }) {
     <div className="flex flex-col items-end">
       <button
         type="button"
-        className={`btn btn-sm ${confirming ? "btn-error" : "btn-ghost text-error"}`}
+        className={`btn btn-sm font-normal ${confirming ? "btn-error" : "btn-ghost text-error"}`}
         onClick={() => (confirming ? remove() : setConfirming(true))}
         onBlur={() => setConfirming(false)}
         disabled={pending}

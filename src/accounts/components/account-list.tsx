@@ -15,18 +15,22 @@ function AccountRow({ account, href, balance }: { account: AccountView; href: st
   const t = useTranslations("accounts");
   return (
     <li>
-      <Link href={`${href}/${account.id}`} className="flex items-center justify-between gap-3 rounded-box p-2 hover:bg-base-200">
+      <Link
+        href={`${href}/${account.id}`}
+        className="flex items-center justify-between gap-3 border-b border-base-300/70 px-1 py-3 transition-colors hover:bg-base-200/60"
+      >
         <div className="min-w-0">
           <p className="truncate font-medium">{account.name}</p>
-          <p className="flex flex-wrap items-center gap-1 text-sm opacity-70">
-            {t(`banks.${account.bank}`)} · {t(`types.${account.type}`)}
-            <span className="badge badge-ghost badge-sm">{t(`roles.${account.role}`)}</span>
-            <span className={`badge badge-sm ${account.visibility === "private" ? "badge-neutral" : "badge-info"}`}>
-              {t(`visibility.${account.visibility}`)}
+          {/* Role and privacy are plain facts; only a shared account gets a badge, so it stands out. */}
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-base-content/60">
+            <span>
+              {t(`banks.${account.bank}`)} · {t(`types.${account.type}`)} · {t(`roles.${account.role}`)}
+              {account.visibility === "private" && ` · ${t("visibility.private")}`}
             </span>
+            {account.visibility === "shared" && <span className="badge badge-soft badge-info badge-sm">{t("visibility.shared")}</span>}
           </p>
         </div>
-        <span className={`shrink-0 tabular-nums ${balance < 0 ? "text-error" : ""}`}>
+        <span className={`shrink-0 font-medium whitespace-nowrap ${balance < 0 ? "text-error" : ""}`}>
           {formatEuro(balance)}
         </span>
       </Link>
@@ -44,7 +48,7 @@ export function AccountList({ accounts, href = "/accounts", balances }: Props) {
   return (
     <div className="flex flex-col gap-2">
       {active.length === 0 ? (
-        <p className="opacity-70">{t("empty")}</p>
+        <p className="text-sm text-base-content/60">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col">
           {active.map((account) => (
@@ -53,7 +57,7 @@ export function AccountList({ accounts, href = "/accounts", balances }: Props) {
         </ul>
       )}
       {archived.length > 0 && (
-        <details className="collapse collapse-arrow bg-base-200">
+        <details className="collapse collapse-arrow">
           <summary className="collapse-title text-sm">{t("archived", { count: archived.length })}</summary>
           <ul className="collapse-content flex flex-col">
             {archived.map((account) => (

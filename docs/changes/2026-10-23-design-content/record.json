@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-23",
+  "slug": "design-content",
+  "description": "Design part 2 - booking list, badges, forms, filters",
+  "plan": {
+    "path": "docs/plans/2026-10-23-design-content.md",
+    "sha256": "f0f2f0e41232938219bfcc1b4b0315e46ee8aab04c7b6a2805a88b6ee707c641"
+  },
+  "status": "final",
+  "base": "dd2424c8a3787c705876c3543f46d5b7f8ec1b13",
+  "report": "Finalized design-content (dd2424c..working-tree)\nFiles: 13 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-23-design-content/map.html\n",
+  "shownAt": "2026-10-23T15:10:45Z"
+}

@@ -85,10 +85,84 @@
   }
 }
 
-/* Cards are flat panels with a hairline, never floating boxes. */
+/* Quiet versions of the library's components; every part's forms and lists pick them up. */
 @layer components {
+  /* Cards are flat panels with a hairline, never floating boxes. */
   .card {
     box-shadow: none !important;
     border: 1px solid var(--color-base-300);
+  }
+
+  /* Form labels: small, muted, close to their field. */
+  .fieldset {
+    padding-block: 0.25rem;
+  }
+  .fieldset-legend {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: color-mix(in oklab, var(--color-base-content) 72%, transparent);
+    padding-block: 0.25rem 0.125rem;
+  }
+
+  /* Fields: hairline border, accent ring on focus. */
+  .input,
+  .select,
+  .textarea {
+    border-color: var(--color-base-300);
+    box-shadow: none;
+  }
+  .input:focus,
+  .input:focus-within,
+  .select:focus,
+  .select:focus-within,
+  .textarea:focus {
+    outline: 2px solid color-mix(in oklab, var(--color-primary) 35%, transparent);
+    outline-offset: 0;
+    border-color: var(--color-primary);
+  }
+
+  /* Badges: small and square, never pills. */
+  .badge {
+    border-radius: 0.1875rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .badge-sm {
+    --size: 1.125rem;
+    font-size: 0.6875rem;
+    padding-inline: 0.375rem;
+  }
+
+  /* Bars: thin lines. */
+  .progress {
+    height: 0.375rem;
+    border-radius: 999px;
+  }
+
+  /* Fold-out boxes: a hairline instead of a grey area. */
+  .collapse {
+    background: transparent;
+    border: 1px solid var(--color-base-300);
+  }
+  .collapse-title {
+    font-weight: 500;
+  }
+
+  /* Dialogs and notices: flat. */
+  .modal-box {
+    border: 1px solid var(--color-base-300);
+    box-shadow: none;
+  }
+  .alert {
+    box-shadow: none;
+  }
+
+  /* Table heads: small and muted. */
+  .table thead th {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
   }
 }

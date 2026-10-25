@@ -16,7 +16,7 @@ type Props = {
 /** Past imports, newest first, each with an undo button. */
 export function ImportList({ imports, accountNames, action = "/api/imports" }: Props) {
   const t = useTranslations("import.list");
-  if (imports.length === 0) return <p className="opacity-70">{t("empty")}</p>;
+  if (imports.length === 0) return <p className="text-sm text-base-content/60">{t("empty")}</p>;
   return (
     <ul className="flex flex-col divide-y divide-base-300">
       {imports.map((item) => (
@@ -48,23 +48,23 @@ function ImportRow({ item, accountName, action }: { item: ImportView; accountNam
   }
 
   return (
-    <li className="flex flex-wrap items-center justify-between gap-2 py-3">
+    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1 py-3">
       <div className="min-w-0">
-        <div className="font-semibold">
+        <div className="font-medium">
           {accountName} · {tBanks(item.bank)}
         </div>
-        <div className="truncate text-sm opacity-70">
+        <div className="truncate text-sm text-base-content/60">
           {format.dateTime(new Date(item.createdAt), { dateStyle: "medium", timeStyle: "short" })} · {item.fileName}
           {!item.createdByMe && ` · ${t("byOther")}`}
         </div>
-        <div className="text-sm">
+        <div className="text-sm text-base-content/80">
           {item.periodFrom && item.periodTo && `${day(item.periodFrom)} – ${day(item.periodTo)} · `}
           {t("counts", { new: item.newCount, duplicate: item.duplicateCount, merged: item.mergedCount })}
           {item.remainingCount + item.mergedRemainingCount !== item.newCount + item.mergedCount &&
             ` · ${t("remaining", { count: item.remainingCount + item.mergedRemainingCount })}`}
         </div>
       </div>
-      <button type="button" className="btn btn-ghost btn-sm text-error" onClick={() => dialog.current?.showModal()}>
+      <button type="button" className="btn btn-ghost btn-sm font-normal text-error" onClick={() => dialog.current?.showModal()}>
         {t("undo")}
       </button>
       <dialog ref={dialog} className="modal">
