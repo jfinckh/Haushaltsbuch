@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "permission-change:database:account-roles",
+      "itemHash": "sha256:97be292bdcdaba59d993cca4586d0b1baf3a3ebb90f6f2f24e1ff0eb02ed8122",
+      "decision": "approve",
+      "at": "2026-10-25T22:18:17Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0025_account_roles.sql",
+      "itemHash": "sha256:a47415d14c62242f8a9e22651087037bfc39175ebe2b9d9328dee4463e9f8def",
+      "decision": "approve",
+      "at": "2026-10-25T22:18:17Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0025_snapshot.json",
+      "itemHash": "sha256:79b221050c1f2be48e36a32348d0c22609cae1e30ab4bd188cf9b9742683c245",
+      "decision": "approve",
+      "at": "2026-10-25T22:18:17Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "itemHash": "sha256:0db6dc98c5d3037bda3c88cc1d1c69b57c67a72b173d47612a86a9e9dada192d",
+      "decision": "approve",
+      "at": "2026-10-25T22:18:17Z",
+      "source": "hook"
+    }
+  ]
+}

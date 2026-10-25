@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-25",
+  "slug": "bookings-page",
+  "description": "Bookings page and statistics drill-down",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-10-25-bookings-page.md",
+    "sha256": "c5daf9b422ae0e225b3e86cb24edf13e4cf687472032f41846ddaba4276c8d93"
+  },
+  "status": "approved",
+  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601"
+}

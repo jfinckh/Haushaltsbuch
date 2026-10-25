@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-10-25",
+  "slug": "saving-own-private",
+  "description": "Gespart for all private accounts",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-10-25-saving-own-private.md",
+    "sha256": "4ba3617f7713d6d62b48c46ecc717f504b01cecc8efc3c603e9d76bde46a0f30"
+  },
+  "status": "approved",
+  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601"
+}
