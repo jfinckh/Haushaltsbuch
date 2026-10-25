@@ -12,6 +12,11 @@ npm run db:migrate
 npm run dev                       # http://localhost:3000
 ```
 
+Locally there is no zero-trust provider. `.env.example` sets `AUTH_MODE=dev`, so `/sign-in` shows a
+dev sign-in: one click signs you in as Max or Erika (see "Test data"), or as any email. There are no
+passwords. On a server the app signs people in through Cloudflare Access instead; see
+[docs/deployment.md](docs/deployment.md).
+
 ## Scripts
 
 - `npm test` runs the Vitest suite (in-memory Postgres via PGlite, no Docker needed)
@@ -24,10 +29,12 @@ npm run dev                       # http://localhost:3000
 
 `npm run db:seed` (after `npm run db:migrate`) creates a ready-to-use household from the concept:
 
-| User | Email | Password |
-| --- | --- | --- |
-| Max Mustermann | `max@example.test` | `haushalt-test-1234` |
-| Erika Mustermann | `erika@example.test` | `haushalt-test-1234` |
+| User | Email |
+| --- | --- |
+| Max Mustermann | `max@example.test` |
+| Erika Mustermann | `erika@example.test` |
+
+Sign in as either with the buttons on `/sign-in` (dev sign-in).
 
 Both are members of the household "Mustermann". Max has a private ING Giro and a private Trade
 Republic (clearing account and depot); there is a shared ING Gemeinschaftskonto, and Erika has a
@@ -55,7 +62,27 @@ dev server runs on.
 
 `src/auth` is self-contained and reusable. Use it only through its entry points:
 
-- `@/auth` (browser-safe): `SignInForm`, `SignUpForm`, `SignOutButton`, `InviteShareButton`, `InviteAcceptance`, `useSession`, `signInSchema`, `signUpSchema`, `SessionUser`
-- `@/auth/server`: `createAuth({ db, secret, baseURL, invitePath?, inviteTtlSeconds? })` returns `{ handler, api, getSession, requireSession, getInviter }`; `authTables` for Drizzle
+- `@/auth` (browser-safe): `DevSignIn`, `SignOutButton`, `InviteShareButton`, `InviteAcceptance`, `useSession`, `SessionUser`
+- `@/auth/server`: `createAuth({ db, secret, baseURL, mode, invitePath?, inviteTtlSeconds? })` returns `{ handler, api, mode, getSession, requireSession, signInUrl, signOutRedirect, devSignIn, getInviter, getUserNames, userExists, ensureUserSession }`; `authTables` for Drizzle
+
+There is no email and password. Better Auth keeps users, sessions and cookies; how a session starts
+depends on `AUTH_MODE`:
+
+- **`identity`** (also when `AUTH_MODE` is unset): a zero-trust proxy (Cloudflare Access) has signed
+  the person in and sends a signed token with every request (`Cf-Access-Jwt-Assertion`). The app
+  checks its signature, issuer, audience and expiry (`IDENTITY_ISSUER`, `IDENTITY_JWKS_URL`,
+  `IDENTITY_AUDIENCE`, optional `IDENTITY_JWT_HEADER`). `/sign-in` redirects to
+  `GET /api/auth/identity/sign-in`, which finds the user by email (or creates it on the first visit)
+  and starts a session. A session counts only while the token belongs to the same person: no token,
+  or a token for someone else, means signed out. The plain email header is never trusted.
+  Sign-out also ends the provider's login (`IDENTITY_LOGOUT_URL`, default `/cdn-cgi/access/logout`).
+- **`dev`**: the local dev sign-in (`POST /api/auth/dev/sign-in`). The app refuses to start with it
+  unless all three hold: `AUTH_MODE=dev`, `NODE_ENV=development` (`next dev`; `next build` and
+  `next start` set production) and `BETTER_AUTH_URL` on `localhost`, `127.0.0.1` or `*.localhost`.
+  Forgetting a setting never turns it on.
+
+The email identifies the user. A new email at the provider means a new, empty user; moving data to
+it is manual. The name is set on the first visit (the token's name, else the part of the email
+before "@") and later tokens do not change it.
 
 Invite links are single-use and valid for 7 days. `GET /api/auth/invite/inviter` returns who invited the signed-in user.

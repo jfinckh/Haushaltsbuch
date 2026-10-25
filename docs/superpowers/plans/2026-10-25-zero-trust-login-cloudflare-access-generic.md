@@ -258,4 +258,272 @@ signoff:
     reason: Sign-out must also end the provider's login, or you are signed in again at once.
 expectedEdges:
   - { from: app, to: auth }
+amendments:
+  - id: A1
+    at: 2026-10-25T22:10:54Z
+    on: file
+    action: remove
+    target: src/auth/create-auth.test.ts
+    reason: Its tests use the test browser, which now signs in through the dev sign-in, so they pass unchanged. The new mode tests went into identity/plugin.test.ts.
+  - id: A2
+    at: 2026-10-25T22:10:54Z
+    on: file
+    action: add
+    item:
+      path: scripts/seed.ts
+      change: changed
+      purpose: Output and comment no longer mention a password.
+    reason: The seed users have no password any more.
+  - id: A3
+    at: 2026-10-25T22:10:54Z
+    on: file
+    action: add
+    item:
+      path: src/auth/identity/test-provider.ts
+      change: new
+      purpose: A test stand-in for the zero-trust provider with its own key pair.
+    reason: The token and plugin tests both need signed test tokens.
+  - id: A4
+    at: 2026-10-25T22:10:54Z
+    on: file
+    action: add
+    item:
+      path: src/auth/invite/plugin.test.ts
+      change: changed
+      purpose: Two test names no longer speak of sign-up.
+    reason: The tests now sign in through the dev sign-in.
+  - id: A5
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: docs/plans/2026-10-25-statistics-month-picker.md
+      change: new
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A6
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: docs/plans/2026-10-25-statistics-month.md
+      change: new
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A7
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/[locale]/statistics/category-trends.tsx
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A8
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/[locale]/statistics/month-picker.tsx
+      change: new
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A9
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/[locale]/statistics/month-switcher.tsx
+      change: new
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A10
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/[locale]/statistics/page.tsx
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A11
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/[locale]/statistics/view-tabs.tsx
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A12
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/_lib/account-switcher.tsx
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A13
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/_lib/messages/de.json
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A14
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/_lib/messages/en.json
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A15
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/app/api/imports/route.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A16
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/budgets/create-budgets.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A17
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/category-trends.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A18
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/category-trends.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A19
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/create-insights.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A20
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/create-insights.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A21
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/select-account.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A22
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/statistics.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A23
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/insights/year-overview.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A24
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/rules/create-rules.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A25
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/transactions/categories.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A26
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/transactions/categories.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A27
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/transactions/create-categories.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A28
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/transactions/create-transactions.test.ts
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A29
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/transactions/messages/de.json
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
+  - id: A30
+    at: 2026-10-25T22:13:41Z
+    on: file
+    action: add
+    item:
+      path: src/transactions/messages/en.json
+      change: changed
+      purpose: Part of the month picker for the statistics page, not of this plan.
+    reason: Came in through commit 67ee81d (plans statistics-month and statistics-month-picker) while this plan was built. That commit also took this plan's record folder, so finalize compares from 678fd4e.
 ```

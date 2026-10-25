@@ -1,33 +1,13 @@
 {
-  "validation": {
-    "emailInvalid": "Please enter a valid email address.",
-    "passwordRequired": "Please enter your password.",
-    "nameRequired": "Please enter your name.",
-    "nameTooLong": "Name is too long.",
-    "passwordTooShort": "Password must be at least 8 characters.",
-    "passwordTooLong": "Password must be at most 128 characters."
-  },
-  "fields": {
-    "name": "Name",
+  "devSignIn": {
+    "title": "Sign in locally",
+    "note": "For local development only. On the server you sign in through the zero-trust provider.",
+    "signInAs": "Sign in as {name}",
+    "other": "Someone else",
     "email": "Email",
-    "password": "Password",
-    "passwordHint": "At least 8 characters."
-  },
-  "signIn": {
-    "title": "Sign in",
+    "name": "Name (optional)",
     "submit": "Sign in",
-    "wrongCredentials": "Wrong email or password.",
-    "failed": "Sign-in failed. Please try again.",
-    "noAccount": "No account yet?",
-    "signUpLink": "Sign up"
-  },
-  "signUp": {
-    "title": "Create account",
-    "submit": "Sign up",
-    "userExists": "An account with this email already exists.",
-    "failed": "Sign-up failed. Please try again.",
-    "haveAccount": "Already have an account?",
-    "signInLink": "Sign in"
+    "failed": "Sign-in failed. Check the email address."
   },
   "signOut": "Sign out",
   "invite": {
@@ -40,14 +20,13 @@
   },
   "inviteAcceptance": {
     "invalidTitle": "Invite link not valid",
-    "invalidText": "This link has expired or was already used. Ask for a new one, or sign up without an invite.",
+    "invalidText": "This link has expired or was already used. Ask for a new one.",
     "acceptedTitle": "Invite accepted",
     "acceptedText": "You accepted {name}'s invite. Your home page shows whether you moved to the household.",
     "ownTitle": "This is your own invite",
     "ownText": "You can't accept your own invite link. Share it with the person you want to invite.",
     "invitedTitle": "{name} invited you",
-    "invitedText": "Create an account, or sign in if you already have one. Then you come back here and can join.",
-    "signUp": "Sign up",
+    "invitedText": "Sign in first. Then you come back here and can join.",
     "signIn": "Sign in",
     "continue": "Continue",
     "joinText": "If you join, you see the household's shared accounts. Your private accounts stay private. If you are alone in a household without shared accounts so far, you move to the new household.",

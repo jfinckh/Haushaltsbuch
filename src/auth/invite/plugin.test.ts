@@ -25,14 +25,14 @@ async function userRow(id: string) {
 }
 
 describe("invite links", () => {
-  it("open sign-up works without an invite; inviter is null", async () => {
+  it("signing in works without an invite; inviter is null", async () => {
     const browser = createBrowser(setup.auth);
     const res = await browser.signUp("Max", "max@example.com");
     expect(res.status).toBe(200);
     expect((await browser.getInviter()).json).toEqual({ inviter: null });
   });
 
-  it("rejects sign-up input that breaks the shared rules", async () => {
+  it("rejects sign-in input that breaks the rules", async () => {
     const browser = createBrowser(setup.auth);
     const res = await browser.signUp("  ", "max@example.com");
     expect(res.status).toBe(400);

@@ -7,9 +7,8 @@ import { authClient } from "../client";
 
 type Props = {
   token: string;
-  /** Sign-in and sign-up pages; they should lead back to this page so the user can accept. */
+  /** Sign-in page; it should lead back to this page so the user can accept. */
   signInHref: string;
-  signUpHref: string;
   /** Where the user continues to after accepting, declining or for their own invite. */
   continueHref?: string;
 };
@@ -26,7 +25,7 @@ const openInvite = (token: string) => authClient.invite.open({ token });
  * Landing view for an invite link. Opening it only shows who invites; a signed-in user joins with
  * "Beitreten", so a link alone never moves anyone into a household.
  */
-export function InviteAcceptance({ token, signInHref, signUpHref, continueHref = "/" }: Props) {
+export function InviteAcceptance({ token, signInHref, continueHref = "/" }: Props) {
   const t = useTranslations("auth.inviteAcceptance");
   const [state, setState] = useState<State>({ status: "loading" });
   const [pending, setPending] = useState(false);
@@ -62,8 +61,7 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
             <h1 className="card-title text-2xl">{t("invalidTitle")}</h1>
             <p>{t("invalidText")}</p>
             <div className="card-actions">
-              <Link href={signUpHref} className="btn btn-primary">{t("signUp")}</Link>
-              <Link href={signInHref} className="btn btn-ghost">{t("signIn")}</Link>
+              <Link href={continueHref} className="btn btn-primary">{t("continue")}</Link>
             </div>
           </>
         )}
@@ -103,8 +101,7 @@ export function InviteAcceptance({ token, signInHref, signUpHref, continueHref =
             <h1 className="card-title text-2xl">{t("invitedTitle", { name: state.inviterName })}</h1>
             <p>{t("invitedText")}</p>
             <div className="card-actions">
-              <Link href={signUpHref} className="btn btn-primary">{t("signUp")}</Link>
-              <Link href={signInHref} className="btn btn-ghost">{t("signIn")}</Link>
+              <Link href={signInHref} className="btn btn-primary">{t("signIn")}</Link>
             </div>
           </>
         )}

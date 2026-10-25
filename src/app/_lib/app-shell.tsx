@@ -144,7 +144,7 @@ export function AppShell({ children, narrow = false }: { children: ReactNode; na
         </nav>
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-base-300 px-1 pt-4">
           <LocaleSwitcher />
-          <SignOutButton redirectTo="/sign-in" className="btn btn-ghost btn-sm font-normal" />
+          <SignOutButton redirectTo="/sign-in?signedOut=1" className="btn btn-ghost btn-sm font-normal" />
         </div>
       </aside>
 
@@ -155,7 +155,7 @@ export function AppShell({ children, narrow = false }: { children: ReactNode; na
           </Link>
           <div className="flex items-center gap-1">
             <LocaleSwitcher />
-            <SignOutButton redirectTo="/sign-in" className="btn btn-ghost btn-xs font-normal" />
+            <SignOutButton redirectTo="/sign-in?signedOut=1" className="btn btn-ghost btn-xs font-normal" />
           </div>
         </header>
         <main className="flex-1 px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
@@ -229,7 +229,7 @@ export function Section({
   );
 }
 
-/** Frame of the pages before the app: sign-in, sign-up, invite, first household. */
+/** Frame of the pages before the app: sign-in, invite, first household. */
 export function AuthFrame({ children }: { children: ReactNode }) {
   const t = useTranslations("app.nav");
   return (

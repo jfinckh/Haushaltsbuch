@@ -1,4 +1,110 @@
 {
   "version": 1,
-  "approvals": []
+  "approvals": [
+    {
+      "itemKey": "package-new:jose",
+      "itemHash": "sha256:c4c65215e26c3b7adf6bca0e838b79ad06f878bce8b91990d3491ec9e236376d",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth:email-password",
+      "itemHash": "sha256:50c71412f91e017bb47e2c88621d090e2cede0ca5ff4ec89d9c3c696c3ddf12f",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth:zero-trust-identity",
+      "itemHash": "sha256:0b15d8e1066ce333ee0a61acad2af022b7f280ebf4c9df8b7db5096fa527b893",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth:dev-sign-in",
+      "itemHash": "sha256:6be8b5f7972b532e5334a120c9c31c8b7be233cbb9f6a6a1556ad25b9e0e31c4",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-remove:auth:client:SignInForm",
+      "itemHash": "sha256:8a4c93c043bb223a5e447d632ab2506cf1d5da9c7b214e71e675d20da3316fae",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-remove:auth:client:SignUpForm",
+      "itemHash": "sha256:a082bac5a8319af04cab75c2d3dd06bd25b9fc2fceddf98efb917f71d8e04f6d",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-remove:auth:client:signInSchema",
+      "itemHash": "sha256:dae6965494452ea52e6a4d784ba3db38198849642844d501ef4fcd2778adf85b",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-remove:auth:client:signUpSchema",
+      "itemHash": "sha256:23381a6020398d94f19c1f75a5f774a76bdadec2afb181fd2796e54474b45fa7",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:auth:client:DevSignIn",
+      "itemHash": "sha256:0ec475ed87b0da3a6ce7c9ead45ac7cd22c974e15e3c990331deae225c1e0714",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:AUTH_MODE",
+      "itemHash": "sha256:e011906ce6544bcbad7aaadb3e0ff9e75e46eb4132f56704a87c0537de71d637",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_ISSUER",
+      "itemHash": "sha256:89276012b0b416bbbc30f0b90a832ebfba228f20096dca252a009aca8f022084",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_JWKS_URL",
+      "itemHash": "sha256:2883190cacf3fc71fa95aad651b24aab4115c5e755f614f8236ce610fa5c967d",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_AUDIENCE",
+      "itemHash": "sha256:b83345d760b26a5eb0b47ebec045714b3b03bffb069a21345c4a19287132a43d",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_JWT_HEADER",
+      "itemHash": "sha256:68741dce9898596a781cdfa0b6d25d227866611fcd0df150087d34312f901b2c",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_LOGOUT_URL",
+      "itemHash": "sha256:a0b1c9fa1ca6c848cd72f4e7f9c310687333cc3c61d2d92f28d792acefe3bf93",
+      "decision": "approve",
+      "at": "2026-10-25T21:50:57Z",
+      "source": "hook"
+    }
+  ]
 }

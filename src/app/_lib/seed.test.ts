@@ -14,7 +14,7 @@ import type { Caller } from "@/shared/rls";
 import { createTransactions, type Transactions } from "@/transactions/server";
 import { createTransfers } from "@/transfers/server";
 import { householdMembersOf } from "./members";
-import { SEED_PASSWORD, SEED_USERS, seedAuthFrom, seedDevData, type SeedDeps } from "./seed";
+import { SEED_USERS, seedAuthFrom, seedDevData, type SeedDeps } from "./seed";
 
 // The dev seed on a fresh in-memory Postgres with the real services: what it creates, the ING
 // balance from CLAUDE.md, privacy between Max and Erika, and that it never runs twice.
@@ -38,7 +38,12 @@ beforeEach(async () => {
     keys: `1:${randomBytes(32).toString("base64")}`,
     indexKey: randomBytes(32).toString("base64"),
   });
-  auth = createAuth({ db, secret: "test-secret-test-secret-test-secret-123", baseURL: "http://localhost:3000" });
+  auth = createAuth({
+    db,
+    secret: "test-secret-test-secret-test-secret-123",
+    baseURL: "http://localhost:3000",
+    mode: { kind: "dev" },
+  });
   accounts = createAccounts({ db, crypto });
   transactions = createTransactions({ db, crypto });
   const households = createHouseholds({ db, householdHoldsData: accounts.householdHasSharedAccounts });
@@ -58,9 +63,9 @@ beforeEach(async () => {
   };
 });
 
-/** Signs in with the documented seed password, as the sign-in form does. */
+/** Signs in as the dev sign-in page does. */
 async function signIn(email: string): Promise<Caller> {
-  const result = await auth.api.signInEmail({ body: { email, password: SEED_PASSWORD } });
+  const result = await auth.api.devSignIn({ body: { email } });
   return { sessionToken: result.token };
 }
 
@@ -72,7 +77,7 @@ async function balanceOf(caller: Caller, accountId: string) {
 const names = async (caller: Caller) => (await accounts.listAccounts(caller)).map((a) => a.name).sort();
 
 describe("seedDevData", () => {
-  it("creates both users, who can sign in with the documented password", async () => {
+  it("creates both users, who can sign in with the dev sign-in", async () => {
     const result = await seedDevData(deps);
     expect(result.ok).toBe(true);
     for (const user of Object.values(SEED_USERS)) {
@@ -134,9 +139,7 @@ describe("seedDevData", () => {
   });
 
   it("refuses when only one of the seed users exists, without creating the other", async () => {
-    await auth.api.signUpEmail({
-      body: { name: "Someone", email: SEED_USERS.erika.email, password: "anderes-passwort-1" },
-    });
+    await auth.api.devSignIn({ body: { name: "Someone", email: SEED_USERS.erika.email } });
     expect(await seedDevData(deps)).toEqual({ ok: false, reason: "already-seeded" });
     expect(await auth.userExists(SEED_USERS.max.email)).toBe(false);
   });

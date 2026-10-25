@@ -1,0 +1,490 @@
+{
+  "version": 1,
+  "base": "678fd4ec6c6f22f32f434ab1f604ecf23426559b",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/auth/identity/verify.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/identity/verify.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/identity/plugin.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/identity/plugin.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/create-auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/validation.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/sign-in-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/sign-up-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/field-errors.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/dev-sign-in.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/sign-out-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/components/invite-acceptance.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/sign-in/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/sign-up/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/invite/[token]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/invite-return.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/invite-return.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/app-shell.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".env.example",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "package.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "package-lock.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/deployment.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "README.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "scripts/seed.ts",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/identity/test-provider.ts",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/invite/plugin.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": "docs/plans/2026-10-25-statistics-month-picker.md",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "file",
+      "id": "docs/plans/2026-10-25-statistics-month.md",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/category-trends.tsx",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-picker.tsx",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-switcher.tsx",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/page.tsx",
+      "status": "convergence",
+      "viaAmendment": "A10"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/view-tabs.tsx",
+      "status": "convergence",
+      "viaAmendment": "A11"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/account-switcher.tsx",
+      "status": "convergence",
+      "viaAmendment": "A12"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence",
+      "viaAmendment": "A13"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence",
+      "viaAmendment": "A14"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A15"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/create-budgets.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A16"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/category-trends.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A17"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/category-trends.ts",
+      "status": "convergence",
+      "viaAmendment": "A18"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A19"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.ts",
+      "status": "convergence",
+      "viaAmendment": "A20"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/select-account.ts",
+      "status": "convergence",
+      "viaAmendment": "A21"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/statistics.ts",
+      "status": "convergence",
+      "viaAmendment": "A22"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/year-overview.ts",
+      "status": "convergence",
+      "viaAmendment": "A23"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A24"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/categories.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A25"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/categories.ts",
+      "status": "convergence",
+      "viaAmendment": "A26"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-categories.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A27"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A28"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/de.json",
+      "status": "convergence",
+      "viaAmendment": "A29"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/en.json",
+      "status": "convergence",
+      "viaAmendment": "A30"
+    },
+    {
+      "kind": "edge",
+      "id": "app->auth",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:SignInForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:SignUpForm",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:signInSchema",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:signUpSchema",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "auth:client:DevSignIn",
+      "status": "convergence"
+    },
+    {
+      "kind": "package",
+      "id": "jose",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "AUTH_MODE",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "IDENTITY_ISSUER",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "IDENTITY_JWKS_URL",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "IDENTITY_AUDIENCE",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "IDENTITY_JWT_HEADER",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "IDENTITY_LOGOUT_URL",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "package-new:jose",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:auth:email-password",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:auth:zero-trust-identity",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:auth:dev-sign-in",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-remove:auth:client:SignInForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-remove:auth:client:SignUpForm",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-remove:auth:client:signInSchema",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-remove:auth:client:signUpSchema",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:auth:client:DevSignIn",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:AUTH_MODE",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_ISSUER",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_JWKS_URL",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_AUDIENCE",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_JWT_HEADER",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:IDENTITY_LOGOUT_URL",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

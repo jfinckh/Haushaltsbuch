@@ -15,7 +15,7 @@ Household budget app for two people (me and my partner), built so more household
 - Next.js (App Router, `src/` directory), TypeScript strict, API routes as the backend
 - Postgres via Docker Compose locally, Drizzle for schema and migrations
 - Zod for every input crossing an API boundary; shared schemas between forms and routes
-- Better Auth for authentication: open sign-up with email and password; invite links record who invited whom
+- Login through a zero-trust provider (Cloudflare Access): the app checks its signed token on every request and creates the user on the first visit; Better Auth keeps users and sessions; no email and password. Locally `AUTH_MODE=dev` gives a dev sign-in (only with `next dev` on localhost). Invite links record who invited whom. Setup: `docs/deployment.md`
 - daisyUI (Tailwind 4) for UI components
 - Vitest for unit and integration tests
 - Mobile later as a PWA; deployment later (likely Hetzner)

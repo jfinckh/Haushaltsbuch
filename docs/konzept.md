@@ -177,7 +177,7 @@ Der Entwurf schlug „lokal speichern“ vor; das passt nicht zu geteilten Famil
 - **Hosting in der EU**, Auftragsverarbeitungsvertrag mit jedem Dienstleister (DSGVO).
 - **Verschlüsselung** bei Übertragung (TLS) und Speicherung; sensible Felder wie IBAN zusätzlich auf Feldebene.
 - **Zugriffsprüfung im Service-Layer:** jede Abfrage prüft Haushaltsmitgliedschaft und Kontosichtbarkeit. Private Konten anderer sind auch über die API nicht abrufbar, nicht einmal als Summe.
-- **Login** mit starkem Passwort oder Passkey, optional 2FA; in der App Sperre per Face ID oder Fingerabdruck.
+- **Login** über einen Zero-Trust-Anbieter (Cloudflare Access) statt eigener Passwörter: Ohne dessen Login erreicht niemand eine Seite der App. Die App prüft bei jeder Anfrage dessen signiertes Token und legt Nutzer beim ersten Besuch an. 2FA und Login-Methode (E-Mail-Code, Google, …) stellt der Anbieter. In der App später Sperre per Face ID oder Fingerabdruck.
 - **Datenhoheit:** vollständiger Export (CSV/JSON) und Konto löschen auf Knopfdruck.
 - **Minimal speichern:** keine Bank-Zugangsdaten im MVP, nur hochgeladene Dateien.
 
@@ -219,7 +219,7 @@ src/insights/       Dashboard-Zahlen, Gesamtansicht         → transactions, bu
 
 - **`src/app/` bleibt dünn:** Seiten und API-Routen rufen nur die Einstiegspunkte der Parts auf.
 - **Wiederverwendbare Parts** wie `auth` und `shared` nutzen nichts Fachliches. Braucht ein zweites Projekt sie, werden sie als privates npm-Paket (GitHub Packages) herausgelöst; dank sauberer Grenzen ist das weitgehend mechanisch.
-- **Auth nicht selbst bauen:** `src/auth` ist eine dünne Schicht über einer Bibliothek wie Better Auth. Die Bibliothek übernimmt Passwörter, Sessions, Passkeys und Sicherheitsupdates; der Part bringt Schema, Registrierung nur per Einladung, Login-Screens und Routenschutz mit.
+- **Auth nicht selbst bauen:** `src/auth` ist eine dünne Schicht über einer Bibliothek wie Better Auth. Die Bibliothek übernimmt Nutzer, Sessions und Sicherheitsupdates; den Login selbst übernimmt der Zero-Trust-Anbieter. Der Part bringt Schema, Token-Prüfung, Einladungslinks und Routenschutz mit.
 - **Neue Parts und neue Nutzungen** laufen über change-map (`change-map add`, `change-map allow`) und brauchen eine Freigabe im Plan.
 
 ### Lokal starten
@@ -232,7 +232,7 @@ Postgres per Docker Compose, Next.js im Dev-Modus, Drizzle oder Prisma für Migr
 - **Beträge als Ganzzahl in Cent, Buchungsdatum als reines Datum.** Trade Republic liefert UTC-Zeitstempel, die sonst auf den Vortag rutschen können.
 - **Parser und Abgleich testen** (z. B. Vitest) mit den Testdaten; hier entstehen leise Fehler am ehesten.
 - **Keine Buchungsdaten oder IBANs im Log**, auch nicht in Fehlermeldungen.
-- **Registrierung nur per Einladungslink**, mit Passkey oder 2FA.
+- **Zugang nur über den Zero-Trust-Anbieter:** Wer rein darf, steht in dessen Zugriffsregel (E-Mail-Liste). Die App läuft hinter einem Tunnel ohne offenen Port (`docs/deployment.md`). Einladungslinks regeln nur den Beitritt zum Haushalt.
 - **Verschlüsselte Backups ab Tag eins** (z. B. restic), Wiederherstellung mindestens einmal testen.
 
 ## Testdaten

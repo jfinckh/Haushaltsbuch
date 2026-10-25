@@ -13,9 +13,6 @@ import { importsRoute } from "./imports-route";
 // the accounts from the concept and the four test files, imported like an upload in the browser.
 // Run with `npm run db:seed`. It only inserts, and refuses when a seed user already exists.
 
-/** The test password of both seed users. Documented in the README; never printed. */
-export const SEED_PASSWORD = "haushalt-test-1234";
-
 export const SEED_USERS = {
   max: { name: "Max Mustermann", email: "max@example.test" },
   erika: { name: "Erika Mustermann", email: "erika@example.test" },
@@ -32,8 +29,8 @@ const ING_EXPECTED_BALANCE_CENTS = 70326;
 
 type SeedAuth = {
   userExists: (email: string) => Promise<boolean>;
-  /** Signs the user up like the form does and returns the new user's id and session. */
-  signUp: (input: { name: string; email: string; password: string }) => Promise<{ userId: string; caller: Caller }>;
+  /** Creates the user and a session for it (no password: locally you sign in with the dev sign-in). */
+  createUser: (input: { name: string; email: string }) => Promise<{ userId: string; caller: Caller }>;
 };
 
 export type SeedDeps = {
@@ -55,14 +52,13 @@ export type SeedResult =
   | { ok: true; imports: Record<keyof SeedDeps["files"], ImportSummary> }
   | { ok: false; reason: "already-seeded" };
 
-/** The seed's view of auth: the check for existing users and sign-up with a session. */
+/** The seed's view of auth: the check for existing users and creating one with a session. */
 export function seedAuthFrom(auth: Auth): SeedAuth {
   return {
     userExists: (email) => auth.userExists(email),
-    async signUp(input) {
-      const result = await auth.api.signUpEmail({ body: input });
-      if (!result.token) throw new Error("Sign-up returned no session");
-      return { userId: result.user.id, caller: { sessionToken: result.token } };
+    async createUser(input) {
+      const { userId, sessionToken } = await auth.ensureUserSession(input);
+      return { userId, caller: { sessionToken } };
     },
   };
 }
@@ -103,8 +99,8 @@ export async function seedDevData(deps: SeedDeps): Promise<SeedResult> {
     if (await auth.userExists(user.email)) return { ok: false, reason: "already-seeded" };
   }
 
-  const max = await auth.signUp({ ...SEED_USERS.max, password: SEED_PASSWORD });
-  const erika = await auth.signUp({ ...SEED_USERS.erika, password: SEED_PASSWORD });
+  const max = await auth.createUser(SEED_USERS.max);
+  const erika = await auth.createUser(SEED_USERS.erika);
   const created = await households.createHousehold(max.caller, { name: "Mustermann" });
   if (!created.ok) throw new Error(`Creating the seed household failed: ${created.reason}`);
   // As if Erika accepted Max's invite link right now.

@@ -1,33 +1,13 @@
 {
-  "validation": {
-    "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein.",
-    "passwordRequired": "Bitte gib dein Passwort ein.",
-    "nameRequired": "Bitte gib deinen Namen ein.",
-    "nameTooLong": "Der Name ist zu lang.",
-    "passwordTooShort": "Das Passwort muss mindestens 8 Zeichen haben.",
-    "passwordTooLong": "Das Passwort darf höchstens 128 Zeichen haben."
-  },
-  "fields": {
-    "name": "Name",
+  "devSignIn": {
+    "title": "Lokal anmelden",
+    "note": "Nur für die lokale Entwicklung. Auf dem Server meldest du dich über den Zero-Trust-Anbieter an.",
+    "signInAs": "Als {name} anmelden",
+    "other": "Andere Person",
     "email": "E-Mail",
-    "password": "Passwort",
-    "passwordHint": "Mindestens 8 Zeichen."
-  },
-  "signIn": {
-    "title": "Anmelden",
+    "name": "Name (optional)",
     "submit": "Anmelden",
-    "wrongCredentials": "E-Mail oder Passwort ist falsch.",
-    "failed": "Anmeldung fehlgeschlagen. Bitte versuch es noch einmal.",
-    "noAccount": "Noch kein Konto?",
-    "signUpLink": "Registrieren"
-  },
-  "signUp": {
-    "title": "Konto erstellen",
-    "submit": "Registrieren",
-    "userExists": "Zu dieser E-Mail gibt es schon ein Konto.",
-    "failed": "Registrierung fehlgeschlagen. Bitte versuch es noch einmal.",
-    "haveAccount": "Du hast schon ein Konto?",
-    "signInLink": "Anmelden"
+    "failed": "Anmelden hat nicht geklappt. Prüfe die E-Mail-Adresse."
   },
   "signOut": "Abmelden",
   "invite": {
@@ -40,14 +20,13 @@
   },
   "inviteAcceptance": {
     "invalidTitle": "Einladungslink ungültig",
-    "invalidText": "Dieser Link ist abgelaufen oder wurde schon benutzt. Bitte um einen neuen oder registriere dich ohne Einladung.",
+    "invalidText": "Dieser Link ist abgelaufen oder wurde schon benutzt. Bitte um einen neuen.",
     "acceptedTitle": "Einladung angenommen",
     "acceptedText": "Du hast die Einladung von {name} angenommen. Auf der Startseite siehst du, ob du in den Haushalt gewechselt bist.",
     "ownTitle": "Das ist deine eigene Einladung",
     "ownText": "Du kannst deinen eigenen Einladungslink nicht annehmen. Teile ihn mit der Person, die du einladen möchtest.",
     "invitedTitle": "{name} hat dich eingeladen",
-    "invitedText": "Erstelle ein Konto oder melde dich an, wenn du schon eines hast. Danach kommst du hierher zurück und kannst beitreten.",
-    "signUp": "Registrieren",
+    "invitedText": "Melde dich an. Danach kommst du hierher zurück und kannst beitreten.",
     "signIn": "Anmelden",
     "continue": "Weiter",
     "joinText": "Wenn du beitrittst, siehst du die gemeinsamen Konten des Haushalts. Deine privaten Konten bleiben privat. Bist du bisher allein in einem Haushalt ohne gemeinsame Konten, wechselst du in den neuen Haushalt.",

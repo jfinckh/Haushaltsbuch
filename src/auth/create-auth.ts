@@ -1,17 +1,25 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { APIError } from "better-auth/api";
 import { nextCookies, toNextJsHandler } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { findOrCreateUser, IDENTITY_SIGN_IN_PATH, safeCallbackPath, zeroTrust, type LoginMode } from "./identity/plugin";
+import { createIdentityVerifier, type IdentityOptions } from "./identity/verify";
 import { invites } from "./invite/plugin";
 import { authTables } from "./schema";
-import { signInSchema, signUpSchema } from "./validation";
 
 // A Drizzle Postgres database (node-postgres, PGlite, ...). Typed loosely so host projects
 // can pass whichever Drizzle driver they use.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DrizzleDatabase = { [key: string]: any };
+
+/** How people sign in. There is no email and password. */
+export type AuthMode =
+  /** A zero-trust proxy (Cloudflare Access, ...) signs people in; the app checks its signed token. */
+  | ({ kind: "identity"; /** Where sign-out leads, to end the provider's login too. */ logoutUrl: string } & IdentityOptions)
+  /** Local development only: sign in as any email. See assertDevAllowed. */
+  | { kind: "dev" };
 
 export type AuthOptions = {
   db: DrizzleDatabase;
@@ -19,36 +27,45 @@ export type AuthOptions = {
   secret: string;
   /** Public address of the app, e.g. https://haushalt.example. */
   baseURL: string;
+  mode: AuthMode;
   /** Path of the page that receives invite links. Default: /invite */
   invitePath?: string;
   /** How long an invite link stays valid. Default: 7 days. */
   inviteTtlSeconds?: number;
 };
 
-const bodySchemas: Record<string, typeof signInSchema | typeof signUpSchema> = {
-  "/sign-in/email": signInSchema,
-  "/sign-up/email": signUpSchema,
-};
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
-export function buildBetterAuth(options: AuthOptions) {
+/**
+ * Dev sign-in lets anyone sign in as anyone, so it is refused unless the app runs under `next dev`
+ * (or tests) on a local address. Forgetting a setting can never turn it on on a server.
+ */
+export function assertDevAllowed(nodeEnv: string | undefined, baseURL: string): void {
+  if (nodeEnv !== "development" && nodeEnv !== "test") {
+    throw new Error("Dev sign-in needs NODE_ENV=development (next dev). Use AUTH_MODE=identity.");
+  }
+  const host = new URL(baseURL).hostname;
+  if (!LOCAL_HOSTS.has(host) && !host.endsWith(".localhost")) {
+    throw new Error("Dev sign-in needs BETTER_AUTH_URL on localhost. Use AUTH_MODE=identity.");
+  }
+}
+
+function loginMode(options: AuthOptions): LoginMode {
+  if (options.mode.kind === "dev") {
+    assertDevAllowed(process.env.NODE_ENV, options.baseURL);
+    return { kind: "dev" };
+  }
+  return { kind: "identity", verify: createIdentityVerifier(options.mode) };
+}
+
+export function buildBetterAuth(options: AuthOptions, mode: LoginMode = loginMode(options)) {
   const invitePath = options.invitePath ?? "/invite";
   return betterAuth({
     secret: options.secret,
     baseURL: options.baseURL,
     database: drizzleAdapter(options.db, { provider: "pg", schema: authTables, transaction: true }),
-    emailAndPassword: { enabled: true, autoSignIn: true, minPasswordLength: 8, maxPasswordLength: 128 },
-    hooks: {
-      // Same input rules as the forms.
-      before: createAuthMiddleware(async (ctx) => {
-        const schema = bodySchemas[ctx.path];
-        if (!schema) return;
-        const result = schema.safeParse(ctx.body);
-        if (!result.success) {
-          throw new APIError("BAD_REQUEST", { message: result.error.issues[0]?.message ?? "Invalid input" });
-        }
-      }),
-    },
     plugins: [
+      zeroTrust(mode),
       invites({
         buildInviteUrl: (token) => new URL(`${invitePath}/${token}`, options.baseURL).toString(),
         ttlSeconds: options.inviteTtlSeconds,
@@ -105,19 +122,49 @@ export async function findInviter(auth: BetterAuthInstance, userId: string): Pro
   return { id: inviter.id, name: inviter.name, invitedAt: new Date(user.invitedAt ?? 0) };
 }
 
+/** A session for the user with this email (created if new). Server only, e.g. for the dev seed. */
+export async function ensureUserSession(auth: BetterAuthInstance, input: { email: string; name: string }) {
+  const { internalAdapter } = await auth.$context;
+  const user = await findOrCreateUser(internalAdapter, { email: input.email.trim().toLowerCase(), name: input.name }, "dev");
+  const session = await internalAdapter.createSession(user.id);
+  return { userId: user.id, sessionToken: session.token };
+}
+
+/**
+ * The session of a request, or null. Zero trust: in identity mode it counts only while the
+ * provider's token belongs to the same person, so another person in the same browser never gets it.
+ */
+export async function sessionForRequest(auth: BetterAuthInstance, mode: LoginMode, requestHeaders: Headers) {
+  let session;
+  try {
+    session = await auth.api.getSession({ headers: requestHeaders });
+  } catch (error) {
+    // The identity check before every auth endpoint refuses requests without a matching token.
+    if (error instanceof APIError && error.statusCode === 401) return null;
+    throw error;
+  }
+  if (!session || mode.kind === "dev") return session;
+  const identity = await mode.verify(requestHeaders);
+  if (!identity || identity.email !== session.user.email.toLowerCase()) return null;
+  return session;
+}
+
 /** The auth instance for a Next.js app: route handler plus session helpers for server code. */
 export function createAuth(options: AuthOptions) {
-  const auth = buildBetterAuth(options);
+  const mode = loginMode(options);
+  const auth = buildBetterAuth(options, mode);
   const { GET, POST } = toNextJsHandler(auth);
 
   async function getSession() {
-    return auth.api.getSession({ headers: await headers() });
+    return sessionForRequest(auth, mode, await headers());
   }
 
   return {
     /** Mount at app/api/auth/[...all]/route.ts: `export const { GET, POST } = auth.handler`. */
     handler: { GET, POST },
     api: auth.api,
+    /** "identity" or "dev". */
+    mode: mode.kind,
     /** The signed-in user and session, or null. Reads request headers, so call it inside <Suspense>. */
     getSession,
     /** Like getSession, but redirects to `redirectTo` when nobody is signed in. */
@@ -125,6 +172,18 @@ export function createAuth(options: AuthOptions) {
       const session = await getSession();
       if (!session) redirect(redirectTo);
       return session;
+    },
+    /** Identity mode: the address that starts a session from the provider's token, then goes to `callbackPath`. */
+    signInUrl(callbackPath = "/") {
+      const query = new URLSearchParams({ callbackURL: safeCallbackPath(callbackPath) });
+      return `/api/auth${IDENTITY_SIGN_IN_PATH}?${query}`;
+    },
+    /** Where sign-out leads: the provider's logout (identity), else the sign-in page. */
+    signOutRedirect: options.mode.kind === "identity" ? options.mode.logoutUrl : "/sign-in",
+    /** Dev mode: signs in as `email` and sets the session cookie. Call it from a server action. */
+    async devSignIn(input: { email: string; name?: string }) {
+      if (mode.kind !== "dev") throw new Error("Dev sign-in is off");
+      await auth.api.devSignIn({ body: input, headers: await headers() });
     },
     /** Who invited `userId` most recently and when they accepted, or null. */
     getInviter: (userId: string) => findInviter(auth, userId),
@@ -135,6 +194,8 @@ export function createAuth(options: AuthOptions) {
     getUserNames: (ids: readonly string[]) => findUserNames(auth, ids),
     /** Whether a user with this email exists. Server only, e.g. for the dev seed. */
     userExists: (email: string) => hasUserWithEmail(auth, email),
+    /** A session for the user with this email (created if new). Server only, for the dev seed. */
+    ensureUserSession: (input: { email: string; name: string }) => ensureUserSession(auth, input),
   };
 }
 

@@ -5,8 +5,10 @@
   "description": "Zero-trust login",
   "plan": {
     "path": "docs/superpowers/plans/2026-10-25-zero-trust-login-cloudflare-access-generic.md",
-    "sha256": "151b90da04daed1bd42dcba4127176602bf3839d15e784cd6babfe74378eddf0"
+    "sha256": "924509ed99da480d5331434b1b3746d98ac06df4e4ade1193d8494258409e60e"
   },
-  "status": "planned",
-  "base": "678fd4ec6c6f22f32f434ab1f604ecf23426559b"
+  "status": "final",
+  "base": "678fd4ec6c6f22f32f434ab1f604ecf23426559b",
+  "report": "Finalized zero-trust-login (678fd4e..working-tree)\nFiles: 62 converge, 0 diverge, 0 absent. Elements: 13 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 15 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-25-zero-trust-login/map.html\n",
+  "shownAt": "2026-10-25T22:13:50Z"
 }

@@ -1,5 +1,5 @@
 // Fills the local dev database with the seed data: `npm run db:seed` (reads .env like the app).
-// Prints only counts, never booking data, names, IBANs, amounts or the password.
+// Prints only counts, never booking data, names, IBANs or amounts.
 import { readFileSync } from "node:fs";
 import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
@@ -38,7 +38,7 @@ async function main() {
     return 1;
   }
   const { ing, tradeRepublic, shared, erika } = result.imports;
-  console.log(`Seeded users ${emails} (password: see README, "Test data").`);
+  console.log(`Seeded users ${emails} (sign in locally on /sign-in, README "Run locally").`);
   console.log(`ING Giro: ${ing.newCount} bookings imported, balance check ok.`);
   console.log(`Trade Republic: ${tradeRepublic.newCount} bookings imported, ${tradeRepublic.linked} transfers linked.`);
   console.log(`ING Gemeinschaftskonto: ${shared.newCount} bookings imported, ${shared.linked} transfers linked.`);
