@@ -64,13 +64,13 @@ describe("spending by category group", () => {
   it("lets refunds lower their group and leaves out groups at zero or below", () => {
     expect(
       spendingByGroup([
-        { category: "shopping.clothing", sumCents: -5000 },
-        { category: "shopping", sumCents: 2000 },
-        { category: "health.pharmacy", sumCents: -1000 },
-        { category: "health", sumCents: 1000 },
-        { category: "mobility.fuel", sumCents: 3000 },
+        { category: "housing.rent", sumCents: -5000 },
+        { category: "housing", sumCents: 2000 },
+        { category: "leisure.travel", sumCents: -1000 },
+        { category: "leisure", sumCents: 1000 },
+        { category: "contracts.insurance", sumCents: 3000 },
       ]),
-    ).toEqual({ totalCents: 3000, groups: [{ group: "shopping", cents: 3000 }] });
+    ).toEqual({ totalCents: 3000, groups: [{ group: "housing", cents: 3000 }] });
   });
 
   it("keeps expenses without category as their own row", () => {

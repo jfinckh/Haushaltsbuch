@@ -126,10 +126,10 @@ describe("hiding standard categories", () => {
     expect(await categories.setHidden(max, { scope: "household", key: "children", hidden: true })).toEqual({ ok: true });
     expect(await categories.setHidden(max, { scope: "household", key: "children", hidden: true })).toEqual({ ok: true });
     expect(await categories.setHidden(max, { scope: "personal", key: "groceries.drugstore", hidden: true })).toEqual({ ok: true });
-    expect(await categories.setHidden(max, { scope: "personal", key: "childBenefit", hidden: true })).toEqual({ ok: true });
+    expect(await categories.setHidden(max, { scope: "personal", key: "investmentIncome", hidden: true })).toEqual({ ok: true });
     let listed = await categories.listCategories(max);
     expect(listed.household?.hidden).toEqual(["children"]);
-    expect(listed.personal.hidden).toEqual(["childBenefit", "groceries.drugstore"]);
+    expect(listed.personal.hidden).toEqual(["groceries.drugstore", "investmentIncome"]);
     expect((await categories.listCategories(erika)).household?.hidden).toEqual(["children"]);
 
     expect(await categories.setHidden(erika, { scope: "household", key: "children", hidden: false })).toEqual({ ok: true });

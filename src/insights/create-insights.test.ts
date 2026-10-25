@@ -12,7 +12,7 @@ import { createTransfers, type Transfers } from "@/transfers/server";
 import { createInsights, type Insights } from "./create-insights";
 
 // The figures with the real bookings and transfers services on an in-memory database, and privacy:
-// nobody gets figures of an account they may not see, and "Alle meine Konten" never mixes members.
+// nobody gets figures of an account they may not see, and "Alle privaten Konten" never mixes members.
 // Households and accounts are written straight into their tables (tests only; the table names are
 // part of their database contract).
 
@@ -93,7 +93,7 @@ describe("month figures", () => {
     });
   });
 
-  it("adds the contribution to shared accounts for Alle meine Konten, lowering what is available", async () => {
+  it("adds the contribution to shared accounts for Alle privaten Konten, lowering what is available", async () => {
     // The depot's incoming saving offsets the giro's outgoing one within Max's own accounts.
     expect(await insights.monthFigures(max, { ownPrivate: true })).toEqual({
       ok: true,
@@ -112,7 +112,7 @@ describe("month figures", () => {
     expect(await insights.monthFigures(erika, "shared")).toMatchObject({ ok: true, expenseCents: -12000 });
   });
 
-  it("never mixes members in Alle meine Konten", async () => {
+  it("never mixes members in Alle privaten Konten", async () => {
     expect(await insights.monthFigures(erika, { ownPrivate: true })).toMatchObject({
       incomeCents: 300000,
       expenseCents: -99900,
@@ -138,7 +138,7 @@ describe("statistics", () => {
     });
   });
 
-  it("adds each month's contribution for Alle meine Konten", async () => {
+  it("adds each month's contribution for Alle privaten Konten", async () => {
     const result = await insights.statistics(max, { ownPrivate: true }, 2);
     expect(result.ok && result.rows.map((r) => [r.month, r.contributionCents, r.availableCents])).toEqual([
       ["2026-10", -80000, 95000],
@@ -164,6 +164,21 @@ describe("statistics", () => {
     expect(await insights.statistics(max, "max-giro", 0)).toEqual({ ok: false, reason: "invalid-input" });
     expect(await insights.statistics(max, "max-giro", 25)).toEqual({ ok: false, reason: "invalid-input" });
   });
+
+  it("gives the months up to a chosen month, compared with the month before it", async () => {
+    const result = await insights.statistics(max, "max-giro", 2, "2026-09");
+    expect(result.ok && result.rows.map((r) => [r.month, r.incomeCents])).toEqual([
+      ["2026-09", 100000],
+      ["2026-08", 0],
+    ]);
+    expect(result.ok && result.comparison).toEqual({ expenseChangeCents: 40000, savingsRateChangePoints: null });
+  });
+
+  it("rejects a chosen month after the current one or a malformed one", async () => {
+    expect(await insights.statistics(max, "max-giro", 12, "2026-11")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await insights.statistics(max, "max-giro", 12, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await insights.statistics(max, "max-giro", 12, "2026-9")).toEqual({ ok: false, reason: "invalid-input" });
+  });
 });
 
 describe("category trends", () => {
@@ -173,14 +188,35 @@ describe("category trends", () => {
     expect(result.ok && [result.months[0], result.months.at(-1)]).toEqual(["2025-11", "2026-10"]);
     // Leisure: 400 € in September only. Groceries: 300 € minus a 50 € refund, this month only.
     expect(result.ok && result.groups).toEqual([
-      { group: "leisure", trend: [...Array(10).fill(0), 40000, 0], average3Cents: 13333, average6Cents: 6667, average12Cents: 3333 },
-      { group: "groceries", trend: [...Array(11).fill(0), 25000], average3Cents: 0, average6Cents: 0, average12Cents: 0 },
+      {
+        group: "groceries",
+        trend: [...Array(11).fill(0), 25000],
+        average3Cents: 0,
+        average6Cents: 0,
+        average12Cents: 0,
+        difference: { direction: "more", cents: 25000 },
+      },
+      {
+        group: "leisure",
+        trend: [...Array(10).fill(0), 40000, 0],
+        average3Cents: 13333,
+        average6Cents: 6667,
+        average12Cents: 3333,
+        difference: { direction: "less", cents: -13333 },
+      },
     ]);
   });
 
-  it("covers all own private accounts for Alle meine Konten, never another member's or shared spending", async () => {
+  it("gives the trend up to a chosen month, compared with the 3 months before it", async () => {
+    const result = await insights.categoryTrends(max, "max-giro", "2026-09");
+    expect(result.ok && [result.months[0], result.months.at(-1)]).toEqual(["2025-10", "2026-09"]);
+    expect(result.ok && result.groups.map((g) => [g.group, g.trend.at(-1), g.difference.direction])).toEqual([["leisure", 40000, "more"]]);
+    expect(await insights.categoryTrends(max, "max-giro", "2026-11")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+
+  it("covers all own private accounts for Alle privaten Konten, never another member's or shared spending", async () => {
     const maxs = await insights.categoryTrends(max, { ownPrivate: true });
-    expect(maxs.ok && maxs.groups.map((g) => g.group)).toEqual(["leisure", "groceries"]);
+    expect(maxs.ok && maxs.groups.map((g) => g.group)).toEqual(["groceries", "leisure"]);
     const erikas = await insights.categoryTrends(erika, { ownPrivate: true });
     expect(erikas.ok && erikas.groups.map((g) => [g.group, g.trend.at(-1)])).toEqual([["shopping", 99900]]);
     expect(await insights.categoryTrends(dora, { ownPrivate: true })).toMatchObject({ ok: true, groups: [] });
@@ -217,7 +253,7 @@ describe("year overview", () => {
     expect(result).toMatchObject({ ok: true, totals: { incomeCents: 0, savingsRate: null }, categories: { totalCents: 0, groups: [] } });
   });
 
-  it("adds the contribution to shared accounts for Alle meine Konten", async () => {
+  it("adds the contribution to shared accounts for Alle privaten Konten", async () => {
     expect(await insights.yearOverview(max, { ownPrivate: true }, 2026)).toMatchObject({
       ok: true,
       totals: { incomeCents: 300000, expenseCents: -65000, savingCents: 0, contributionCents: -80000, availableCents: 155000, savingsRate: 0 },

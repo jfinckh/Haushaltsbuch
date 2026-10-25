@@ -1,10 +1,10 @@
 type SwitcherAccount = { id: string; archived: boolean; visibility: "private" | "shared" };
 
-/** The address value of the combined view "Alle meine Konten". */
+/** The address value of the combined view "Alle privaten Konten". */
 export const ALL_MINE = "all";
 
 /**
- * Whether the switcher offers "Alle meine Konten": only with two or more active private accounts.
+ * Whether the switcher offers "Alle privaten Konten": only with two or more active private accounts.
  * The list holds only accounts the caller may see, so every private one is the caller's own.
  */
 export function offersAllMine(accounts: SwitcherAccount[]): boolean {
@@ -12,7 +12,7 @@ export function offersAllMine(accounts: SwitcherAccount[]): boolean {
 }
 
 /**
- * The dashboard's choice: "all" (Alle meine Konten) or the active account named in the address.
+ * The dashboard's choice: "all" (Alle privaten Konten) or the active account named in the address.
  * Otherwise "all" when it is offered, else the first active account. Another member's private id is
  * not in the list, so it falls back silently.
  */

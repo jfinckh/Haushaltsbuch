@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "date": "2026-10-25",
+  "slug": "statistics-month-picker",
+  "description": "Statistik Monatsauswahl",
+  "plan": {
+    "path": "docs/plans/2026-10-25-statistics-month-picker.md",
+    "sha256": "de0b161d8c0e3e26093315f99d15ac4bd690cbc26ad4c061d682c25fa96263a9"
+  },
+  "status": "final",
+  "base": "e9a33e35ec9b8968a6069d58b8d172a5db3463df",
+  "baseSnapshot": {
+    "after": "docs/changes/2026-10-25-statistics-month",
+    "head": "678fd4ec6c6f22f32f434ab1f604ecf23426559b"
+  },
+  "report": "Finalized statistics-month-picker (e9a33e3..working-tree)\nBase: change-map's snapshot of the uncommitted work after docs/changes/2026-10-25-statistics-month (e9a33e3, on top of HEAD 678fd4e).\nFiles: 5 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-25-statistics-month-picker/map.html\n",
+  "shownAt": "2026-10-25T21:48:31Z"
+}

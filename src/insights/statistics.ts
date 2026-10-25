@@ -7,7 +7,7 @@ type MonthSummary = { month: string; incomeCents: number; expenseCents: number; 
 type MonthContribution = { month: string; cents: number };
 
 export type StatisticsRow = MonthSummary & {
-  /** Null for a single account; for "Alle meine Konten" the net contribution, already in availableCents. */
+  /** Null for a single account; for "Alle privaten Konten" the net contribution, already in availableCents. */
   contributionCents: number | null;
   /** Saved / income as a fraction (0.125 = 12.5 %), or null without income. */
   savingsRate: number | null;
@@ -23,7 +23,7 @@ export function savingsRate(incomeCents: number, savingCents: number): number | 
 }
 
 /**
- * The page's rows in the order of the summaries. With contributions (Alle meine Konten), each month's
+ * The page's rows in the order of the summaries. With contributions (Alle privaten Konten), each month's
  * contribution lowers its available amount, as on the dashboard.
  */
 export function statisticsRows(summaries: MonthSummary[], contributions?: MonthContribution[]): StatisticsRow[] {

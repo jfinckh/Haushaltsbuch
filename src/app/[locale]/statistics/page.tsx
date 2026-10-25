@@ -11,6 +11,8 @@ import { ALL_MINE, selectAccount } from "@/insights";
 import type { StatisticsRow } from "@/insights/server";
 import { formatEuro } from "@/shared/money";
 import { CategoryTrends } from "./category-trends";
+import { chosenMonth, MonthSwitcher } from "./month-switcher";
+import Link from "next/link";
 import { ViewTabs } from "./view-tabs";
 import type { Caller } from "@/shared/rls";
 import { AppShell, PageHeader, Section } from "@/app/_lib/app-shell";
@@ -32,13 +34,19 @@ export default function StatisticsPage(props: Props) {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-/** The last 12 months of one visible account (?account=<id>) or of all own private accounts (?account=all). */
+/**
+ * One month (?month=YYYY-MM, default: the current one) of one visible account (?account=<id>) or of
+ * all own private accounts (?account=all), with the 12 months up to it.
+ */
 async function Statistics({ searchParams }: Props) {
   const { caller } = await requireCaller("/sign-in");
   if (!(await households.getHousehold(caller))) redirect("/household/new");
+  const query = await searchParams;
   // The same choice as the dashboard: only accounts the caller may see.
   const visibleAccounts = await accounts.listAccounts(caller);
-  const selected = selectAccount(visibleAccounts, first((await searchParams).account));
+  const selected = selectAccount(visibleAccounts, first(query.account));
+  const selectedId = selected === ALL_MINE ? ALL_MINE : (selected?.id ?? "");
+  const month = chosenMonth(first(query.month));
   const t = await getTranslations("app.statistics");
 
   return (
@@ -46,9 +54,10 @@ async function Statistics({ searchParams }: Props) {
         <PageHeader title={t("title")} />
         {selected ? (
           <>
-            <ViewTabs view="months" accountId={selected === ALL_MINE ? ALL_MINE : selected.id} />
-            <AccountSwitcher accounts={visibleAccounts} selectedId={selected === ALL_MINE ? ALL_MINE : selected.id} path="/statistics" />
-            <MonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} />
+            <ViewTabs view="months" accountId={selectedId} />
+            <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/statistics" params={{ month }} />
+            <MonthSwitcher month={month} accountId={selectedId} />
+            <MonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} month={month} />
           </>
         ) : (
           <p className="opacity-70">{t("noAccounts")}</p>
@@ -58,25 +67,28 @@ async function Statistics({ searchParams }: Props) {
 }
 
 /** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
-async function MonthSeries({ caller, accountId }: { caller: Caller; accountId: string | null }) {
+async function MonthSeries({ caller, accountId, month }: { caller: Caller; accountId: string | null; month: string }) {
   const target = accountId ?? ({ ownPrivate: true } as const);
   const [statistics, trends, { names }] = await Promise.all([
-    insights.statistics(caller, target, MONTHS),
-    insights.categoryTrends(caller, target),
+    insights.statistics(caller, target, MONTHS, month),
+    insights.categoryTrends(caller, target, month),
     categories.catalog(caller),
   ]);
   if (!statistics.ok) return null;
   const { rows, comparison, scaleCents: scale } = statistics;
   const t = await getTranslations("app.statistics");
+  const format = await getFormatter();
+  const shortName = (m: string) => format.dateTime(monthDate(m), { month: "short", year: "numeric", timeZone: "UTC" });
+  const accountParam = accountId ?? ALL_MINE;
 
   return (
     <>
       <CurrentMonth row={rows[0]} comparison={comparison} previousMonth={rows[1]?.month} />
       {trends.ok && <CategoryTrends trends={trends} accountId={accountId} categoryNames={names} />}
-      <Section title={t("byMonth")}>
+      <Section title={t("history", { from: shortName(rows.at(-1)!.month), to: shortName(rows[0].month) })}>
         <ol className="flex flex-col divide-y divide-base-300">
           {rows.map((row) => (
-            <MonthRow key={row.month} row={row} scale={scale} />
+            <MonthRow key={row.month} row={row} scale={scale} href={`/statistics?${new URLSearchParams({ account: accountParam, month: row.month })}`} />
           ))}
         </ol>
       </Section>
@@ -105,7 +117,6 @@ async function CurrentMonth({
 }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
-  const name = format.dateTime(monthDate(row.month), { month: "long", year: "numeric", timeZone: "UTC" });
   const rate = (value: number | null) => (value === null ? t("noRate") : format.number(value, { style: "percent", maximumFractionDigits: 1 }));
 
   let expenseNote: { text: string; tone: Tone; arrow: string } | null = null;
@@ -145,7 +156,7 @@ async function CurrentMonth({
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{comparison ? t("comparison") : name}</h2>
+      <h2 className="sr-only">{t("overview")}</h2>
       <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
         {tiles.map(({ label, value, note }) => (
           <div key={label} className="flex-[1_1_9rem] flex min-w-0 flex-col bg-base-100 px-4 py-3">
@@ -164,7 +175,7 @@ async function CurrentMonth({
   );
 }
 
-async function MonthRow({ row, scale }: { row: StatisticsRow; scale: number }) {
+async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: number; href: string }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const name = format.dateTime(monthDate(row.month), { month: "long", year: "numeric", timeZone: "UTC" });
@@ -179,7 +190,11 @@ async function MonthRow({ row, scale }: { row: StatisticsRow; scale: number }) {
     // Months without bookings stay in the list but recede.
     <li className={`flex flex-col gap-2 py-4 first:pt-1 ${row.incomeCents === 0 && spent === 0 ? "opacity-45" : ""}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-sm font-semibold">{name}</h3>
+        <h3 className="text-sm font-semibold">
+          <Link href={href} className="link link-hover">
+            {name}
+          </Link>
+        </h3>
         <dl className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs">
           {extras.map(([label, value]) => (
             <div key={label} className="flex gap-1">

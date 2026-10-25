@@ -83,52 +83,25 @@
     "shopping": "Shopping",
     "other": "Sonstiges",
     "salary": "Gehalt",
-    "childBenefit": "Kindergeld",
     "investmentIncome": "Zinsen & Dividenden",
-    "reimbursements": "Erstattungen & Spesen",
     "otherIncome": "Sonstige Einnahmen"
   },
   "categories": {
     "housing": {
       "rent": "Miete",
-      "utilities": "Nebenkosten",
-      "electricity": "Strom",
-      "internet": "Internet"
+      "utilities": "Nebenkosten & Energie"
     },
     "groceries": {
       "supermarket": "Supermarkt",
       "drugstore": "Drogerie"
     },
-    "mobility": {
-      "car": "Auto",
-      "fuel": "Tanken",
-      "publicTransport": "ÖPNV"
-    },
     "contracts": {
       "insurance": "Versicherungen",
-      "subscriptions": "Abos",
-      "phone": "Handy"
+      "subscriptions": "Abos & Handy"
     },
     "leisure": {
-      "restaurant": "Restaurant",
-      "goingOut": "Ausgehen",
-      "hobbies": "Hobbys",
+      "restaurant": "Restaurant & Ausgehen",
       "travel": "Urlaub"
-    },
-    "children": {
-      "childcare": "Betreuung",
-      "clothing": "Kleidung",
-      "school": "Schule"
-    },
-    "health": {
-      "pharmacy": "Apotheke",
-      "doctor": "Arzt",
-      "sports": "Sport"
-    },
-    "shopping": {
-      "clothing": "Kleidung",
-      "electronics": "Elektronik",
-      "household": "Haushalt"
     }
   },
   "categoryManager": {

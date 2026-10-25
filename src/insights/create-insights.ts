@@ -15,7 +15,7 @@ export type InsightsOptions = {
   today?: () => string;
 };
 
-/** One visible account, or all of the caller's own private accounts together ("Alle meine Konten"). */
+/** One visible account, or all of the caller's own private accounts together ("Alle privaten Konten"). */
 export type InsightsTarget = string | { ownPrivate: true };
 
 type Failure = { ok: false; reason: "invalid-input" | "not-found" };
@@ -26,9 +26,9 @@ export type MonthFigures = {
   incomeCents: number;
   expenseCents: number;
   savingCents: number;
-  /** Null for a single account; for "Alle meine Konten" the net contribution to shared accounts. */
+  /** Null for a single account; for "Alle privaten Konten" the net contribution to shared accounts. */
   contributionCents: number | null;
-  /** Income − expenses − saving, and for "Alle meine Konten" also minus the contribution. */
+  /** Income − expenses − saving, and for "Alle privaten Konten" also minus the contribution. */
   availableCents: number;
 };
 
@@ -71,6 +71,11 @@ function localToday(): string {
   return `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
+/** Whether `month` is a valid YYYY-MM month no later than the month of `today` (YYYY-MM-DD). */
+function isPastMonth(month: string, today: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(month) && month >= `${FIRST_YEAR}-01` && month <= today.slice(0, 7);
+}
+
 const isOwnPrivate = (target: InsightsTarget) => typeof target !== "string";
 
 /**
@@ -79,7 +84,7 @@ const isOwnPrivate = (target: InsightsTarget) => typeof target !== "string";
  */
 export function createInsights({ transactions, transfers, today = localToday }: InsightsOptions) {
   return {
-    /** The current month of one account or of "Alle meine Konten", as the dashboard shows it. */
+    /** The current month of one account or of "Alle privaten Konten", as the dashboard shows it. */
     async monthFigures(caller: Caller, target: InsightsTarget): Promise<MonthFiguresResult> {
       const summary = await transactions.monthSummary(caller, target);
       if (!summary.ok) return summary;
@@ -90,9 +95,13 @@ export function createInsights({ transactions, transfers, today = localToday }: 
       return { ok, ...figures, contributionCents: contribution.cents, availableCents: figures.availableCents + contribution.cents };
     },
 
-    /** The last `months` (1–24) calendar months including the current one, as the statistics page shows them. */
-    async statistics(caller: Caller, target: InsightsTarget, months: number): Promise<StatisticsResult> {
-      const summaries = await transactions.monthSummaries(caller, target, months);
+    /**
+     * The `months` (1–24) calendar months up to `until` (YYYY-MM, default: the current month), as the
+     * statistics page shows them. A month after the current one gives invalid-input.
+     */
+    async statistics(caller: Caller, target: InsightsTarget, months: number, until?: string): Promise<StatisticsResult> {
+      if (until !== undefined && !isPastMonth(until, today())) return { ok: false, reason: "invalid-input" };
+      const summaries = await transactions.monthSummaries(caller, target, months, until);
       if (!summaries.ok) return summaries;
       let contributions;
       if (isOwnPrivate(target)) {
@@ -110,13 +119,15 @@ export function createInsights({ transactions, transfers, today = localToday }: 
     },
 
     /**
-     * Spending per category group over the last 12 calendar months (including the current one) and
-     * its monthly averages over the last 3, 6 and 12 complete months. Same definition as the
-     * dashboard's spending by category: only expenses, refunds lower their group.
+     * Spending per category group over the 12 calendar months up to `until` (YYYY-MM, default: the
+     * current month), its monthly averages over the 3, 6 and 12 months before `until`, and how
+     * `until` differs from the usual. Same definition as the dashboard's spending by category: only
+     * expenses, refunds lower their group. A month after the current one gives invalid-input.
      */
-    async categoryTrends(caller: Caller, target: InsightsTarget): Promise<CategoryTrendsResult> {
-      // The current month and the 12 complete months before it.
-      const spendings = await transactions.categorySpendings(caller, target, TREND_MONTHS + 1);
+    async categoryTrends(caller: Caller, target: InsightsTarget, until?: string): Promise<CategoryTrendsResult> {
+      if (until !== undefined && !isPastMonth(until, today())) return { ok: false, reason: "invalid-input" };
+      // The month and the 12 months before it.
+      const spendings = await transactions.categorySpendings(caller, target, TREND_MONTHS + 1, until);
       if (!spendings.ok) return spendings;
       return { ok: true, ...categoryTrends(spendings.months) };
     },

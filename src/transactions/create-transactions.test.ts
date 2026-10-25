@@ -361,8 +361,8 @@ describe("spending by category of one account (dashboard)", () => {
   it("sums only the month's expenses per group; refunds lower them, uncategorized is its own row", async () => {
     await create(max, { date: "2026-10-01", amount: "-50,00", category: "groceries.supermarket" });
     await create(max, { date: "2026-10-02", amount: "-10,00", category: "groceries" });
-    await create(max, { date: "2026-10-03", amount: "-40,00", category: "shopping.clothing" });
-    await create(max, { date: "2026-10-04", amount: "40,00", category: "shopping" });
+    await create(max, { date: "2026-10-03", amount: "-40,00", category: "housing.rent" });
+    await create(max, { date: "2026-10-04", amount: "40,00", category: "housing" });
     await create(max, { date: "2026-10-05", amount: "-15,00", category: null });
     await create(max, { date: "2026-10-06", amount: "2.000,00", kind: "income", category: "salary" });
     await create(max, { date: "2026-10-07", amount: "-250,00", kind: "saving", category: null });
@@ -416,8 +416,8 @@ describe("spending by category over a series of months (statistics)", () => {
     await create(max, { date: "2026-10-06", amount: "2.000,00", kind: "income", category: "salary" });
     await create(max, { date: "2026-10-07", amount: "-250,00", kind: "saving", category: null });
     await create(max, { date: "2026-10-08", amount: "-500,00", kind: "transfer", category: null });
-    await create(max, { date: "2026-08-03", amount: "-40,00", category: "shopping.clothing" });
-    await create(max, { date: "2026-08-04", amount: "60,00", category: "shopping" });
+    await create(max, { date: "2026-08-03", amount: "-40,00", category: "housing.rent" });
+    await create(max, { date: "2026-08-04", amount: "60,00", category: "housing" });
     await create(max, { date: "2026-08-31", amount: "-12,00", category: "leisure" });
     await create(max, { date: "2026-07-31", amount: "-11,00", category: "groceries" });
     await create(max, { date: "2026-11-01", amount: "-11,00", category: "groceries" });

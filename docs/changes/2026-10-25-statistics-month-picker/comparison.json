@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "base": "e9a33e35ec9b8968a6069d58b8d172a5db3463df",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-picker.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-switcher.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/superpowers/plans/2026-10-25-zero-trust-login-cloudflare-access-generic.md",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryTrends, TREND_MONTHS } from "./category-trends";
+import { categoryTrends, TREND_MONTHS, usualDifference } from "./category-trends";
 
 /** 13 months newest first (the current one and the 12 before it), spending per group as given. */
 function series(byMonthIndex: Record<number, Record<string, number>>) {
@@ -36,22 +36,50 @@ describe("category trends", () => {
     });
   });
 
-  it("keeps a group that only has spending this month, with averages of 0", () => {
-    const { groups } = categoryTrends(series({ 0: { leisure: 500 } }));
-    expect(groups).toEqual([{ group: "leisure", trend: [...Array(11).fill(0), 500], average3Cents: 0, average6Cents: 0, average12Cents: 0 }]);
+  it("keeps a group that only has spending this month, with averages of 0, as more than usual", () => {
+    const { groups } = categoryTrends(series({ 0: { leisure: 5000 } }));
+    expect(groups).toEqual([
+      {
+        group: "leisure",
+        trend: [...Array(11).fill(0), 5000],
+        average3Cents: 0,
+        average6Cents: 0,
+        average12Cents: 0,
+        difference: { direction: "more", cents: 5000 },
+      },
+    ]);
   });
 
-  it("keeps a group that only had spending in the oldest complete month, which is outside the trend", () => {
-    const { groups } = categoryTrends(series({ 12: { health: 1200 } }));
-    expect(groups).toEqual([{ group: "health", trend: Array(12).fill(0), average3Cents: 0, average6Cents: 0, average12Cents: 100 }]);
+  it("keeps a group without spending this month but with spending in the 3 months before, as less than usual", () => {
+    const { groups } = categoryTrends(series({ 1: { health: 3000 } }));
+    expect(groups.map((g) => [g.group, g.difference])).toEqual([["health", { direction: "less", cents: -1000 }]]);
   });
 
-  it("orders the groups by their 12-month average, largest first; uncategorized is a group like any other", () => {
-    const { groups } = categoryTrends(series({ 0: { shopping: 90000 }, 1: { groceries: 2400, none: 3600, shopping: 1200 } }));
-    expect(groups.map((g) => g.group)).toEqual([null, "groceries", "shopping"]);
+  it("leaves out a group with spending only longer than 3 months ago", () => {
+    expect(categoryTrends(series({ 4: { health: 1200 }, 12: { health: 1200 } })).groups).toEqual([]);
+  });
+
+  it("orders the groups by this month's spending, then by the 3-month average; uncategorized is a group like any other", () => {
+    const { groups } = categoryTrends(series({ 0: { shopping: 900, none: 900, groceries: 2000 }, 1: { none: 3600, shopping: 1200, health: 300 } }));
+    expect(groups.map((g) => g.group)).toEqual(["groceries", null, "shopping", "health"]);
   });
 
   it("has no groups without any spending", () => {
     expect(categoryTrends(series({})).groups).toEqual([]);
+  });
+});
+
+describe("usual difference", () => {
+  it("counts less than 10 € or 10 % of the average as the same", () => {
+    expect(usualDifference(10999, 10000)).toEqual({ direction: "same", cents: 999 });
+    expect(usualDifference(105000, 100000)).toEqual({ direction: "same", cents: 5000 });
+    expect(usualDifference(95000, 100000)).toEqual({ direction: "same", cents: -5000 });
+  });
+
+  it("says more or less from 10 € and 10 % of the average on", () => {
+    expect(usualDifference(11000, 10000)).toEqual({ direction: "more", cents: 1000 });
+    expect(usualDifference(110000, 100000)).toEqual({ direction: "more", cents: 10000 });
+    expect(usualDifference(90000, 100000)).toEqual({ direction: "less", cents: -10000 });
+    expect(usualDifference(0, 1000)).toEqual({ direction: "less", cents: -1000 });
   });
 });

@@ -7,7 +7,7 @@ export type YearTotals = {
   incomeCents: number;
   expenseCents: number;
   savingCents: number;
-  /** Null for a single account; for "Alle meine Konten" the year's net contribution to shared accounts. */
+  /** Null for a single account; for "Alle privaten Konten" the year's net contribution to shared accounts. */
   contributionCents: number | null;
   availableCents: number;
   /** Saved / income of the whole year, or null without income. */

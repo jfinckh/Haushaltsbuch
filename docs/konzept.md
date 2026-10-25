@@ -42,12 +42,12 @@ Bewusst einfach: keine Rollen, und jedes Konto ist entweder privat oder gemeinsa
 - Privates Konto: nur der Besitzer sieht und bebucht es, mit allen Buchungen, Auswertungen und Budgets. Andere Mitglieder sehen nicht einmal, dass es existiert. Gemeinsames Konto: alle im Haushalt sehen und bebuchen es. Wer ein Konto anlegt, wählt das; es lässt sich später ändern.
 - Auswertungen gibt es pro Konto, nicht pro Haushalt: Ausgaben, Kategorien, Budgets und Kennzahlen beziehen sich immer auf das gewählte Konto. Jeder wählt aus den Konten, die er sehen darf: seine privaten und die gemeinsamen.
 - Umbuchungen zwischen privat und gemeinsam: Auf dem Gemeinschaftskonto steht nur „Umbuchung von Max (privat)“, ohne Kontoname, Saldo oder weitere Buchungen. Der Abgleich läuft auf dem Server über alle Konten, zeigt aber jedem nur seine eigene Seite.
-- **Gesamtansicht „Alle meine Konten“:** fasst die eigenen privaten Konten zusammen (z. B. ING Giro + Trade Republic). Umbuchungen zwischen ihnen heben sich auf. Gemeinsame Konten sind nicht enthalten, weil dort auch das Geld der Partnerin liegt; Überweisungen aufs Gemeinschaftskonto erscheinen als eigene Zeile „Beitrag Gemeinschaftskonto“, nicht als Ausgabe einer Kategorie, verringern aber den verfügbaren Betrag.
+- **Gesamtansicht „Alle privaten Konten“:** fasst die eigenen privaten Konten zusammen (z. B. ING Giro + Trade Republic). Umbuchungen zwischen ihnen heben sich auf. Gemeinsame Konten sind nicht enthalten, weil dort auch das Geld der Partnerin liegt; Überweisungen aufs Gemeinschaftskonto erscheinen als eigene Zeile „Beitrag Gemeinschaftskonto“, nicht als Ausgabe einer Kategorie, verringern aber den verfügbaren Betrag.
 - Einladung per Link; wer ihn annimmt, wird Mitglied des Haushalts.
 
 ## Dashboard & Kennzahlen
 
-Das Dashboard zeigt immer ein Konto, oben per Umschalter gewählt (z. B. „Alle meine Konten“ | „ING Giro“ | „Gemeinschaftskonto“), und darunter von oben nach unten: verfügbarer Betrag, Budgetstand, Ausgaben nach Kategorie, letzte Buchungen.
+Das Dashboard zeigt immer ein Konto, oben per Umschalter gewählt (z. B. „Alle privaten Konten“ | „ING Giro“ | „Gemeinschaftskonto“, getrennt nach privat und gemeinsam), und darunter von oben nach unten: verfügbarer Betrag, Budgetstand, Ausgaben nach Kategorie, letzte Buchungen.
 
 1. **Verfügbar diesen Monat** – große Zahl, darunter Einnahmen und Ausgaben bisher.
 2. **Budgets** – ein Fortschrittsbalken pro Kategorie, Warnfarbe ab 80 %.
@@ -92,21 +92,23 @@ Kennzahlen, nach Phase sortiert (alle anderen aus dem Entwurf kommen in die Stat
 
 Standardkategorien mit zwei Ebenen, pro Haushalt und pro Individualnutzer anpassbar. Es gibt also Dashboards für Individualnutzer (private Konten), sowie für das Gemeinschaftskonto:
 
-- **Wohnen:** Miete, Nebenkosten, Strom, Internet
+- **Wohnen:** Miete, Nebenkosten & Energie
 - **Lebensmittel:** Supermarkt, Drogerie
-- **Mobilität:** Auto, Tanken, ÖPNV
-- **Versicherungen & Verträge:** Versicherungen, Abos, Handy
-- **Freizeit:** Restaurant, Ausgehen, Hobbys, Urlaub
-- **Kinder:** Betreuung, Kleidung, Schule
-- **Gesundheit:** Apotheke, Arzt, Sport
-- **Shopping:** Kleidung, Elektronik, Haushalt
+- **Mobilität**
+- **Versicherungen & Verträge:** Versicherungen, Abos & Handy
+- **Freizeit:** Restaurant & Ausgehen, Urlaub
+- **Kinder**
+- **Gesundheit**
+- **Shopping**
 - **Sonstiges**
+
+Einnahmen: Gehalt, Zinsen & Dividenden, Sonstige Einnahmen. Feinere Kategorien legt jeder Haushalt oder jede Person selbst an.
 
 Diese Fälle sind **keine Kategorien, sondern eine eigene Buchungsart**, damit sie die Ausgaben nicht verfälschen:
 
 | Fall | Behandlung |
 | --- | --- |
-| Einnahmen | Gehalt, Kindergeld, Erstattungen; eigene Einnahmekategorien |
+| Einnahmen | Gehalt, Zinsen & Dividenden, Sonstige Einnahmen; eigene Einnahmekategorien |
 | Umbuchung | Geld zwischen eigenen Konten; zählt weder als Ausgabe noch Einnahme |
 | Sparen/Investieren | Überweisung aufs Tagesgeld oder Depot; zählt für die Sparquote |
 | Erstattung | Rückzahlung verringert die Ausgabe der ursprünglichen Kategorie |

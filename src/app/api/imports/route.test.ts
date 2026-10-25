@@ -347,7 +347,7 @@ describe("merging bookings entered by hand", () => {
       date: "2026-10-13",
       amount: "-200,00",
       kind: "expense",
-      category: "leisure.hobbies",
+      category: "leisure.travel",
       counterparty: "Hand-Notiz",
       ...overrides,
     });
@@ -401,7 +401,7 @@ describe("merging bookings entered by hand", () => {
       date: "2026-10-15",
       counterparty: "Trade Republic",
       kind: "expense",
-      category: "leisure.hobbies",
+      category: "leisure.travel",
       classifiedBy: "manual",
     });
     expect(await balanceOf("max", maxPrivate)).toBe(-109674);

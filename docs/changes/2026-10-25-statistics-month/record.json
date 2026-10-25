@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-25",
+  "slug": "statistics-month",
+  "description": "Statistik mit Monatswahl",
+  "plan": {
+    "path": "docs/plans/2026-10-25-statistics-month.md",
+    "sha256": "8b6b9c6000eb4af85ab3a9af1bca5c5a1800e8dbdd52b2af14ffbea8fd4b29ca"
+  },
+  "status": "final",
+  "base": "678fd4ec6c6f22f32f434ab1f604ecf23426559b",
+  "report": "Finalized statistics-month (678fd4e..working-tree)\nFiles: 24 converge, 0 diverge, 0 absent. Elements: 1 converges, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-25-statistics-month/map.html\n",
+  "shownAt": "2026-10-25T21:38:50Z"
+}

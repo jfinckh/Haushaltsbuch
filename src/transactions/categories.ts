@@ -12,19 +12,17 @@ export type CategoryGroup = {
 };
 
 export const CATEGORY_GROUPS: readonly CategoryGroup[] = [
-  { key: "housing", kind: "expense", subcategories: ["rent", "utilities", "electricity", "internet"] },
+  { key: "housing", kind: "expense", subcategories: ["rent", "utilities"] },
   { key: "groceries", kind: "expense", subcategories: ["supermarket", "drugstore"] },
-  { key: "mobility", kind: "expense", subcategories: ["car", "fuel", "publicTransport"] },
-  { key: "contracts", kind: "expense", subcategories: ["insurance", "subscriptions", "phone"] },
-  { key: "leisure", kind: "expense", subcategories: ["restaurant", "goingOut", "hobbies", "travel"] },
-  { key: "children", kind: "expense", subcategories: ["childcare", "clothing", "school"] },
-  { key: "health", kind: "expense", subcategories: ["pharmacy", "doctor", "sports"] },
-  { key: "shopping", kind: "expense", subcategories: ["clothing", "electronics", "household"] },
+  { key: "mobility", kind: "expense", subcategories: [] },
+  { key: "contracts", kind: "expense", subcategories: ["insurance", "subscriptions"] },
+  { key: "leisure", kind: "expense", subcategories: ["restaurant", "travel"] },
+  { key: "children", kind: "expense", subcategories: [] },
+  { key: "health", kind: "expense", subcategories: [] },
+  { key: "shopping", kind: "expense", subcategories: [] },
   { key: "other", kind: "expense", subcategories: [] },
   { key: "salary", kind: "income", subcategories: [] },
-  { key: "childBenefit", kind: "income", subcategories: [] },
   { key: "investmentIncome", kind: "income", subcategories: [] },
-  { key: "reimbursements", kind: "income", subcategories: [] },
   { key: "otherIncome", kind: "income", subcategories: [] },
 ];
 

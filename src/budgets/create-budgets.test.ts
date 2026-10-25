@@ -88,7 +88,7 @@ describe("spending per budget", () => {
 
   it("never counts income, transfers, saving, other categories or other months", async () => {
     await add(max, "max-private", "groceries", "400,00");
-    await book(max, "max-private", "2026-10-02", "50,00", "income", "reimbursements");
+    await book(max, "max-private", "2026-10-02", "50,00", "income", "otherIncome");
     await book(max, "max-private", "2026-10-03", "-50,00", "transfer", null);
     await book(max, "max-private", "2026-10-04", "-50,00", "saving", null);
     await book(max, "max-private", "2026-10-05", "-50,00", "expense", "health");
@@ -99,7 +99,7 @@ describe("spending per budget", () => {
 
   it("uses the current month without a month", async () => {
     await add(max, "max-private", "health", "30,00");
-    await book(max, "max-private", "2026-10-21", "-12,34", "expense", "health.pharmacy");
+    await book(max, "max-private", "2026-10-21", "-12,34", "expense", "health");
     const result = await list(max, "max-private");
     expect(result.month).toBe("2026-10");
     expect(result.budgets[0].spentCents).toBe(1234);

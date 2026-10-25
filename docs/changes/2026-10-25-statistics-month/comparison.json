@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "base": "678fd4ec6c6f22f32f434ab1f604ecf23426559b",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/category-trends.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/category-trends.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/select-account.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/account-switcher.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-switcher.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/category-trends.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/view-tabs.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/statistics.ts",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/year-overview.ts",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/create-budgets.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/categories.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/categories.ts",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-categories.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/de.json",
+      "status": "convergence",
+      "viaAmendment": "A10"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/en.json",
+      "status": "convergence",
+      "viaAmendment": "A11"
+    },
+    {
+      "kind": "edge",
+      "id": "app->insights",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

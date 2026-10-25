@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-/** Tabs between the last 12 months and the year view, keeping the selected account. */
+/** Tabs between the month view and the year view, keeping the selected account. */
 export function ViewTabs({ view, accountId }: { view: "months" | "year"; accountId: string }) {
   const t = useTranslations("app.statistics");
   const tabs = [
-    { key: "months", href: `/statistics?account=${accountId}`, label: t("tabMonths") },
+    { key: "months", href: `/statistics?account=${accountId}`, label: t("tabMonth") },
     { key: "year", href: `/statistics/year?account=${accountId}`, label: t("tabYear") },
   ] as const;
   return (

@@ -207,9 +207,9 @@ describe("applying rules to new bookings", () => {
   it("never overwrites a category set by hand", async () => {
     await create(max);
     const id = await importIng();
-    await setup.transactions.updateTransaction(max, id("2026-10-07"), { category: "shopping.household" });
+    await setup.transactions.updateTransaction(max, id("2026-10-07"), { category: "shopping" });
     expect((await setup.rules.applyToBookings(max, [id("2026-10-07")])).applied).toBe(0);
-    expect(await setup.stored(id("2026-10-07"))).toMatchObject({ category: "shopping.household", classifiedBy: "manual" });
+    expect(await setup.stored(id("2026-10-07"))).toMatchObject({ category: "shopping", classifiedBy: "manual" });
   });
 });
 

@@ -4,7 +4,7 @@
 /** How many calendar months the trend shows, including the current one. */
 export const TREND_MONTHS = 12;
 
-/** The averages cover this many complete months (the current month is never complete). */
+/** The averages cover this many months before the trend's last month. */
 const AVERAGE_SPANS = [3, 6, 12] as const;
 
 /** One month as transactions' categorySpendings returns it: positive cents per group, null = uncategorized. */
@@ -19,18 +19,39 @@ export type CategoryTrend = {
   average3Cents: number;
   average6Cents: number;
   average12Cents: number;
+  /** The trend's last month against the 3-month average. */
+  difference: UsualDifference;
 };
+
+/** How a month's spending differs from the usual (the 3-month average); cents = month − average. */
+export type UsualDifference = { direction: "more" | "less" | "same"; cents: number };
+
+/** Differences below 10 € or below 10 % of the average count as "same". */
+const SAME_CENTS = 1000;
+const SAME_SHARE = 0.1;
+
+/** Whether `cents` is more, less or about the same as `averageCents`. */
+export function usualDifference(cents: number, averageCents: number): UsualDifference {
+  const difference = cents - averageCents;
+  const threshold = Math.max(SAME_CENTS, Math.round(averageCents * SAME_SHARE));
+  if (Math.abs(difference) < threshold) return { direction: "same", cents: difference };
+  return { direction: difference > 0 ? "more" : "less", cents: difference };
+}
 
 export type CategoryTrends = {
   /** The trend months (YYYY-MM), oldest first, ending with the current month. */
   months: string[];
-  /** Groups with any spending in these months, largest 12-month average first. */
+  /**
+   * Groups with spending in the last trend month or in the 3 months before it; the last month's
+   * largest first, then the largest 3-month average.
+   */
   groups: CategoryTrend[];
 };
 
 /**
- * Folds the category spending of the current month and the 12 before it (newest first, as
- * categorySpendings returns them) into a trend per group and its averages over complete months.
+ * Folds the category spending of a month and the 12 before it (newest first, as categorySpendings
+ * returns them) into a trend per group, its averages over the months before it and its difference
+ * from the usual.
  */
 export function categoryTrends(spendings: MonthSpending[]): CategoryTrends {
   const centsOf = (month: MonthSpending, group: string | null) => month.groups.find((g) => g.group === group)?.cents ?? 0;
@@ -42,9 +63,15 @@ export function categoryTrends(spendings: MonthSpending[]): CategoryTrends {
 
   const groups = keys.map((group) => {
     const [average3Cents, average6Cents, average12Cents] = AVERAGE_SPANS.map((span) => average(group, span));
-    return { group, trend: trendMonths.map((month) => centsOf(month, group)), average3Cents, average6Cents, average12Cents };
+    const trend = trendMonths.map((month) => centsOf(month, group));
+    const difference = usualDifference(trend.at(-1) ?? 0, average3Cents);
+    return { group, trend, average3Cents, average6Cents, average12Cents, difference };
   });
-  const trendTotal = (g: CategoryTrend) => g.trend.reduce((sum, cents) => sum + cents, 0);
-  groups.sort((a, b) => b.average12Cents - a.average12Cents || trendTotal(b) - trendTotal(a));
-  return { months: trendMonths.map((m) => m.month), groups };
+  const last = (g: CategoryTrend) => g.trend.at(-1) ?? 0;
+  return {
+    months: trendMonths.map((m) => m.month),
+    groups: groups
+      .filter((g) => last(g) > 0 || g.average3Cents > 0)
+      .sort((a, b) => last(b) - last(a) || b.average3Cents - a.average3Cents),
+  };
 }

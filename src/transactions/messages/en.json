@@ -83,52 +83,25 @@
     "shopping": "Shopping",
     "other": "Other",
     "salary": "Salary",
-    "childBenefit": "Child benefit",
     "investmentIncome": "Interest & dividends",
-    "reimbursements": "Reimbursements",
     "otherIncome": "Other income"
   },
   "categories": {
     "housing": {
       "rent": "Rent",
-      "utilities": "Utilities",
-      "electricity": "Electricity",
-      "internet": "Internet"
+      "utilities": "Utilities & energy"
     },
     "groceries": {
       "supermarket": "Supermarket",
       "drugstore": "Drugstore"
     },
-    "mobility": {
-      "car": "Car",
-      "fuel": "Fuel",
-      "publicTransport": "Public transport"
-    },
     "contracts": {
       "insurance": "Insurance",
-      "subscriptions": "Subscriptions",
-      "phone": "Phone"
+      "subscriptions": "Subscriptions & phone"
     },
     "leisure": {
-      "restaurant": "Restaurant",
-      "goingOut": "Going out",
-      "hobbies": "Hobbies",
+      "restaurant": "Restaurants & going out",
       "travel": "Travel"
-    },
-    "children": {
-      "childcare": "Childcare",
-      "clothing": "Clothing",
-      "school": "School"
-    },
-    "health": {
-      "pharmacy": "Pharmacy",
-      "doctor": "Doctor",
-      "sports": "Sports"
-    },
-    "shopping": {
-      "clothing": "Clothing",
-      "electronics": "Electronics",
-      "household": "Household"
     }
   },
   "categoryManager": {
