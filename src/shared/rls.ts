@@ -1,5 +1,5 @@
 import "server-only";
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 // User-scoped database access. Queries run as the restricted role app_user with the caller's
@@ -14,6 +14,19 @@ export type RlsTransaction = Parameters<Parameters<RlsDatabase["transaction"]>[0
 
 /** Who is calling: the token of their signed-in session. Built by the app from the session. */
 export type Caller = { readonly sessionToken: string };
+
+/**
+ * The rows of a raw SQL query (e.g. a call of a database function). The one place that reads the
+ * driver's raw result, so callers state the row type instead of casting.
+ */
+export async function rows<T>(tx: RlsTransaction, query: SQL): Promise<T[]> {
+  return ((await tx.execute(query)) as unknown as { rows: T[] }).rows;
+}
+
+/** A Postgres text[] literal from ids, as bound parameters. */
+export function textArray(ids: readonly string[]): SQL {
+  return ids.length === 0 ? sql`ARRAY[]::text[]` : sql`ARRAY[${sql.join(ids.map((id) => sql`${id}`), sql`, `)}]::text[]`;
+}
 
 /** Thrown when the caller's session does not exist (any more) or has expired. */
 export class InvalidSessionError extends Error {
@@ -82,10 +95,8 @@ async function runAsSession<T>(
   return db.transaction(async (tx) => {
     await tx.execute(sql`SET LOCAL ROLE app_user`);
     await tx.execute(sql`SELECT set_config('app.session_token', ${caller.sessionToken}, true)`);
-    const result = (await tx.execute(sql`SELECT auth_current_user_id() AS id`)) as unknown as {
-      rows: { id: string | null }[];
-    };
-    const userId = result.rows[0]?.id;
+    const [row] = await rows<{ id: string | null }>(tx, sql`SELECT auth_current_user_id() AS id`);
+    const userId = row?.id;
     if (!userId) throw new InvalidSessionError();
     return fn(tx, userId);
   });

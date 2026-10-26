@@ -1,4 +1,5 @@
-import { and, asc, eq, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, eq, or, type SQL } from "drizzle-orm";
+import { currentHouseholdId, inCurrentHousehold } from "@/db-contract/server";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { formatIban } from "@/shared/iban";
@@ -25,17 +26,9 @@ function visibleTo(userId: string): SQL {
     and(eq(account.visibility, "private"), eq(account.ownerUserId, userId)),
     and(
       eq(account.visibility, "shared"),
-      sql`${account.householdId} IN (SELECT households_current_user_household_ids())`,
+      inCurrentHousehold(account.householdId),
     ),
   )!;
-}
-
-/** The session user's household, from households' database contract. */
-async function currentHouseholdId(tx: RlsTransaction): Promise<string | null> {
-  const result = (await tx.execute(sql`SELECT households_current_user_household_ids() AS id LIMIT 1`)) as unknown as {
-    rows: { id: string }[];
-  };
-  return result.rows[0]?.id ?? null;
 }
 
 /** The accounts part. Every call is about the caller's own view; their user id comes from the database. */

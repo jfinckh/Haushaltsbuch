@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
+import { accountIsVisible, visibleAccount } from "@/db-contract/server";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore, MergedFrom, TransactionView } from "@/transactions/server";
@@ -46,14 +47,7 @@ const uploadSchema = z.object({
 });
 
 /** Imports of accounts the session's user may see (accounts' database contract). RLS applies the same rule. */
-const visible: SQL = sql`${importBatch.accountId} IN (SELECT accounts_visible_account_ids())`;
-
-async function accountIsVisible(tx: RlsTransaction, accountId: string): Promise<boolean> {
-  const result = (await tx.execute(
-    sql`SELECT 1 AS found WHERE ${accountId} IN (SELECT accounts_visible_account_ids())`,
-  )) as unknown as { rows: unknown[] };
-  return result.rows.length > 0;
-}
+const visible: SQL = visibleAccount(importBatch.accountId);
 
 type ClassifiedRow = ParsedRow & { fingerprint: string; status: PreviewRow["status"]; merge?: TransactionView };
 

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, isNull, ne, sql, type SQL } from "drizzle-orm";
+import { currentHouseholdId } from "@/db-contract/server";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { CATEGORY_GROUPS, categoryKeysFor, standardChoices, type CategoryCatalog, type CategoryChoice } from "./categories";
 import type { Categories, CategoryScopeView, CategoryView, HideCategoryResult, ListCategoriesResult, SaveCategoryResult } from "./contract";
@@ -26,12 +27,6 @@ const toView = (row: CategoryRow): CategoryView => ({
 
 /** Every standard key (groups and subcategories) of both kinds. */
 const STANDARD_KEYS = new Set([...categoryKeysFor("expense"), ...categoryKeysFor("income")]);
-
-/** The caller's household id, or null (households' database contract: one household per person). */
-async function householdOf(tx: RlsTransaction): Promise<string | null> {
-  const result = (await tx.execute(sql`SELECT households_current_user_household_ids() AS id`)) as unknown as { rows: { id: string }[] };
-  return result.rows[0]?.id ?? null;
-}
 
 /** The rows of one scope: the household's, or the caller's own personal ones. */
 function scopeFilter(table: typeof category | typeof hiddenCategory, scope: CategoryScope, householdId: string | null, userId: string): SQL {
@@ -99,7 +94,7 @@ export function createCategories({ db }: CategoriesOptions): Categories {
   return {
     async listCategories(caller: Caller): Promise<ListCategoriesResult> {
       return withSession(db, caller, async (tx, userId): Promise<ListCategoriesResult> => {
-        const householdId = await householdOf(tx);
+        const householdId = await currentHouseholdId(tx);
         const scopeView = async (scope: CategoryScope): Promise<CategoryScopeView> => {
           const hidden = await tx
             .select({ key: hiddenCategory.key })
@@ -119,7 +114,7 @@ export function createCategories({ db }: CategoriesOptions): Categories {
 
     async catalog(caller: Caller): Promise<CategoryCatalog> {
       return withSession(db, caller, async (tx, userId): Promise<CategoryCatalog> => {
-        const householdId = await householdOf(tx);
+        const householdId = await currentHouseholdId(tx);
         // Row-level security returns only the household's rows and the caller's own personal ones.
         const rows = await tx.select().from(category).orderBy(asc(category.name), asc(category.id));
         const hidden = await tx.select().from(hiddenCategory);
@@ -154,7 +149,7 @@ export function createCategories({ db }: CategoriesOptions): Categories {
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       const { scope, kind, parentKey, name } = parsed.data;
       return withSession(db, caller, async (tx, userId): Promise<SaveCategoryResult> => {
-        const householdId = await householdOf(tx);
+        const householdId = await currentHouseholdId(tx);
         if (scope === "household" && !householdId) return { ok: false, reason: "not-found" };
         if (parentKey !== null && !(await parentFits(tx, parentKey, kind, scopeFilter(category, scope, householdId, userId)))) {
           return { ok: false, reason: "invalid-input" };
@@ -190,7 +185,7 @@ export function createCategories({ db }: CategoriesOptions): Categories {
       if (!parsed.success || !STANDARD_KEYS.has(parsed.data.key)) return { ok: false, reason: "invalid-input" };
       const { scope, key, hidden } = parsed.data;
       return withSession(db, caller, async (tx, userId): Promise<HideCategoryResult> => {
-        const householdId = await householdOf(tx);
+        const householdId = await currentHouseholdId(tx);
         if (scope === "household" && !householdId) return { ok: false, reason: "not-found" };
         if (hidden) {
           await tx

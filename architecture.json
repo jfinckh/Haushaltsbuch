@@ -8,13 +8,14 @@
     "db": [],
     "auth": [],
     "households": ["shared"],
-    "accounts": ["shared"],
-    "transactions": ["shared"],
-    "import": ["shared", "transactions"],
-    "transfers": ["shared", "transactions"],
-    "rules": ["shared", "transactions"],
-    "budgets": ["shared", "transactions"],
-    "insights": ["shared", "transactions", "transfers"]
+    "accounts": ["db-contract", "shared"],
+    "transactions": ["db-contract", "shared"],
+    "import": ["db-contract", "shared", "transactions"],
+    "transfers": ["db-contract", "shared", "transactions"],
+    "rules": ["db-contract", "shared", "transactions"],
+    "budgets": ["db-contract", "shared", "transactions"],
+    "insights": ["shared", "transactions", "transfers"],
+    "db-contract": ["shared"]
   },
   "features": {}
 }

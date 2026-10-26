@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:db-contract",
+      "itemHash": "sha256:ff0c15cc8f21205562e3178dc7a96f47ed4c4700142467c00c3b7b4711c185c1",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:db-contract->shared",
+      "itemHash": "sha256:0357eec1b58a970f442e7ec3305eeac53d3a47c8f425ed6bfcd224743592d7c3",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:accounts->db-contract",
+      "itemHash": "sha256:f6f49087bb43ab5140237797633b860fbd64e06ab523387a5bb287bc7f044cec",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:transactions->db-contract",
+      "itemHash": "sha256:615172132a1922c529096809202d91ad35729affa3c0ce11c12933ee9a414133",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:budgets->db-contract",
+      "itemHash": "sha256:3654cee7a6561af6360f5e687e585939c45e1fcb615c9c5d1fb1e07f6efc14cb",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:import->db-contract",
+      "itemHash": "sha256:eb0c48baad8a396ad289270c83e24edb1ae7340c94c97a779417b782e5625e6d",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:rules->db-contract",
+      "itemHash": "sha256:ea8da64a548f4f9413a860b3dab5687f2bbbea83097fb5b2e7c6dd29cc9eae07",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:transfers->db-contract",
+      "itemHash": "sha256:82e9525907831054547d0f9ca57df2ebafa58968d1291ae259fb5605d5abcfcf",
+      "decision": "approve",
+      "at": "2026-10-26T14:43:30Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:visibleAccount",
+      "itemHash": "sha256:c080e676b7436d3676e8e60ffc4aa1292028be00a42d84b9e451e7a69b49135f",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:accountIsVisible",
+      "itemHash": "sha256:c0fe558628f1a7902f83480ca6980f0a26df8e6c69c4221787c09cd7e4742dc4",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:ownPrivateAccount",
+      "itemHash": "sha256:d98de48bccc23f1e9231084174890538bcbea57098be29aa8e3f0b3a9be0d189",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:notOnSavingsAccount",
+      "itemHash": "sha256:e5e6c207f9be24ffecfa5116112496400bae9fb2116fcfec7a8abcd5f2aa70b5",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:accountScopes",
+      "itemHash": "sha256:6f7c0cb95859439c4708979a9ab1fbe1895f3a22b85eb150b1fb531dfaab8cbb",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:AccountScope",
+      "itemHash": "sha256:1ce208c2547413bb45e31845e3b6635a39821a70180d30da5cda4c3a4379425b",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:inCurrentHousehold",
+      "itemHash": "sha256:4d32f60da1d73886526007659279d2945985c04bd8657d6eea7a5b55c6739288",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:currentHouseholdId",
+      "itemHash": "sha256:ea1fc801b8654ae26fcc8520d5e804014039f906cf519393343490322e2c73e5",
+      "decision": "approve",
+      "at": "2026-10-26T14:54:03Z",
+      "source": "hook"
+    }
+  ]
+}

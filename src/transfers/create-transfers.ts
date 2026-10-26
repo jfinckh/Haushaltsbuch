@@ -1,6 +1,7 @@
-import { inArray, isNull, sql, type SQL } from "drizzle-orm";
+import { inArray, isNull, sql } from "drizzle-orm";
+import { accountIsVisible, accountScopes } from "@/db-contract/server";
 import type { FieldCrypto } from "@/shared/field-crypto";
-import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
+import { rows, textArray, withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore, TransactionView } from "@/transactions/server";
 import type { RuleTransfer, SharedContributionResult, SharedContributionsResult, Transfers } from "./contract";
 import { transferBooking } from "./schema";
@@ -78,14 +79,6 @@ function addDays(date: string, days: number): string {
   const value = new Date(`${date}T00:00:00Z`);
   value.setUTCDate(value.getUTCDate() + days);
   return value.toISOString().slice(0, 10);
-}
-
-/** A Postgres text[] literal from ids, as bound parameters. */
-const textArray = (ids: readonly string[]): SQL =>
-  ids.length === 0 ? sql`ARRAY[]::text[]` : sql`ARRAY[${sql.join(ids.map((id) => sql`${id}`), sql`, `)}]::text[]`;
-
-async function rows<T>(tx: RlsTransaction, query: SQL): Promise<T[]> {
-  return ((await tx.execute(query)) as unknown as { rows: T[] }).rows;
 }
 
 const toBookingView = ({ id, accountId, date, amountCents, kind, counterparty, reference }: TransactionView): TransferBookingView => ({
@@ -173,10 +166,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
     return booking ?? null;
   }
 
-  async function accountIsVisible(tx: RlsTransaction, accountId: string) {
-    return (await rows(tx, sql`SELECT 1 AS found WHERE ${accountId} IN (SELECT accounts_visible_account_ids())`)).length > 0;
-  }
-
   /** Dissolves the booking's link and rejects its proposals (manual decision). */
   async function rejectAll(tx: RlsTransaction, id: string) {
     for (const pair of await pairsOf(tx, [id])) {
@@ -207,13 +196,10 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
     const months = monthsBetween(from, to);
     if (months.length < 1 || months.length > MAX_MONTHS) return { ok: false, reason: "invalid-input" };
     return withSession(db, caller, async (tx, userId): Promise<SharedContributionsResult> => {
-      // accounts' contract: household_id is null for a private account, which is always the caller's own.
-      const scopes = await rows<{ account_id: string; household_id: string | null }>(
-        tx,
-        sql`SELECT account_id, household_id FROM accounts_visible_account_scopes()`,
-      );
-      const ownPrivate = new Set(scopes.filter((s) => s.household_id === null).map((s) => s.account_id));
-      const shared = new Set(scopes.filter((s) => s.household_id !== null).map((s) => s.account_id));
+      // A private account has no household and is always the caller's own.
+      const scopes = await accountScopes(tx);
+      const ownPrivate = new Set(scopes.filter((s) => s.householdId === null).map((s) => s.accountId));
+      const shared = new Set(scopes.filter((s) => s.householdId !== null).map((s) => s.accountId));
       const range = { from: monthRange(months.at(-1)!).from, to: monthRange(months[0]).to };
       const bookings = (await transactions.findBookings(tx, userId, range)).filter(
         (b) => b.kind === "transfer" && ownPrivate.has(b.accountId),

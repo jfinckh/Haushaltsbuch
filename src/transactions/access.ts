@@ -1,35 +1,29 @@
-import { and, eq, sql, type SQL } from "drizzle-orm";
+import { and, eq, type SQL } from "drizzle-orm";
+import { accountIsVisible, accountScopes, notOnSavingsAccount as notOnSavings, ownPrivateAccount, visibleAccount } from "@/db-contract/server";
 import type { RlsTransaction } from "@/shared/rls";
 import { isCategoryFor, ownCategoryId } from "./categories";
 import type { AccountTarget, CategoryTarget } from "./contract";
 import type { TransactionKind } from "./kinds";
 import { category, transaction } from "./schema";
 
-// Which bookings, accounts and categories the caller may see and use. The SQL functions are
-// accounts' database contract; row-level security applies the same rules.
+// Which bookings, accounts and categories the caller may see and use, through accounts' database
+// contract (db-contract). Row-level security applies the same rules.
 
 /** Bookings of accounts the session's user may see. */
-export const visible: SQL = sql`${transaction.accountId} IN (SELECT accounts_visible_account_ids())`;
+export const visible: SQL = visibleAccount(transaction.accountId);
 
 /**
  * The caller's own private accounts (a private account has no household and is visible to its
  * owner only), never shared ones.
  */
-export const ownPrivate: SQL = sql`${transaction.accountId} IN (SELECT account_id FROM accounts_visible_account_scopes() WHERE household_id IS NULL)`;
+export const ownPrivate: SQL = ownPrivateAccount(transaction.accountId);
 
 /**
  * Bookings outside the caller's visible savings accounts. Within the own private accounts, a saving
  * booking on a savings account is the other side of one on an everyday account, so only the
  * everyday side counts.
  */
-export const notOnSavingsAccount: SQL = sql`${transaction.accountId} NOT IN (SELECT account_id FROM accounts_visible_account_roles() WHERE role = 'savings')`;
-
-export async function accountIsVisible(tx: RlsTransaction, accountId: string): Promise<boolean> {
-  const result = (await tx.execute(
-    sql`SELECT 1 AS found WHERE ${accountId} IN (SELECT accounts_visible_account_ids())`,
-  )) as unknown as { rows: unknown[] };
-  return result.rows.length > 0;
-}
+export const notOnSavingsAccount: SQL = notOnSavings(transaction.accountId);
 
 /** A visible booking by id, or null; `lock` locks its row for update. */
 export async function findVisible(tx: RlsTransaction, id: string, lock = false) {
@@ -62,12 +56,9 @@ export async function categoryAllowed(
 ): Promise<boolean> {
   let isPrivate: boolean;
   if (typeof target === "string") {
-    const scopes = (await tx.execute(
-      sql`SELECT household_id FROM accounts_visible_account_scopes() WHERE account_id = ${target}`,
-    )) as unknown as { rows: { household_id: string | null }[] };
-    const account = scopes.rows[0];
+    const [account] = await accountScopes(tx, [target]);
     if (!account) return false;
-    isPrivate = account.household_id === null;
+    isPrivate = account.householdId === null;
   } else {
     isPrivate = target.visibility === "private";
   }

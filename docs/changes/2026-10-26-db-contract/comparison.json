@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "base": "2f9de4ad21444f7e6a2c129ac4a52fdf0f7f58c4",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/db-contract/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db-contract/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db-contract/accounts.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db-contract/households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db-contract/accounts.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/rls.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/access.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-categories.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/create-budgets.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/create-transfers.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-service.ts",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "unit",
+      "id": "db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "db-contract->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "accounts->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "transactions->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "budgets->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "import->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "rules->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "transfers->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:visibleAccount",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:accountIsVisible",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:ownPrivateAccount",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:notOnSavingsAccount",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:accountScopes",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:AccountScope",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:inCurrentHousehold",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "export",
+      "id": "db-contract:server:currentHouseholdId",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    }
+  ],
+  "edges": [
+    {
+      "from": "accounts",
+      "to": "db-contract",
+      "state": "new"
+    },
+    {
+      "from": "budgets",
+      "to": "db-contract",
+      "state": "new"
+    },
+    {
+      "from": "db-contract",
+      "to": "shared",
+      "state": "new"
+    },
+    {
+      "from": "import",
+      "to": "db-contract",
+      "state": "new"
+    },
+    {
+      "from": "rules",
+      "to": "db-contract",
+      "state": "new"
+    },
+    {
+      "from": "transactions",
+      "to": "db-contract",
+      "state": "new"
+    },
+    {
+      "from": "transfers",
+      "to": "db-contract",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:db-contract->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:accounts->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:transactions->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:budgets->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:import->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:rules->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:transfers->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:visibleAccount",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:accountIsVisible",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:ownPrivateAccount",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:notOnSavingsAccount",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:accountScopes",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:AccountScope",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:inCurrentHousehold",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:db-contract:server:currentHouseholdId",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

@@ -28,20 +28,24 @@ Architecture boundaries are enforced by change-map and eslint-plugin-boundaries.
 src/app/            routing only (pages, API routes); thin, calls part entry points (figures come from insights)
 src/shared/         helpers, money (cents, German number format), UI basics
 src/db/             Postgres connection (server only)        → nothing
+src/db-contract/    typed calls of the SQL functions accounts and households define for other parts (server only)
+                                                             → shared
 src/auth/           login, sessions, invite links, auth UI   → nothing (db is injected via createAuth)
 src/households/     households, members, account visibility  → shared (db is injected via createHouseholds)
-src/accounts/       accounts, role (everyday/savings)        → shared (household membership via SQL)
+src/accounts/       accounts, role (everyday/savings)        → shared, db-contract (household membership)
 src/transactions/   bookings, categories (standard + own per household or person), who classified
-                                                             → shared (account access via accounts' SQL function accounts_visible_account_ids; household categories via households' households_current_user_household_ids)
-src/transfers/      transfer matching, manual linking        → shared, transactions (matching across the household in its own SECURITY DEFINER SQL functions, via accounts' accounts_household_accounts(); the app starts it after each import)
-src/import/         ING and Trade Republic parsers, dedup    → shared, transactions (account access via accounts' SQL function; the app checks the bank, sets the opening balance and starts transfer matching)
-src/rules/          rules, auto-categorization, learning     → shared, transactions (scope via accounts' SQL function accounts_visible_account_scopes; the app applies rules after each import, before transfer matching)
-src/budgets/        budgets per account and category         → shared, transactions (monthly spending via transactions' expenseTotals; account access via accounts' SQL function accounts_visible_account_ids)
+                                                             → shared, db-contract (account access; the household for household categories)
+src/transfers/      transfer matching, manual linking        → shared, transactions, db-contract (account access and scopes; matching across the household in its own SECURITY DEFINER SQL functions, via accounts' accounts_household_accounts(); the app starts it after each import)
+src/import/         ING and Trade Republic parsers, dedup    → shared, transactions, db-contract (account access; the app checks the bank, sets the opening balance and starts transfer matching)
+src/rules/          rules, auto-categorization, learning     → shared, transactions, db-contract (account scopes and the household; the app applies rules after each import, before transfer matching)
+src/budgets/        budgets per account and category         → shared, transactions, db-contract (monthly spending via transactions' expenseTotals; account access)
 src/insights/       dashboard and statistics figures, balances, account choice incl. "Alle meine Konten"
                                                              → shared, transactions, transfers (services injected via createInsights; no SQL of its own)
 ```
 
 `auth` and `shared` must stay free of domain logic; they may be extracted into packages later.
+
+Parts never import accounts or households to learn what the caller may see. They ask the database through the SQL functions accounts and households define in their migrations, and call those only through `db-contract` (never as SQL text). A new function for other parts gets its typed call there.
 
 ## Rules that apply everywhere
 

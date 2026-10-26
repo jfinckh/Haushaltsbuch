@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "db-contract",
+  "description": "db-contract, typed access to the shared SQL functions",
+  "plan": {
+    "path": "docs/plans/2026-10-26-db-contract.md",
+    "sha256": "1584e74aaa64055d11829b0846634591609ea743cdca310bc7f8b046d00f95ce"
+  },
+  "status": "final",
+  "base": "2f9de4ad21444f7e6a2c129ac4a52fdf0f7f58c4",
+  "report": "Finalized db-contract (2f9de4a..working-tree)\nFiles: 16 converge, 0 diverge, 0 absent. Elements: 16 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 16 approved.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-db-contract/map.html\n",
+  "shownAt": "2026-10-26T14:54:15Z"
+}

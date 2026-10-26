@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, isNull, like, lte, or, type SQL } from "drizzle-orm";
+import { accountIsVisible } from "@/db-contract/server";
 import { withSession, type RlsDatabase } from "@/shared/rls";
-import { accountIsVisible, categoryAllowed, findVisible, notOnSavingsAccount, ownPrivate, targetFilter, visible } from "./access";
+import { categoryAllowed, findVisible, notOnSavingsAccount, ownPrivate, targetFilter, visible } from "./access";
 import type { BookingCodec } from "./booking-codec";
 import { isCategoryFor } from "./categories";
 import type { BookingService, LatestTransactionsResult, ListTransactionsResult, SaveTransactionResult } from "./contract";

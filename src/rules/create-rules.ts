@@ -1,4 +1,5 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+import { accountScopes, currentHouseholdId, type AccountScope } from "@/db-contract/server";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore, TransactionView } from "@/transactions/server";
@@ -23,16 +24,6 @@ const CONTEXT = {
 } as const;
 
 type RuleRow = typeof bookingRule.$inferSelect;
-
-/** A visible account and its household; null household: a private account (always the caller's). */
-type AccountScope = { account_id: string; household_id: string | null };
-
-async function rows<T>(tx: RlsTransaction, query: ReturnType<typeof sql>): Promise<T[]> {
-  return ((await tx.execute(query)) as unknown as { rows: T[] }).rows;
-}
-
-const textArray = (ids: readonly string[]) =>
-  ids.length === 0 ? sql`ARRAY[]::text[]` : sql`ARRAY[${sql.join(ids.map((id) => sql`${id}`), sql`, `)}]::text[]`;
 
 const levelOf = (row: RuleRow): RuleLevel => (row.accountId ? "account" : row.ownerUserId ? "private" : "shared");
 
@@ -76,27 +67,22 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
     };
   }
 
-  async function accountScopes(tx: RlsTransaction, accountIds: string[]): Promise<Map<string, AccountScope>> {
-    if (accountIds.length === 0) return new Map();
-    const found = await rows<AccountScope>(
-      tx,
-      sql`SELECT account_id, household_id FROM accounts_visible_account_scopes() WHERE account_id = ANY(${textArray(accountIds)})`,
-    );
-    return new Map(found.map((row) => [row.account_id, row]));
+  async function scopesById(tx: RlsTransaction, accountIds: string[]): Promise<Map<string, AccountScope>> {
+    return new Map((await accountScopes(tx, accountIds)).map((scope) => [scope.accountId, scope]));
   }
 
   /** The stored scope columns for a scope the caller may use, or why not. */
   async function scopeColumns(tx: RlsTransaction, userId: string, scope: RuleValues["scope"]) {
     if (scope.type === "account") {
-      const visible = (await accountScopes(tx, [scope.accountId])).has(scope.accountId);
+      const visible = (await scopesById(tx, [scope.accountId])).has(scope.accountId);
       return visible ? { ok: true as const, columns: { accountId: scope.accountId, householdId: null, ownerUserId: null } } : ({ ok: false, reason: "not-found" } as const);
     }
     if (scope.type === "private") {
       return { ok: true as const, columns: { accountId: null, householdId: null, ownerUserId: userId } };
     }
-    const [household] = await rows<{ id: string }>(tx, sql`SELECT households_current_user_household_ids() AS id LIMIT 1`);
-    return household
-      ? { ok: true as const, columns: { accountId: null, householdId: household.id, ownerUserId: null } }
+    const householdId = await currentHouseholdId(tx);
+    return householdId
+      ? { ok: true as const, columns: { accountId: null, householdId, ownerUserId: null } }
       : ({ ok: false, reason: "no-household" } as const);
   }
 
@@ -137,20 +123,16 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
     return { ok: true, rule: toView(row, userId) };
   }
 
-  /**
-   * Applies the rules that fit each booking's account, as the caller may see them. Bookings someone
-   * classified by hand are skipped by transactions.
-   */
   /** For each booking the visible rule that wins, if any; bookings on invisible accounts get none. */
   async function winningRules(tx: RlsTransaction, userId: string, bookings: TransactionView[]) {
-    const scopes = await accountScopes(tx, [...new Set(bookings.map((b) => b.accountId))]);
+    const scopes = await scopesById(tx, [...new Set(bookings.map((b) => b.accountId))]);
     const visibleRules = await tx.select().from(bookingRule);
     const matchable = visibleRules.map((row) => ({ row, view: toView(row, userId) }));
 
     const fitsAccount = (row: RuleRow, scope: AccountScope) =>
-      row.accountId === scope.account_id ||
-      (row.householdId !== null && row.householdId === scope.household_id) ||
-      (row.ownerUserId !== null && row.ownerUserId === userId && scope.household_id === null);
+      row.accountId === scope.accountId ||
+      (row.householdId !== null && row.householdId === scope.householdId) ||
+      (row.ownerUserId !== null && row.ownerUserId === userId && scope.householdId === null);
 
     return bookings.flatMap((booking) => {
       const scope = scopes.get(booking.accountId);
@@ -171,6 +153,10 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
     });
   }
 
+  /**
+   * Applies the rules that fit each booking's account, as the caller may see them. Bookings someone
+   * classified by hand are skipped by transactions.
+   */
   async function apply(tx: RlsTransaction, userId: string, bookings: TransactionView[]): Promise<ApplyResult> {
     if (bookings.length === 0) return { applied: 0, transfers: [] };
     const decisions = await winningRules(tx, userId, bookings);
@@ -309,7 +295,7 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       const { accountId } = parsed.data;
       return withSession(db, caller, async (tx, userId) => {
-        if (!(await accountScopes(tx, [accountId])).has(accountId)) return { ok: false as const, reason: "not-found" as const };
+        if (!(await scopesById(tx, [accountId])).has(accountId)) return { ok: false as const, reason: "not-found" as const };
         const bookings = await transactions.findBookings(tx, userId, { accountId, uncategorized: true });
         return { ok: true as const, ...(await apply(tx, userId, bookings)) };
       });
