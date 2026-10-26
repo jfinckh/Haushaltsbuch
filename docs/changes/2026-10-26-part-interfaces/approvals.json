@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-remove:households:server:NoHouseholdError",
+      "itemHash": "sha256:332a4b404889556066abbff54de7af5118f060f5b6b7f44e207e30488640bbdc",
+      "decision": "approve",
+      "at": "2026-10-26T13:24:51Z",
+      "source": "hook"
+    }
+  ]
+}

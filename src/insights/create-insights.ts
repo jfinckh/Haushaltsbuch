@@ -2,9 +2,10 @@ import type { Caller } from "@/shared/rls";
 import type { BookingFigures } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
 import { currentBalances } from "./balances";
-import { categoryTrends, TREND_MONTHS, type CategoryTrends } from "./category-trends";
-import { barScale, compareMonths, statisticsRows, type StatisticsRow } from "./statistics";
-import { yearCategories, yearTotals, type YearTotals } from "./year-overview";
+import { categoryTrends, TREND_MONTHS } from "./category-trends";
+import type { CategoryTrendsResult, Insights, InsightsTarget, MonthFiguresResult, StatisticsResult, YearOverviewResult } from "./contract";
+import { barScale, compareMonths, statisticsRows } from "./statistics";
+import { yearCategories, yearTotals } from "./year-overview";
 
 export type InsightsOptions = {
   /** Month totals and balances of the accounts the caller may see. */
@@ -14,51 +15,6 @@ export type InsightsOptions = {
   /** Today's date (YYYY-MM-DD), for the current year. Default: the local date. */
   today?: () => string;
 };
-
-/** One visible account, or all of the caller's own private accounts together ("Alle privaten Konten"). */
-export type InsightsTarget = string | { ownPrivate: true };
-
-type Failure = { ok: false; reason: "invalid-input" | "not-found" };
-
-/** The dashboard's current month (cents, signed as booked: money out is negative). */
-export type MonthFigures = {
-  month: string;
-  incomeCents: number;
-  expenseCents: number;
-  savingCents: number;
-  /** Null for a single account; for "Alle privaten Konten" the net contribution to shared accounts. */
-  contributionCents: number | null;
-  /** Income − expenses − saving, and for "Alle privaten Konten" also minus the contribution. */
-  availableCents: number;
-};
-
-export type MonthFiguresResult = ({ ok: true } & MonthFigures) | Failure;
-
-export type StatisticsResult =
-  | {
-      ok: true;
-      /** One row per calendar month, newest first. */
-      rows: StatisticsRow[];
-      /** The newest month compared with the one before, or null with a single month. */
-      comparison: ReturnType<typeof compareMonths> | null;
-      /** The amount a full bar stands for. */
-      scaleCents: number;
-    }
-  | Failure;
-
-export type CategoryTrendsResult = ({ ok: true } & CategoryTrends) | Failure;
-
-export type YearOverviewResult =
-  | {
-      ok: true;
-      year: number;
-      /** The year's months up to the current one, January first. */
-      months: StatisticsRow[];
-      totals: YearTotals;
-      /** Spending per category group over these months, largest first. */
-      categories: { totalCents: number; groups: { group: string | null; cents: number }[] };
-    }
-  | Failure;
 
 /** The earliest year the overview accepts. */
 const FIRST_YEAR = 1970;
@@ -82,9 +38,8 @@ const isOwnPrivate = (target: InsightsTarget) => typeof target !== "string";
  * The insights part: figures of the dashboard and the statistics page. It only combines what the
  * bookings and transfers services return in the caller's session, so it sees what the caller may see.
  */
-export function createInsights({ transactions, transfers, today = localToday }: InsightsOptions) {
+export function createInsights({ transactions, transfers, today = localToday }: InsightsOptions): Insights {
   return {
-    /** The current month of one account or of "Alle privaten Konten", as the dashboard shows it. */
     async monthFigures(caller: Caller, target: InsightsTarget): Promise<MonthFiguresResult> {
       const summary = await transactions.monthSummary(caller, target);
       if (!summary.ok) return summary;
@@ -95,10 +50,6 @@ export function createInsights({ transactions, transfers, today = localToday }: 
       return { ok, ...figures, contributionCents: contribution.cents, availableCents: figures.availableCents + contribution.cents };
     },
 
-    /**
-     * The `months` (1–24) calendar months up to `until` (YYYY-MM, default: the current month), as the
-     * statistics page shows them. A month after the current one gives invalid-input.
-     */
     async statistics(caller: Caller, target: InsightsTarget, months: number, until?: string): Promise<StatisticsResult> {
       if (until !== undefined && !isPastMonth(until, today())) return { ok: false, reason: "invalid-input" };
       const summaries = await transactions.monthSummaries(caller, target, months, until);
@@ -118,12 +69,6 @@ export function createInsights({ transactions, transfers, today = localToday }: 
       };
     },
 
-    /**
-     * Spending per category group over the 12 calendar months up to `until` (YYYY-MM, default: the
-     * current month), its monthly averages over the 3, 6 and 12 months before `until`, and how
-     * `until` differs from the usual. Same definition as the dashboard's spending by category: only
-     * expenses, refunds lower their group. A month after the current one gives invalid-input.
-     */
     async categoryTrends(caller: Caller, target: InsightsTarget, until?: string): Promise<CategoryTrendsResult> {
       if (until !== undefined && !isPastMonth(until, today())) return { ok: false, reason: "invalid-input" };
       // The month and the 12 months before it.
@@ -132,11 +77,6 @@ export function createInsights({ transactions, transfers, today = localToday }: 
       return { ok: true, ...categoryTrends(spendings.months) };
     },
 
-    /**
-     * One calendar year (up to the current month in the current year): its months January first,
-     * the year's totals and its spending per category group. Same definitions as the statistics rows
-     * and the category trends. A future year or one before 1970 gives invalid-input.
-     */
     async yearOverview(caller: Caller, target: InsightsTarget, year: number): Promise<YearOverviewResult> {
       const [currentYear, currentMonth] = today().split("-").map(Number);
       if (!Number.isInteger(year) || year < FIRST_YEAR || year > currentYear) return { ok: false, reason: "invalid-input" };
@@ -158,14 +98,9 @@ export function createInsights({ transactions, transfers, today = localToday }: 
       return { ok: true, year, months, totals: yearTotals(months), categories: yearCategories(spendings.months) };
     },
 
-    /**
-     * The current balance of each given account: opening balance plus the bookings the caller may see.
-     * Pass only accounts the caller may see (e.g. from accounts' list).
-     */
     async balances(caller: Caller, accounts: { id: string; openingBalanceCents: number }[]): Promise<Record<string, number>> {
       return currentBalances(accounts, await transactions.balances(caller));
     },
   };
 }
 
-export type Insights = ReturnType<typeof createInsights>;

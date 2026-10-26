@@ -9,7 +9,8 @@ import type { Caller, RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
 import { createTransactions, type Transactions } from "@/transactions/server";
 import { createTransfers, type Transfers } from "@/transfers/server";
-import { createInsights, type Insights } from "./create-insights";
+import type { Insights } from "./contract";
+import { createInsights } from "./create-insights";
 
 // The figures with the real bookings and transfers services on an in-memory database, and privacy:
 // nobody gets figures of an account they may not see, and "Alle privaten Konten" never mixes members.

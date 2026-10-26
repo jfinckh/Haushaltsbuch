@@ -6,7 +6,7 @@ import { useState, type ComponentProps, type FormEvent } from "react";
 import { formatCents, formatEuro } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { CategorySelect, useCategoryName } from "@/transactions";
-import type { BudgetView } from "../create-budgets";
+import type { BudgetView } from "../contract";
 import { createBudgetSchema, updateBudgetSchema } from "../validation";
 
 type Props = {

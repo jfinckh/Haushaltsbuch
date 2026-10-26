@@ -9,7 +9,7 @@ import { asCaller, json, notFound, type GetCaller } from "./api";
 
 type Deps = {
   imports: Imports;
-  accounts: Accounts;
+  accounts: Pick<Accounts, "getAccount" | "updateAccount">;
   transactions: Pick<BookingFigures, "balances">;
   /**
    * Runs first after a confirmed import with the ids of its new bookings: the rules. Returns how many

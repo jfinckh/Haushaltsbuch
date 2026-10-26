@@ -1,5 +1,16 @@
 import { and, asc, count, eq, gte, lt, sql } from "drizzle-orm";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
+import type {
+  AcceptedInvite,
+  CreateHouseholdResult,
+  Household,
+  Households,
+  JoinResult,
+  LeaveHouseholdResult,
+  Member,
+  Membership,
+  RenameHouseholdResult,
+} from "./contract";
 import { household, householdInviteUse, householdMember } from "./schema";
 import { createHouseholdSchema, renameHouseholdSchema } from "./validation";
 
@@ -12,50 +23,6 @@ export type HouseholdsOptions = {
    */
   householdHoldsData?: (tx: RlsTransaction, householdId: string) => Promise<boolean>;
 };
-
-export type Membership = { householdId: string };
-
-export type Household = {
-  id: string;
-  name: string;
-  currency: string;
-  memberCount: number;
-};
-
-export type Member = { userId: string; joinedAt: Date };
-
-export type CreateHouseholdResult =
-  | { ok: true; household: Household }
-  | { ok: false; reason: "invalid-input" | "already-member" };
-
-export type RenameHouseholdResult =
-  | { ok: true; household: Household }
-  | { ok: false; reason: "invalid-input" | "no-household" };
-
-export type LeaveHouseholdResult = { left: boolean; householdDeleted: boolean };
-
-/** The invite a user accepted most recently, as auth records it. */
-export type AcceptedInvite = {
-  inviterId: string;
-  /** When the user accepted it. A later time means a newer invite. */
-  invitedAt: Date;
-};
-
-export type JoinResult = {
-  membership: Membership | null;
-  /** The user was invited but stays in their own household (see keptReason). */
-  keptOwnHousehold: boolean;
-  /** Why the own household was kept: it has other members, or it holds data. */
-  keptReason: "other-members" | "holds-data" | null;
-};
-
-/** Thrown by requireMembership when the user belongs to no household. */
-export class NoHouseholdError extends Error {
-  constructor() {
-    super("User belongs to no household");
-    this.name = "NoHouseholdError";
-  }
-}
 
 const UNIQUE_VIOLATION = "23505";
 
@@ -70,7 +37,7 @@ function isUniqueViolation(error: unknown): boolean {
  * The households part: who belongs to which household. Every call is about the caller only; the
  * caller's user id always comes from the database (withSession), never from arguments.
  */
-export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) {
+export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions): Households {
   // The caller's user id, as the database finds it for their session.
   async function sessionUserId(caller: Caller): Promise<string> {
     return withSession(db, caller, async (_tx, userId) => userId);
@@ -143,7 +110,6 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) 
     getMembership,
     getHousehold,
 
-    /** Members of the user's own household, oldest first. Empty without a household. */
     async listMembers(caller: Caller): Promise<Member[]> {
       return withSession(db, caller, async (tx, userId) => {
         const [membership] = await tx
@@ -159,7 +125,6 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) 
       });
     },
 
-    /** Renames the user's own household. Any member may do this. */
     async renameHousehold(caller: Caller, input: unknown): Promise<RenameHouseholdResult> {
       const parsed = renameHouseholdSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -178,10 +143,6 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) 
       return { ok: true, household: updated };
     },
 
-    /**
-     * Removes the user from their household. The last member to leave deletes the household
-     * (memberships cascade; later parts that hang data on a household must cascade too).
-     */
     async leaveHousehold(caller: Caller): Promise<LeaveHouseholdResult> {
       return withSession(db, caller, async (tx, userId) => {
         const [membership] = await tx
@@ -206,14 +167,6 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) 
       });
     },
 
-    /** The user's membership; throws NoHouseholdError if there is none. */
-    async requireMembership(caller: Caller): Promise<Membership> {
-      const membership = await getMembership(caller);
-      if (!membership) throw new NoHouseholdError();
-      return membership;
-    },
-
-    /** Creates a household with the user as its first member. A user can have only one. */
     async createHousehold(caller: Caller, input: unknown): Promise<CreateHouseholdResult> {
       const parsed = createHouseholdSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -235,15 +188,6 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) 
       return { ok: true, household: created };
     },
 
-    /**
-     * Moves the user into the household of the person who invited them most recently. `invite`
-     * must come from auth's invite record, never from request input. Acts on each invite only
-     * once, so a user who later leaves is not put back by the same invite; a newer invite is
-     * acted on again. A user whose own household is empty (no other members, no data per
-     * householdHoldsData) switches and the empty household is deleted; otherwise they keep it, and
-     * the invite stays open until they leave. Does nothing if the inviter has no household yet. Returns
-     * the user's membership afterwards.
-     */
     async joinInvitersHousehold(caller: Caller, invite: AcceptedInvite | null): Promise<JoinResult> {
       const userId = await sessionUserId(caller);
       const own = await findMembership(userId);
@@ -282,4 +226,3 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions) 
   };
 }
 
-export type Households = ReturnType<typeof createHouseholds>;

@@ -39,14 +39,14 @@ export function statisticsRows(summaries: MonthSummary[], contributions?: MonthC
   });
 }
 
+/** Money spent (positive = spent more) and the savings rate change in percentage points. */
+export type MonthComparison = { expenseChangeCents: number; savingsRateChangePoints: number | null };
+
 /**
  * How the current month differs from the previous one: money spent (positive = spent more) and the
  * savings rate in percentage points (one decimal), or null when either month has no rate.
  */
-export function compareMonths(
-  current: StatisticsRow,
-  previous: StatisticsRow,
-): { expenseChangeCents: number; savingsRateChangePoints: number | null } {
+export function compareMonths(current: StatisticsRow, previous: StatisticsRow): MonthComparison {
   const rates = current.savingsRate !== null && previous.savingsRate !== null;
   return {
     expenseChangeCents: previous.expenseCents - current.expenseCents,

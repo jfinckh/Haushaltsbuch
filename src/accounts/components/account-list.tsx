@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { formatEuro } from "@/shared/money";
-import type { AccountView } from "../create-accounts";
+import type { AccountView } from "../contract";
 
 type Props = {
   accounts: AccountView[];

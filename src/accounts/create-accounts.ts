@@ -2,47 +2,15 @@ import { and, asc, eq, or, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { formatIban } from "@/shared/iban";
+import type { Accounts, AccountView, CreateAccountResult, UpdateAccountResult } from "./contract";
 import { account } from "./schema";
-import {
-  accountValuesSchema,
-  createAccountSchema,
-  createTradeRepublicSchema,
-  updateAccountSchema,
-  type AccountRole,
-  type AccountType,
-  type AccountValues,
-  type Bank,
-  type Visibility,
-} from "./validation";
+import { accountValuesSchema, createAccountSchema, createTradeRepublicSchema, updateAccountSchema, type AccountValues } from "./validation";
 
 export type AccountsOptions = {
   db: RlsDatabase;
   /** Encrypts IBANs; keys come from the environment. */
   crypto: FieldCrypto;
 };
-
-/** An account as callers see it. The owner's user id is never sent. */
-export type AccountView = {
-  id: string;
-  name: string;
-  bank: Bank;
-  type: AccountType;
-  role: AccountRole;
-  visibility: Visibility;
-  openingBalanceCents: number;
-  /** Formatted in groups of four, or null. */
-  iban: string | null;
-  archived: boolean;
-  ownedByMe: boolean;
-};
-
-export type CreateAccountResult =
-  | { ok: true; accounts: AccountView[] }
-  | { ok: false; reason: "invalid-input" | "no-household" };
-
-export type UpdateAccountResult =
-  | { ok: true; account: AccountView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "no-household" | "not-owner" };
 
 const IBAN_CONTEXT = "account.iban";
 
@@ -71,7 +39,7 @@ async function currentHouseholdId(tx: RlsTransaction): Promise<string | null> {
 }
 
 /** The accounts part. Every call is about the caller's own view; their user id comes from the database. */
-export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
+export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions): Accounts {
   function toView(row: AccountRow, userId: string): AccountView {
     return {
       id: row.id,
@@ -126,7 +94,6 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
   }
 
   return {
-    /** All accounts the caller may see, by name. */
     async listAccounts(caller: Caller): Promise<AccountView[]> {
       return withSession(db, caller, async (tx, userId) => {
         const rows = await tx
@@ -138,7 +105,6 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
       });
     },
 
-    /** One account, or null if it does not exist or the caller may not see it. */
     async getAccount(caller: Caller, id: string): Promise<AccountView | null> {
       return withSession(db, caller, async (tx, userId) => {
         const row = await findVisible(tx, userId, id);
@@ -146,11 +112,6 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
       });
     },
 
-    /**
-     * Creates an account owned by the caller. With `{ setup: "trade-republic", ... }` it creates
-     * Trade Republic's clearing account (everyday, with the IBAN) and depot (savings) together.
-     * A shared account goes into the caller's household.
-     */
     async createAccount(caller: Caller, input: unknown): Promise<CreateAccountResult> {
       const isTradeRepublic = (input as { setup?: unknown } | null)?.setup === "trade-republic";
       let accounts: AccountValues[];
@@ -186,10 +147,6 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
       return withSession(db, caller, (tx, userId) => insertAccounts(tx, userId, accounts));
     },
 
-    /**
-     * Changes an account the caller may see. Any member may change a shared account; only the
-     * owner may change its visibility. Making it shared puts it into the owner's household.
-     */
     async updateAccount(caller: Caller, id: string, input: unknown): Promise<UpdateAccountResult> {
       const parsed = updateAccountSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -237,7 +194,6 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
       });
     },
 
-    /** Deletes an account the caller may see. False if there is none. */
     async deleteAccount(caller: Caller, id: string): Promise<boolean> {
       return withSession(db, caller, async (tx, userId) => {
         const deleted = await tx
@@ -248,10 +204,6 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
       });
     },
 
-    /**
-     * For households: whether a household holds shared accounts, so it must not be given up when
-     * its only member switches households. Runs on the owner connection households passes in.
-     */
     async householdHasSharedAccounts(tx: RlsTransaction, householdId: string): Promise<boolean> {
       const [row] = await tx
         .select({ id: account.id })
@@ -263,4 +215,3 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions) {
   };
 }
 
-export type Accounts = ReturnType<typeof createAccounts>;

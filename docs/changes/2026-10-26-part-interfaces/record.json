@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "part-interfaces",
+  "description": "Explicit interfaces for accounts, households, budgets, insights and categories",
+  "plan": {
+    "path": "docs/plans/2026-10-26-part-interfaces.md",
+    "sha256": "45336d4e4860b157ec686f82030eee12badc0bb348da25225e1c23aec64a36af"
+  },
+  "status": "final",
+  "base": "d42eaed962d80fc96d79b0412b7b0622c4334c2f",
+  "report": "Finalized part-interfaces (d42eaed..working-tree)\nFiles: 24 converge, 0 diverge, 0 absent. Elements: 1 converges, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 1 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-part-interfaces/map.html\n",
+  "shownAt": "2026-10-26T14:15:39Z"
+}

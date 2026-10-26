@@ -1,6 +1,7 @@
 import { and, asc, eq, sql, type SQL } from "drizzle-orm";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore } from "@/transactions/server";
+import type { Budgets, BudgetView, ListBudgetsResult, SaveBudgetResult } from "./contract";
 import { budget } from "./schema";
 import { createBudgetSchema, monthSchema, updateBudgetSchema } from "./validation";
 
@@ -9,25 +10,6 @@ export type BudgetsOptions = {
   /** Reads the monthly expense totals of an account and checks a budget's category. */
   transactions: Pick<BookingStore, "expenseTotals" | "checkCategory">;
 };
-
-/** A budget as callers see it, with its spending in the listed month. No user ids. */
-export type BudgetView = {
-  id: string;
-  accountId: string;
-  /** Expense category key: a group covers its subcategories. */
-  category: string;
-  limitCents: number;
-  /** Expenses minus refunds in the month (cents); below 0 if refunds were larger. */
-  spentCents: number;
-};
-
-export type ListBudgetsResult =
-  | { ok: true; month: string; budgets: BudgetView[] }
-  | { ok: false; reason: "invalid-input" | "not-found" };
-
-export type SaveBudgetResult =
-  | { ok: true; budget: BudgetView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "duplicate" };
 
 type BudgetRow = typeof budget.$inferSelect;
 
@@ -58,7 +40,7 @@ const toView = (row: BudgetRow, spentCents: number): BudgetView => ({
 });
 
 /** The budgets part. Every call is about the caller's own view; their user id comes from the database. */
-export function createBudgets({ db, transactions }: BudgetsOptions) {
+export function createBudgets({ db, transactions }: BudgetsOptions): Budgets {
   /** The view of a stored budget with its spending in the current month. */
   async function currentView(tx: RlsTransaction, row: BudgetRow): Promise<BudgetView> {
     const { totals } = await transactions.expenseTotals(tx, row.accountId);
@@ -66,7 +48,6 @@ export function createBudgets({ db, transactions }: BudgetsOptions) {
   }
 
   return {
-    /** An account's budgets with their spending in a calendar month (default: the current one). */
     async listBudgets(caller: Caller, accountId: string, month?: string): Promise<ListBudgetsResult> {
       const parsed = monthSchema.safeParse(month);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -82,7 +63,6 @@ export function createBudgets({ db, transactions }: BudgetsOptions) {
       });
     },
 
-    /** Adds a budget to an account the caller may see; one per account and category. */
     async createBudget(caller: Caller, input: unknown): Promise<SaveBudgetResult> {
       const parsed = createBudgetSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -101,7 +81,6 @@ export function createBudgets({ db, transactions }: BudgetsOptions) {
       });
     },
 
-    /** Changes the limit of a visible budget. */
     async updateBudget(caller: Caller, id: string, input: unknown): Promise<SaveBudgetResult> {
       const parsed = updateBudgetSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -116,7 +95,6 @@ export function createBudgets({ db, transactions }: BudgetsOptions) {
       });
     },
 
-    /** Deletes a visible budget; false if there is none the caller may see. */
     async deleteBudget(caller: Caller, id: string): Promise<boolean> {
       return withSession(db, caller, async (tx) => {
         const deleted = await tx
@@ -129,4 +107,3 @@ export function createBudgets({ db, transactions }: BudgetsOptions) {
   };
 }
 
-export type Budgets = ReturnType<typeof createBudgets>;

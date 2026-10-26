@@ -8,7 +8,8 @@ import { createFieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
 import { createCategories, createTransactions, type Transactions } from "@/transactions/server";
-import { createBudgets, type Budgets } from "./create-budgets";
+import type { Budgets } from "./contract";
+import { createBudgets } from "./create-budgets";
 import { budget } from "./schema";
 
 // Budgets with their monthly spending, and privacy: a budget exists only for whoever may see its

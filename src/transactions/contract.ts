@@ -1,11 +1,12 @@
 import type { Caller, RlsTransaction } from "@/shared/rls";
-import type { GroupSpending } from "./categories";
+import type { CategoryCatalog, GroupSpending } from "./categories";
 import type { ClassifiedBy, TransactionKind } from "./kinds";
-import type { TransactionValues } from "./validation";
+import type { CategoryScope, TransactionValues } from "./validation";
 
-// The contract of the transactions part. Other parts depend on one of its three roles:
-// BookingService (pages and routes), BookingStore (other parts, inside their own database
-// transaction) or BookingFigures (totals). createTransactions implements all three.
+// The contract of the transactions part. Other parts depend on one of the three roles of the
+// bookings: BookingService (pages and routes), BookingStore (other parts, inside their own
+// database transaction) or BookingFigures (totals). createTransactions implements all three.
+// Categories (own categories and hidden standard ones) is implemented by createCategories.
 
 /** A booking as callers see it. The creator's user id is never sent. */
 export type TransactionView = {
@@ -214,3 +215,60 @@ export interface BookingFigures {
 
 /** The whole transactions part. */
 export interface Transactions extends BookingService, BookingStore, BookingFigures {}
+
+/** An own category as callers see it. Its key is what bookings, rules and budgets store. */
+export type CategoryView = {
+  id: string;
+  /** `c_<id>` for a group, `<group key>.c_<id>` for a subcategory. */
+  key: string;
+  scope: CategoryScope;
+  kind: "expense" | "income";
+  /** Null for a group; the standard or own group key for a subcategory. */
+  parentKey: string | null;
+  name: string;
+  archived: boolean;
+};
+
+/** One scope's adjustments: hidden standard keys and own categories (archived ones included). */
+export type CategoryScopeView = { hidden: string[]; categories: CategoryView[] };
+
+export type ListCategoriesResult = {
+  /** Null when the caller has no household. */
+  household: CategoryScopeView | null;
+  personal: CategoryScopeView;
+};
+
+export type SaveCategoryResult =
+  | { ok: true; category: CategoryView }
+  | { ok: false; reason: "invalid-input" | "not-found" | "duplicate" };
+
+export type HideCategoryResult = { ok: true } | Failure;
+
+/** Own categories and hidden standard ones, per household and per person. */
+export interface Categories {
+  /** The caller's household and personal adjustments. Personal ones are only ever the caller's own. */
+  listCategories(caller: Caller): Promise<ListCategoriesResult>;
+
+  /**
+   * The names of every own category the caller may see (archived ones too) and the choices for a
+   * shared account (standard minus the household's hidden ones, plus household categories) and for
+   * one of the caller's private accounts (additionally minus their own hidden ones, plus their
+   * personal categories). Archived ones are never offered.
+   */
+  catalog(caller: Caller): Promise<CategoryCatalog>;
+
+  /** Adds an own group or subcategory to the household or to the caller only. */
+  createCategory(caller: Caller, input: unknown): Promise<SaveCategoryResult>;
+
+  /** Renames an own category the caller may see. */
+  renameCategory(caller: Caller, id: string, input: unknown): Promise<SaveCategoryResult>;
+
+  /**
+   * Archives (true) or restores (false) an own category. Archived ones stay on bookings, rules and
+   * budgets but are no longer offered for new ones.
+   */
+  setArchived(caller: Caller, id: string, archived: unknown): Promise<SaveCategoryResult>;
+
+  /** Hides or shows a standard category key for the household or only for the caller. */
+  setHidden(caller: Caller, input: unknown): Promise<HideCategoryResult>;
+}

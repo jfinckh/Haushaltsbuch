@@ -2,38 +2,11 @@ import { randomUUID } from "node:crypto";
 import { and, asc, eq, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { CATEGORY_GROUPS, categoryKeysFor, standardChoices, type CategoryCatalog, type CategoryChoice } from "./categories";
+import type { Categories, CategoryScopeView, CategoryView, HideCategoryResult, ListCategoriesResult, SaveCategoryResult } from "./contract";
 import { category, hiddenCategory } from "./schema";
 import { archiveCategorySchema, createCategorySchema, hideCategorySchema, renameCategorySchema, type CategoryScope } from "./validation";
 
 export type CategoriesOptions = { db: RlsDatabase };
-
-/** An own category as callers see it. Its key is what bookings, rules and budgets store. */
-export type CategoryView = {
-  id: string;
-  /** `c_<id>` for a group, `<group key>.c_<id>` for a subcategory. */
-  key: string;
-  scope: CategoryScope;
-  kind: "expense" | "income";
-  /** Null for a group; the standard or own group key for a subcategory. */
-  parentKey: string | null;
-  name: string;
-  archived: boolean;
-};
-
-/** One scope's adjustments: hidden standard keys and own categories (archived ones included). */
-export type CategoryScopeView = { hidden: string[]; categories: CategoryView[] };
-
-export type ListCategoriesResult = {
-  /** Null when the caller has no household. */
-  household: CategoryScopeView | null;
-  personal: CategoryScopeView;
-};
-
-export type SaveCategoryResult =
-  | { ok: true; category: CategoryView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "duplicate" };
-
-export type HideCategoryResult = { ok: true } | { ok: false; reason: "invalid-input" | "not-found" };
 
 type CategoryRow = typeof category.$inferSelect;
 
@@ -70,7 +43,7 @@ function scopeFilter(table: typeof category | typeof hiddenCategory, scope: Cate
  * standard keys. Every call runs in the caller's session; row-level security shows household rows to
  * its members and personal rows to their owner only.
  */
-export function createCategories({ db }: CategoriesOptions) {
+export function createCategories({ db }: CategoriesOptions): Categories {
   /** Whether an active category with this name (any case) exists under the same parent in the scope. */
   async function nameTaken(tx: RlsTransaction, row: Pick<CategoryRow, "householdId" | "ownerUserId" | "parentKey" | "kind" | "name">, exceptId?: string) {
     const scope = row.householdId ? eq(category.householdId, row.householdId) : eq(category.ownerUserId, row.ownerUserId ?? "");
@@ -124,7 +97,6 @@ export function createCategories({ db }: CategoriesOptions) {
   }
 
   return {
-    /** The caller's household and personal adjustments. Personal ones are only ever the caller's own. */
     async listCategories(caller: Caller): Promise<ListCategoriesResult> {
       return withSession(db, caller, async (tx, userId): Promise<ListCategoriesResult> => {
         const householdId = await householdOf(tx);
@@ -145,12 +117,6 @@ export function createCategories({ db }: CategoriesOptions) {
       });
     },
 
-    /**
-     * The names of every own category the caller may see (archived ones too) and the choices for a
-     * shared account (standard minus the household's hidden ones, plus household categories) and for
-     * one of the caller's private accounts (additionally minus their own hidden ones, plus their
-     * personal categories). Archived ones are never offered.
-     */
     async catalog(caller: Caller): Promise<CategoryCatalog> {
       return withSession(db, caller, async (tx, userId): Promise<CategoryCatalog> => {
         const householdId = await householdOf(tx);
@@ -183,7 +149,6 @@ export function createCategories({ db }: CategoriesOptions) {
       });
     },
 
-    /** Adds an own group or subcategory to the household or to the caller only. */
     async createCategory(caller: Caller, input: unknown): Promise<SaveCategoryResult> {
       const parsed = createCategorySchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -210,22 +175,16 @@ export function createCategories({ db }: CategoriesOptions) {
       });
     },
 
-    /** Renames an own category the caller may see. */
     async renameCategory(caller: Caller, id: string, input: unknown): Promise<SaveCategoryResult> {
       const parsed = renameCategorySchema.safeParse(input);
       return update(caller, id, () => (parsed.success ? { name: parsed.data.name } : null));
     },
 
-    /**
-     * Archives (true) or restores (false) an own category. Archived ones stay on bookings, rules and
-     * budgets but are no longer offered for new ones.
-     */
     async setArchived(caller: Caller, id: string, archived: unknown): Promise<SaveCategoryResult> {
       const parsed = archiveCategorySchema.safeParse({ archived });
       return update(caller, id, () => (parsed.success ? { archived: parsed.data.archived } : null));
     },
 
-    /** Hides or shows a standard category key for the household or only for the caller. */
     async setHidden(caller: Caller, input: unknown): Promise<HideCategoryResult> {
       const parsed = hideCategorySchema.safeParse(input);
       if (!parsed.success || !STANDARD_KEYS.has(parsed.data.key)) return { ok: false, reason: "invalid-input" };
@@ -253,4 +212,3 @@ export function createCategories({ db }: CategoriesOptions) {
   };
 }
 
-export type Categories = ReturnType<typeof createCategories>;

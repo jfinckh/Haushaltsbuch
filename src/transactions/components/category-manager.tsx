@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { CATEGORY_GROUPS } from "../categories";
-import type { CategoryScopeView, CategoryView } from "../create-categories";
+import type { CategoryScopeView, CategoryView } from "../contract";
 import { createCategorySchema, renameCategorySchema, type CategoryScope } from "../validation";
 import { useCategoryName } from "./use-category-name";
 

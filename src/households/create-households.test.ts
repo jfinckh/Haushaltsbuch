@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { InvalidSessionError } from "@/shared/rls";
-import { NoHouseholdError } from "./create-households";
 import { household, householdMember } from "./schema";
 import { createTestHouseholds, invite } from "./test-utils";
 
@@ -268,15 +267,6 @@ describe("leaving", () => {
     await setup.households.createHousehold(await setup.as("dora"), { name: "B" });
     expect(await setup.households.leaveHousehold(await setup.as("stranger"))).toEqual({ left: false, householdDeleted: false });
     expect((await setup.households.getHousehold(await setup.as("dora")))?.memberCount).toBe(1);
-  });
-});
-
-describe("requireMembership", () => {
-  it("returns the membership or throws NoHouseholdError", async () => {
-    await expect(setup.households.requireMembership(await setup.as("max"))).rejects.toBeInstanceOf(NoHouseholdError);
-    const created = await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
-    if (!created.ok) throw new Error("setup failed");
-    expect(await setup.households.requireMembership(await setup.as("max"))).toEqual({ householdId: created.household.id });
   });
 });
 

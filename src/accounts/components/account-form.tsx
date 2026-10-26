@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatCents } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
-import type { AccountView } from "../create-accounts";
+import type { AccountView } from "../contract";
 import {
   ACCOUNT_ROLES,
   BANKS,
