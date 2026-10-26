@@ -1,7 +1,7 @@
 import "server-only";
 import type { Accounts } from "@/accounts/server";
 import type { Auth } from "@/auth/server";
-import type { createHouseholds } from "@/households/server";
+import type { Households } from "@/households/server";
 import type { Imports } from "@/import/server";
 import type { Rules } from "@/rules/server";
 import type { Caller } from "@/shared/rls";
@@ -35,7 +35,7 @@ type SeedAuth = {
 
 export type SeedDeps = {
   auth: SeedAuth;
-  households: ReturnType<typeof createHouseholds>;
+  households: Households;
   accounts: Accounts;
   transactions: Transactions;
   imports: Imports;

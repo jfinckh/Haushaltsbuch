@@ -131,10 +131,10 @@ export function TransactionForm({
       method: transaction ? "PATCH" : "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(rule ? { ...body, rule } : body),
-    });
+    }).catch(() => null);
     setPending(false);
-    if (!response.ok) {
-      return setErrors({ form: response.status === 404 ? "transactions.form.notFound" : "transactions.form.saveFailed" });
+    if (!response?.ok) {
+      return setErrors({ form: response?.status === 404 ? "transactions.form.notFound" : "transactions.form.saveFailed" });
     }
     if (rule) {
       const saved = (await response.json().catch(() => ({}))) as { rule?: { created: boolean } };

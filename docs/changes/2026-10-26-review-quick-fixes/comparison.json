@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "base": "ebdafd35fe0501269878c7b96443313da508ea68",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/households-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/households/route.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "export",
+      "id": "households:server:Households",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "export-add:households:server:Households",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "review-quick-fixes",
+  "description": "Review quick fixes",
+  "plan": {
+    "path": "docs/plans/2026-10-26-review-quick-fixes.md",
+    "sha256": "1eca5075909300606727ab4ed6003e583d8ff696056c8c67f1d854b74fca0ac4"
+  },
+  "status": "final",
+  "base": "ebdafd35fe0501269878c7b96443313da508ea68",
+  "report": "Finalized review-quick-fixes (ebdafd3..working-tree)\nFiles: 5 converge, 0 diverge, 0 absent. Elements: 1 converges, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 1 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-review-quick-fixes/map.html\n",
+  "shownAt": "2026-10-26T11:13:13Z"
+}

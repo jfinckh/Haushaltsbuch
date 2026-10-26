@@ -1,9 +1,9 @@
 import "server-only";
-import type { createHouseholds } from "@/households/server";
+import type { Households } from "@/households/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
 type Deps = {
-  households: ReturnType<typeof createHouseholds>;
+  households: Households;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };

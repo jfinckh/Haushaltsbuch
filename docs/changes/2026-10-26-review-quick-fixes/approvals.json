@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:households:server:Households",
+      "itemHash": "sha256:1883163cb390e5a29ea58d811ea8d388f32ee79db6e50f68e9307686b5c927e4",
+      "decision": "approve",
+      "at": "2026-10-26T11:10:50Z",
+      "source": "hook"
+    }
+  ]
+}

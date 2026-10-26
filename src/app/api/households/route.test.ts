@@ -3,11 +3,11 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { householdMembershipRoute, householdsRoute } from "@/app/_lib/households-route";
-import { createHouseholds } from "@/households/server";
+import { createHouseholds, type Households } from "@/households/server";
 import type { Caller, RlsDatabase } from "@/shared/rls";
 import { createTestSession, endTestSessions } from "@/shared/test-sessions";
 
-let households: ReturnType<typeof createHouseholds>;
+let households: Households;
 let db: RlsDatabase;
 let callers: Map<string, Promise<Caller>>;
 
