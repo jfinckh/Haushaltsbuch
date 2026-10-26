@@ -3,7 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import type { ImportView } from "../create-imports";
+import type { ImportView } from "../contract";
 
 type Props = {
   imports: ImportView[];

@@ -2,6 +2,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore, TransactionView } from "@/transactions/server";
+import type { ApplyToAccountResult, Rules, SaveRuleResult } from "./contract";
 import { normalizeText, pickRule, type MatchableRule, type RuleLevel } from "./matching";
 import { bookingRule, ruleSuggestionDismissal } from "./schema";
 import { findSuggestions, type RuleSuggestion, type SuggestionField } from "./suggestions";
@@ -15,10 +16,6 @@ export type RulesOptions = {
   /** Reads bookings and sets their type and category. */
   transactions: Pick<BookingStore, "findBookings" | "checkCategory" | "classifyBookings">;
 };
-
-export type SaveRuleResult =
-  | { ok: true; rule: RuleView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "no-household" };
 
 const CONTEXT = {
   counterparty: "rule.counterpartyPattern",
@@ -55,7 +52,7 @@ function yearBefore(today: string): string {
  * rules and their own private rules (drizzle/0018_rules_functions.sql). Rules run only on bookings
  * the caller may see, and only when the rule's scope fits the booking's account.
  */
-export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOptions) {
+export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOptions): Rules {
   const decrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.decrypt(value, context));
   const encrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.encrypt(value, context));
 
@@ -191,7 +188,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
   }
 
   return {
-    /** The rules the caller may see, most recently changed first. */
     async listRules(caller: Caller): Promise<RuleView[]> {
       return withSession(db, caller, async (tx, userId) => {
         const found = await tx.select().from(bookingRule).orderBy(desc(bookingRule.updatedAt), bookingRule.id);
@@ -199,7 +195,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /** One rule, or null if it does not exist or the caller may not see it. */
     async getRule(caller: Caller, id: string): Promise<RuleView | null> {
       return withSession(db, caller, async (tx, userId) => {
         const row = await findVisible(tx, id);
@@ -207,14 +202,12 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /** Adds a rule in a scope the caller may use. */
     async createRule(caller: Caller, input: unknown): Promise<SaveRuleResult> {
       const parsed = ruleInputSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       return withSession(db, caller, (tx, userId) => insertRule(tx, userId, parsed.data));
     },
 
-    /** Replaces a visible rule (the whole rule); the new scope must be one the caller may use. */
     async updateRule(caller: Caller, id: string, input: unknown): Promise<SaveRuleResult> {
       const parsed = ruleInputSchema.safeParse(input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
@@ -233,7 +226,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /** Deletes a visible rule; false if there is none the caller may see. */
     async deleteRule(caller: Caller, id: string): Promise<boolean> {
       return withSession(db, caller, async (tx) => {
         const deleted = await tx.delete(bookingRule).where(eq(bookingRule.id, id)).returning({ id: bookingRule.id });
@@ -241,12 +233,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /**
-     * "Künftig immer so": a rule for the booking's account with the booking's current type and
-     * category, looking for `pattern` in the chosen field. The pattern must occur in that field.
-     * A transfer or saving rule also takes the booking's sign.
-     * `transferTarget` external: the booking was marked as a transfer from or to an external own account.
-     */
     async createFromBooking(
       caller: Caller,
       bookingId: string,
@@ -277,10 +263,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /**
-     * Rule suggestions from the caller's visible expenses and income of the last 12 months that no
-     * visible rule covers; hidden ones are left out. `today` (YYYY-MM-DD) is for tests.
-     */
     async listSuggestions(caller: Caller, { today = new Date().toISOString().slice(0, 10) }: { today?: string } = {}): Promise<RuleSuggestion[]> {
       return withSession(db, caller, async (tx, userId) => {
         const found = await transactions.findBookings(tx, userId, { from: yearBefore(today), to: today });
@@ -296,7 +278,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /** "Nicht mehr vorschlagen": hides a suggestion for the caller only. Repeating it changes nothing. */
     async dismissSuggestion(caller: Caller, input: unknown): Promise<boolean> {
       const parsed = dismissSuggestionSchema.safeParse(input);
       if (!parsed.success) return false;
@@ -315,7 +296,6 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /** After an import: applies the rules to the new bookings (only those nobody classified yet). */
     async applyToBookings(caller: Caller, bookingIds: string[]): Promise<ApplyResult> {
       if (bookingIds.length === 0) return { applied: 0, transfers: [] };
       return withSession(db, caller, async (tx, userId) => {
@@ -324,8 +304,7 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
       });
     },
 
-    /** Applies the rules to an account's uncategorized expenses and income. */
-    async applyToAccount(caller: Caller, input: unknown): Promise<({ ok: true } & ApplyResult) | { ok: false; reason: "invalid-input" | "not-found" }> {
+    async applyToAccount(caller: Caller, input: unknown): Promise<ApplyToAccountResult> {
       const parsed = applyRulesSchema.safeParse(typeof input === "string" ? { accountId: input } : input);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       const { accountId } = parsed.data;
@@ -338,4 +317,3 @@ export function createRules({ db, crypto: fieldCrypto, transactions }: RulesOpti
   };
 }
 
-export type Rules = ReturnType<typeof createRules>;

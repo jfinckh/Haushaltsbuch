@@ -2,6 +2,7 @@ import { inArray, isNull, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore, TransactionView } from "@/transactions/server";
+import type { RuleTransfer, SharedContributionResult, SharedContributionsResult, Transfers } from "./contract";
 import { transferBooking } from "./schema";
 import { transferSignals, type Member } from "./signals";
 import { proposalActionSchema, transferActionSchema } from "./validation";
@@ -43,10 +44,6 @@ type PairRow = {
 
 type BookingRow = typeof transferBooking.$inferSelect;
 
-export type SharedContributionResult = { ok: true; month: string; cents: number } | { ok: false; reason: "invalid-input" };
-
-export type SharedContributionsResult = { ok: true; months: { month: string; cents: number }[] } | { ok: false; reason: "invalid-input" };
-
 /** The longest series of months sharedContributions computes at once. */
 const MAX_MONTHS = 24;
 
@@ -71,9 +68,6 @@ function monthsBetween(from: string, to: string): string[] {
   }
   return months;
 }
-
-/** A booking a rule typed as transfer or saving; target external: from or to an external own account. */
-export type RuleTransfer = { id: string; target: "external" | null };
 
 function localToday(): string {
   const now = new Date();
@@ -128,7 +122,7 @@ function decisionOf(row: BookingRow | undefined, targetVisible: boolean): Transf
  * another member's private booking and never change it without that member's OK: a likely partner on
  * another member's private account becomes a proposal only its owner sees and decides on.
  */
-export function createTransfers({ db, crypto: fieldCrypto, transactions, today = localToday }: TransfersOptions) {
+export function createTransfers({ db, crypto: fieldCrypto, transactions, today = localToday }: TransfersOptions): Transfers {
   const pairsOf = (tx: RlsTransaction, ids: string[]) =>
     ids.length === 0 ? Promise.resolve([]) : rows<PairRow>(tx, sql`SELECT * FROM transfers_pairs_of(${textArray(ids)})`);
 
@@ -249,14 +243,7 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
     });
   }
 
-  const api = {
-    /**
-     * After an import (or after rules were applied): stores the transfer hints of the bookings (read
-     * in the caller's session) and matches them across all accounts of the household. Bookings a
-     * rule typed as transfer or saving (`ruleTransfers`) wait for a partner; with target external
-     * they are not listed as open. Manual decisions stay. Returns only counts of what the caller may see:
-     * proposals that wait for another member are left out.
-     */
+  const api: Transfers = {
     async matchAfterImport(
       caller: Caller,
       {
@@ -294,10 +281,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /**
-     * A booking's transfer status, or null if the caller may not see it. `members`: the caller's
-     * household members, for the names of hidden partners' owners.
-     */
     async statusOf(caller: Caller, id: string, members: readonly Member[] = []): Promise<TransferStatus | null> {
       return withSession(db, caller, async (tx, userId) => {
         const booking = await findOne(tx, userId, id);
@@ -337,7 +320,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** Open transfers and proposals of an account, or null if the caller may not see it. `members` as for statusOf. */
     async accountOverview(caller: Caller, accountId: string, members: readonly Member[] = []): Promise<AccountTransfers | null> {
       return withSession(db, caller, async (tx, userId) => {
         if (!(await accountIsVisible(tx, accountId))) return null;
@@ -358,7 +340,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** Links two bookings the caller may both see; their current links are dissolved. */
     async link(caller: Caller, id: string, partnerId: string): Promise<"ok" | "not-found" | "invalid"> {
       return withSession(db, caller, async (tx) => {
         const [result] = await rows<{ result: "ok" | "not-found" | "invalid" }>(tx, sql`SELECT transfers_link(${id}, ${partnerId}) AS result`);
@@ -366,7 +347,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** Dissolves the booking's link; the pair is never linked again automatically. */
     async unlink(caller: Caller, id: string): Promise<boolean> {
       return withSession(db, caller, async (tx) => {
         const link = (await pairsOf(tx, [id])).find((pair) => pair.status === "linked");
@@ -383,7 +363,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** Rejects a proposal (or dissolves a link) the caller sees one side of. */
     async rejectProposal(caller: Caller, pairId: string): Promise<boolean> {
       return withSession(db, caller, async (tx) => {
         const [result] = await rows<{ result: boolean }>(tx, sql`SELECT transfers_reject(${pairId}) AS result`);
@@ -391,10 +370,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /**
-     * Sets the type by hand. Expense or income dissolves the link and rules out a partner; transfer
-     * or saving applies to both sides of a linked pair. Matching never changes it again.
-     */
     async setKind(caller: Caller, id: string, kind: TransferKind): Promise<boolean> {
       return withSession(db, caller, async (tx, userId) => {
         const booking = await findOne(tx, userId, id);
@@ -411,7 +386,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /** Marks a booking as a transfer without partner: from or to an external own account, or a visible account. */
     async markWithoutPartner(caller: Caller, id: string, target: NoPartnerTarget): Promise<"ok" | "not-found" | "invalid"> {
       return withSession(db, caller, async (tx, userId) => {
         const booking = await findOne(tx, userId, id);
@@ -431,25 +405,13 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       });
     },
 
-    /**
-     * Net transfers between the caller's own private accounts and shared accounts in a calendar month
-     * (cents, signed as booked on the private side: negative = paid into shared accounts). Counts
-     * bookings of type transfer whose linked partner, or whose target without partner, is on a shared
-     * account. Transfers between own accounts, to an external own account, to a hidden account or
-     * still open do not count. Only the caller's own private bookings are read.
-     */
     async sharedContribution(caller: Caller, month: string): Promise<SharedContributionResult> {
       const result = await sharedContributions(caller, month, month);
       return result.ok ? { ok: true, ...result.months[0] } : result;
     },
 
-    /**
-     * The net contribution (as sharedContribution) of each calendar month from `from` to `to`
-     * (YYYY-MM, at most 24 months), newest first.
-     */
     sharedContributions,
 
-    /** A manual action on a booking, from the API (input checked here). */
     async applyAction(caller: Caller, id: string, input: unknown): Promise<"ok" | "not-found" | "invalid" | "invalid-input"> {
       const parsed = transferActionSchema.safeParse(input);
       if (!parsed.success) return "invalid-input";
@@ -466,7 +428,6 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
       }
     },
 
-    /** Accepts or rejects a proposal, from the API (input checked here). */
     async decideProposal(caller: Caller, pairId: string, input: unknown): Promise<"ok" | "not-found" | "taken" | "invalid-input"> {
       const parsed = proposalActionSchema.safeParse(input);
       if (!parsed.success) return "invalid-input";
@@ -477,4 +438,3 @@ export function createTransfers({ db, crypto: fieldCrypto, transactions, today =
   return api;
 }
 
-export type Transfers = ReturnType<typeof createTransfers>;

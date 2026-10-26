@@ -7,9 +7,9 @@ import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from
 type Deps = {
   transactions: BookingService;
   /** Records a type changed in the booking form as a manual transfer decision. */
-  transfers?: Transfers;
+  transfers?: Pick<Transfers, "setKind">;
   /** Creates a rule from the booking when the form asks for it ("Künftig immer so"). */
-  rules?: Rules;
+  rules?: Pick<Rules, "createFromBooking">;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };

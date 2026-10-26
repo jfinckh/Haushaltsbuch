@@ -4,7 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatCents } from "@/shared/money";
-import type { ImportPreview } from "../create-imports";
+import type { ImportPreview } from "../contract";
 
 type Props = {
   /** The accounts the user may import into (passed by the app). */

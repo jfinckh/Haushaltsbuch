@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { nextCookies, toNextJsHandler } from "better-auth/next-js";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import type { Auth, Inviter } from "./contract";
 import { findOrCreateUser, IDENTITY_SIGN_IN_PATH, safeCallbackPath, zeroTrust, type LoginMode } from "./identity/plugin";
 import { createIdentityVerifier, type IdentityOptions } from "./identity/verify";
 import { invites } from "./invite/plugin";
@@ -99,13 +99,6 @@ export async function hasUserWithEmail(auth: BetterAuthInstance, email: string):
   return user !== null;
 }
 
-export type Inviter = {
-  id: string;
-  name: string;
-  /** When the user accepted this inviter's invite. Tells a newer invite from an older one. */
-  invitedAt: Date;
-};
-
 /** Who invited `userId` most recently, or null. */
 export async function findInviter(auth: BetterAuthInstance, userId: string): Promise<Inviter | null> {
   const { adapter } = await auth.$context;
@@ -150,7 +143,7 @@ export async function sessionForRequest(auth: BetterAuthInstance, mode: LoginMod
 }
 
 /** The auth instance for a Next.js app: route handler plus session helpers for server code. */
-export function createAuth(options: AuthOptions) {
+export function createAuth(options: AuthOptions): Auth {
   const mode = loginMode(options);
   const auth = buildBetterAuth(options, mode);
   const { GET, POST } = toNextJsHandler(auth);
@@ -160,43 +153,22 @@ export function createAuth(options: AuthOptions) {
   }
 
   return {
-    /** Mount at app/api/auth/[...all]/route.ts: `export const { GET, POST } = auth.handler`. */
     handler: { GET, POST },
-    api: auth.api,
-    /** "identity" or "dev". */
     mode: mode.kind,
-    /** The signed-in user and session, or null. Reads request headers, so call it inside <Suspense>. */
     getSession,
-    /** Like getSession, but redirects to `redirectTo` when nobody is signed in. */
-    async requireSession(redirectTo = "/sign-in") {
-      const session = await getSession();
-      if (!session) redirect(redirectTo);
-      return session;
-    },
-    /** Identity mode: the address that starts a session from the provider's token, then goes to `callbackPath`. */
     signInUrl(callbackPath = "/") {
       const query = new URLSearchParams({ callbackURL: safeCallbackPath(callbackPath) });
       return `/api/auth${IDENTITY_SIGN_IN_PATH}?${query}`;
     },
-    /** Where sign-out leads: the provider's logout (identity), else the sign-in page. */
     signOutRedirect: options.mode.kind === "identity" ? options.mode.logoutUrl : "/sign-in",
-    /** Dev mode: signs in as `email` and sets the session cookie. Call it from a server action. */
     async devSignIn(input: { email: string; name?: string }) {
       if (mode.kind !== "dev") throw new Error("Dev sign-in is off");
       await auth.api.devSignIn({ body: input, headers: await headers() });
     },
-    /** Who invited `userId` most recently and when they accepted, or null. */
     getInviter: (userId: string) => findInviter(auth, userId),
-    /**
-     * Display names of the given users (id → name). Server only: callers decide whose names
-     * a user may see and pass only those ids.
-     */
     getUserNames: (ids: readonly string[]) => findUserNames(auth, ids),
-    /** Whether a user with this email exists. Server only, e.g. for the dev seed. */
     userExists: (email: string) => hasUserWithEmail(auth, email),
-    /** A session for the user with this email (created if new). Server only, for the dev seed. */
     ensureUserSession: (input: { email: string; name: string }) => ensureUserSession(auth, input),
   };
 }
 
-export type Auth = ReturnType<typeof createAuth>;

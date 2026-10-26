@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Caller } from "@/shared/rls";
-import { createImports, type Imports, type UploadInput } from "./create-imports";
+import type { Imports, UploadInput } from "./contract";
+import { createImports } from "./create-imports";
 import { createTestDatabase } from "./test-utils";
 
 type Setup = Awaited<ReturnType<typeof createTestDatabase>>;

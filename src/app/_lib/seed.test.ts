@@ -63,10 +63,10 @@ beforeEach(async () => {
   };
 });
 
-/** Signs in as the dev sign-in page does. */
+/** Signs in as an existing or new user, as the dev sign-in does. */
 async function signIn(email: string): Promise<Caller> {
-  const result = await auth.api.devSignIn({ body: { email } });
-  return { sessionToken: result.token };
+  const { sessionToken } = await auth.ensureUserSession({ email, name: email });
+  return { sessionToken };
 }
 
 async function balanceOf(caller: Caller, accountId: string) {
@@ -139,7 +139,7 @@ describe("seedDevData", () => {
   });
 
   it("refuses when only one of the seed users exists, without creating the other", async () => {
-    await auth.api.devSignIn({ body: { name: "Someone", email: SEED_USERS.erika.email } });
+    await auth.ensureUserSession({ name: "Someone", email: SEED_USERS.erika.email });
     expect(await seedDevData(deps)).toEqual({ ok: false, reason: "already-seeded" });
     expect(await auth.userExists(SEED_USERS.max.email)).toBe(false);
   });

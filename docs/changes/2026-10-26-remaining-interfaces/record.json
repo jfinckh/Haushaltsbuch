@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "remaining-interfaces",
+  "description": "Explicit interfaces for import, rules, transfers and auth",
+  "plan": {
+    "path": "docs/plans/2026-10-26-remaining-interfaces.md",
+    "sha256": "326511ba81571b5ea99b874f6397644f315aa4668fd6b40e553bef3f93d1c198"
+  },
+  "status": "final",
+  "base": "979a3ea8357576d8311ddb88348df1ae23d66090",
+  "report": "Finalized remaining-interfaces (979a3ea..working-tree)\nFiles: 18 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-remaining-interfaces/map.html\n",
+  "shownAt": "2026-10-26T14:26:56Z"
+}

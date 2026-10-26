@@ -5,9 +5,9 @@ import type { Transfers } from "@/transfers/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
 type Deps = {
-  transfers: Transfers;
+  transfers: Pick<Transfers, "statusOf" | "accountOverview" | "applyAction" | "decideProposal">;
   /** Creates a rule when a transfer to an external own account is marked "Künftig immer so". */
-  rules?: Rules;
+  rules?: Pick<Rules, "createFromBooking">;
   /** The caller's household members with names: a hidden partner is shown by its owner's name. */
   members?: (caller: Caller) => Promise<{ userId: string; name: string }[]>;
   /** The signed-in caller, or null. */
