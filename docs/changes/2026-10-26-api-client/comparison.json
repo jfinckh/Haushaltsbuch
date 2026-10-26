@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "base": "f467e2ca589343007bdbeeb1a47628788639b873",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/shared/api-client.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/api-client.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-actions.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/components/budget-section.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/create-household-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/household-name-editor.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/components/leave-household-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/components/import-upload.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/apply-rules-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/components/rule-suggestions.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/category-manager.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/delete-transaction-button.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/components/use-transfer-action.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "accounts->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "budgets->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "households->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "import->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "rules->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "transactions->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "transfers->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

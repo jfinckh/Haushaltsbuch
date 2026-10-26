@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type ComponentProps, type FormEvent } from "react";
+import { callApi } from "@/shared/api-client";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { CategorySelect, isCategoryFor, isOwnCategoryKey, TRANSACTION_KINDS, type TransactionKind } from "@/transactions";
 import type { RuleAccount, RuleScope, RuleView } from "../types";
@@ -118,16 +119,11 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
     }
     setPending(true);
     setErrors({});
-    const response = await fetch(rule ? `${action}/${rule.id}` : action, {
-      method: rule ? "PATCH" : "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    }).catch(() => null);
+    const result = await callApi(rule ? `${action}/${rule.id}` : action, { method: rule ? "PATCH" : "POST", json: body });
     setPending(false);
-    if (!response?.ok) {
-      const reason = response && ((await response.json().catch(() => ({}))) as { error?: string }).error;
+    if (!result.ok) {
       const message =
-        response?.status === 404 ? "rules.form.notFound" : reason === "no-household" ? "rules.form.noHousehold" : "rules.form.saveFailed";
+        result.status === 404 ? "rules.form.notFound" : result.error === "no-household" ? "rules.form.noHousehold" : "rules.form.saveFailed";
       return setErrors({ form: message });
     }
     if (onSaved) onSaved();

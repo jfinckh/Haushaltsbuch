@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { callApi } from "@/shared/api-client";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { useState, type FormEvent } from "react";
 import { createHouseholdSchema } from "../validation";
@@ -29,13 +30,10 @@ export function CreateHouseholdForm({ action = "/api/households", redirectTo = "
 
     setPending(true);
     setError(null);
-    const response = await fetch(action, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
+    const result = await callApi(action, { json: parsed.data });
     setPending(false);
-    if (!response.ok && response.status !== 409) return setError("households.create.failed");
+    // 409: the user is already in a household; the target page shows it.
+    if (!result.ok && result.status !== 409) return setError("households.create.failed");
     router.push(redirectTo);
     router.refresh();
   }

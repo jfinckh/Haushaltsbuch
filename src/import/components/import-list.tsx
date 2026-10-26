@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { callApi } from "@/shared/api-client";
 import type { ImportView } from "../contract";
 
 type Props = {
@@ -40,9 +41,9 @@ function ImportRow({ item, accountName, action }: { item: ImportView; accountNam
   async function undo() {
     setPending(true);
     setFailed(false);
-    const response = await fetch(`${action}/${item.id}`, { method: "DELETE" }).catch(() => null);
+    const result = await callApi(`${action}/${item.id}`, { method: "DELETE" });
     setPending(false);
-    if (!response || (!response.ok && response.status !== 404)) return setFailed(true);
+    if (!result.ok && result.status !== 404) return setFailed(true);
     dialog.current?.close();
     router.refresh();
   }

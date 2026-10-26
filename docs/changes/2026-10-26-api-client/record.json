@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "api-client",
+  "description": "Shared typed API client for the browser",
+  "plan": {
+    "path": "docs/plans/2026-10-26-api-client.md",
+    "sha256": "fecacdf132b5fdbb4f0d3b4a7f5116da85524c41c74fdd5d9dd29de1c787ced0"
+  },
+  "status": "final",
+  "base": "f467e2ca589343007bdbeeb1a47628788639b873",
+  "report": "Finalized api-client (f467e2c..working-tree)\nFiles: 18 converge, 0 diverge, 0 absent. Elements: 7 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-api-client/map.html\n",
+  "shownAt": "2026-10-26T16:10:40Z"
+}

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { callApi } from "@/shared/api-client";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { CATEGORY_GROUPS } from "../categories";
 import type { CategoryScopeView, CategoryView } from "../contract";
@@ -22,9 +23,9 @@ type Props = {
 
 /** Sends a JSON request; true when it succeeded, "duplicate" on 409, else false. */
 async function send(url: string, method: string, body: unknown): Promise<true | false | "duplicate"> {
-  const response = await fetch(url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
-  if (response?.status === 409) return "duplicate";
-  return Boolean(response?.ok);
+  const result = await callApi(url, { method, json: body });
+  if (result.status === 409) return "duplicate";
+  return result.ok;
 }
 
 /**

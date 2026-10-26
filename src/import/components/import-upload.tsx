@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { callApi, type ApiResult } from "@/shared/api-client";
 import { formatCents } from "@/shared/money";
 import type { ImportPreview } from "../contract";
 
@@ -16,14 +17,19 @@ type Props = {
 };
 
 type PreviewResponse = { preview: ImportPreview; openingBalance: { willSet: boolean; cents: number | null } };
+type ConfirmResponse = {
+  import: { newCount: number; mergedCount: number };
+  transfers?: { linked: number; proposed: number } | null;
+  rules?: { applied: number } | null;
+};
 type Failure = { reason: string; line?: number };
 
 const ERROR_KEYS = ["invalid-input", "not-found", "too-large", "empty", "unknown-format", "invalid-row", "unsupported-currency", "wrong-bank", "preview-outdated"];
 
-async function failureOf(response: Response): Promise<Failure> {
-  const body = (await response.json().catch(() => null)) as { error?: string; line?: number } | null;
-  const reason = body?.error && ERROR_KEYS.includes(body.error) ? body.error : response.status === 404 ? "not-found" : "failed";
-  return { reason, line: body?.line };
+function failureOf(result: Extract<ApiResult<unknown>, { ok: false }>): Failure {
+  const reason = result.error && ERROR_KEYS.includes(result.error) ? result.error : result.status === 404 ? "not-found" : "failed";
+  const line = (result.body as { line?: unknown } | undefined)?.line;
+  return { reason, line: typeof line === "number" ? line : undefined };
 }
 
 /** Upload a bank export into an account: preview first, then confirm. */
@@ -56,7 +62,7 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     setFailure(null);
   }
 
-  async function send(path: string, merges?: { line: number; transactionId: string }[]): Promise<Response | null> {
+  async function send<T>(path: string, merges?: { line: number; transactionId: string }[]): Promise<T | null> {
     if (!account || !file) {
       setFailure({ reason: "invalid-input" });
       return null;
@@ -67,22 +73,16 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     if (merges) body.set("merges", JSON.stringify(merges));
     setPending(true);
     setFailure(null);
-    try {
-      const response = await fetch(path, { method: "POST", body });
-      if (!response.ok) {
-        const failed = await failureOf(response);
-        setFailure(failed);
-        // The proposals changed: show the preview button again.
-        if (failed.reason === "preview-outdated") setPreview(null);
-        return null;
-      }
-      return response;
-    } catch {
-      setFailure({ reason: "failed" });
+    const result = await callApi<T>(path, { form: body });
+    setPending(false);
+    if (!result.ok) {
+      const failed = failureOf(result);
+      setFailure(failed);
+      // The proposals changed: show the preview button again.
+      if (failed.reason === "preview-outdated") setPreview(null);
       return null;
-    } finally {
-      setPending(false);
     }
+    return result.data;
   }
 
   async function onPreview(event: FormEvent<HTMLFormElement>) {
@@ -90,21 +90,16 @@ export function ImportUpload({ accounts, accountId, action = "/api/imports" }: P
     setDone(null);
     setPreview(null);
     setDeclined(new Set());
-    const response = await send(`${action}/preview`);
-    if (response) setPreview((await response.json()) as PreviewResponse);
+    const response = await send<PreviewResponse>(`${action}/preview`);
+    if (response) setPreview(response);
   }
 
   async function onConfirm() {
     const merges = (preview?.preview.rows ?? []).flatMap((row) =>
       row.merge && !declined.has(row.line) ? [{ line: row.line, transactionId: row.merge.transactionId }] : [],
     );
-    const response = await send(action, merges);
-    if (!response) return;
-    const body = (await response.json()) as {
-      import: { newCount: number; mergedCount: number };
-      transfers?: { linked: number; proposed: number } | null;
-      rules?: { applied: number } | null;
-    };
+    const body = await send<ConfirmResponse>(action, merges);
+    if (!body) return;
     setDone({ count: body.import.newCount, merged: body.import.mergedCount, transfers: body.transfers ?? null, rules: body.rules ?? null });
     setPreview(null);
     setFile(null);

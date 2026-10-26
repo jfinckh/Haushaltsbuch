@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { callApi } from "@/shared/api-client";
 import type { RuleAccount, RuleView } from "../types";
 import { useRuleTexts } from "./use-rule-texts";
 
@@ -76,9 +77,9 @@ function DeleteRuleButton({ id, action }: { id: string; action: string }) {
   async function remove() {
     setPending(true);
     setFailed(false);
-    const response = await fetch(`${action}/${id}`, { method: "DELETE" }).catch(() => null);
+    const result = await callApi(`${action}/${id}`, { method: "DELETE" });
     setPending(false);
-    if (!response?.ok && response?.status !== 404) return setFailed(true);
+    if (!result.ok && result.status !== 404) return setFailed(true);
     router.refresh();
   }
 

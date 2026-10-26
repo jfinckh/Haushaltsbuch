@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { callApi } from "@/shared/api-client";
 import { formatCents, parseGermanAmount } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { isCategoryFor, isOwnCategoryKey, type CategoryCatalog } from "../categories";
@@ -127,18 +128,16 @@ export function TransactionForm({
 
     setPending(true);
     setErrors({});
-    const response = await fetch(transaction ? `${action}/${transaction.id}` : action, {
+    const result = await callApi<{ rule?: { created: boolean } }>(transaction ? `${action}/${transaction.id}` : action, {
       method: transaction ? "PATCH" : "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(rule ? { ...body, rule } : body),
-    }).catch(() => null);
+      json: rule ? { ...body, rule } : body,
+    });
     setPending(false);
-    if (!response?.ok) {
-      return setErrors({ form: response?.status === 404 ? "transactions.form.notFound" : "transactions.form.saveFailed" });
+    if (!result.ok) {
+      return setErrors({ form: result.status === 404 ? "transactions.form.notFound" : "transactions.form.saveFailed" });
     }
     if (rule) {
-      const saved = (await response.json().catch(() => ({}))) as { rule?: { created: boolean } };
-      if (!saved.rule?.created) {
+      if (!result.data?.rule?.created) {
         router.refresh();
         return setErrors({ rule: "transactions.form.ruleFailed" });
       }

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { callApi } from "@/shared/api-client";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { useState, type FormEvent } from "react";
 import { renameHouseholdSchema } from "../validation";
@@ -30,13 +31,9 @@ export function HouseholdNameEditor({ name, action = "/api/households" }: Props)
 
     setPending(true);
     setError(null);
-    const response = await fetch(action, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
+    const result = await callApi(action, { method: "PATCH", json: parsed.data });
     setPending(false);
-    if (!response.ok) return setError("households.rename.failed");
+    if (!result.ok) return setError("households.rename.failed");
     setEditing(false);
     router.refresh();
   }

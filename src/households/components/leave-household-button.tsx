@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { callApi } from "@/shared/api-client";
 
 type Props = {
   /** Whether the user is the only member, so leaving deletes the household. */
@@ -31,9 +32,9 @@ export function LeaveHouseholdButton({
   async function leave() {
     setPending(true);
     setFailed(false);
-    const response = await fetch(action, { method: "DELETE" });
+    const result = await callApi(action, { method: "DELETE" });
     setPending(false);
-    if (!response.ok && response.status !== 404) return setFailed(true);
+    if (!result.ok && result.status !== 404) return setFailed(true);
     dialog.current?.close();
     router.push(redirectTo);
     router.refresh();

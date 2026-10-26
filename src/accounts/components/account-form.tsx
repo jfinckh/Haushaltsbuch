@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { callApi } from "@/shared/api-client";
 import { formatCents } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import type { AccountView } from "../contract";
@@ -96,17 +97,13 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
 
     setPending(true);
     setErrors({});
-    const response = await fetch(account ? `${action}/${account.id}` : action, {
-      method: account ? "PATCH" : "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const result = await callApi(account ? `${action}/${account.id}` : action, { method: account ? "PATCH" : "POST", json: body });
     setPending(false);
-    if (!response.ok) {
+    if (!result.ok) {
       const form =
-        response.status === 403
+        result.status === 403
           ? "accounts.form.notOwner"
-          : response.status === 409
+          : result.status === 409
             ? "accounts.form.noHousehold"
             : "accounts.form.saveFailed";
       return setErrors({ form });

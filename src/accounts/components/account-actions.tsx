@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { callApi, type ApiOptions } from "@/shared/api-client";
 
 type Props = {
   id: string;
@@ -22,12 +23,13 @@ export function AccountActions({ id, archived, shared, action = "/api/accounts",
   const [error, setError] = useState<"changeFailed" | "deleteFailed" | null>(null);
   const [pending, setPending] = useState(false);
 
-  async function send(init: RequestInit, failure: "changeFailed" | "deleteFailed") {
+  async function send(options: ApiOptions, failure: "changeFailed" | "deleteFailed") {
     setPending(true);
     setError(null);
-    const response = await fetch(`${action}/${id}`, init);
+    const result = await callApi(`${action}/${id}`, options);
     setPending(false);
-    if (!response.ok && response.status !== 404) {
+    // An account that is gone already counts as done.
+    if (!result.ok && result.status !== 404) {
       setError(failure);
       return false;
     }
@@ -35,10 +37,7 @@ export function AccountActions({ id, archived, shared, action = "/api/accounts",
   }
 
   async function toggleArchived() {
-    const ok = await send(
-      { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ archived: !archived }) },
-      "changeFailed",
-    );
+    const ok = await send({ method: "PATCH", json: { archived: !archived } }, "changeFailed");
     if (ok) router.refresh();
   }
 

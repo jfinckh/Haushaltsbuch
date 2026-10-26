@@ -6,7 +6,7 @@ Point 6 of the codebase review (2026-10-26).
 
 16 places in 8 parts call `fetch` by hand: build the request, check `response.ok`, read the status, parse JSON, cast it (`as { rule?: … }`). Each does it a little differently.
 
-**Bug:** 11 of them have no handling for a network error (`fetch` rejects): `delete-transaction-button`, `account-actions`, `account-form`, `create-household-form`, `household-name-editor`, `leave-household-button`, `apply-rules-form`, `rule-suggestions`, `budget-section` (one of two calls), `import-upload`, `use-transfer-action`. On a dropped connection the button stays in its loading state and the error goes unhandled. The booking form had the same bug (fixed in the quick fixes).
+**Bug:** 6 of them have no handling for a network error (`fetch` rejects): `delete-transaction-button`, `account-actions`, `account-form`, `create-household-form`, `household-name-editor`, `leave-household-button`. (The first count said 11; a recount during the build found 6, the others already caught it.) On a dropped connection the button stays in its loading state and the error goes unhandled. The booking form had the same bug (fixed in the quick fixes).
 
 ## Design
 
@@ -57,7 +57,7 @@ version: 1
 title: Shared typed API client for the browser
 slug: api-client
 summary: All forms and buttons talk to the server through one small helper. When the connection drops, they now show their error message instead of loading forever. Everything else stays the same.
-why: Sixteen places call the server by hand, each a little differently, and eleven of them hang on a network error. One helper fixes that once and makes the calls shorter.
+why: Sixteen places call the server by hand, each a little differently, and six of them hang on a network error. One helper fixes that once and makes the calls shorter.
 unchanged: Every page, form and message stays the same. The server and its API do not change.
 steps:
   - title: Add one helper for server calls

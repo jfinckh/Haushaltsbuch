@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { callApi } from "@/shared/api-client";
 import type { RuleAccount } from "../types";
 
 type Props = {
@@ -26,15 +27,10 @@ export function ApplyRulesForm({ accounts, action = "/api/rules/apply" }: Props)
     setPending(true);
     setFailed(false);
     setResult(null);
-    const response = await fetch(action, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ accountId }),
-    }).catch(() => null);
+    const result = await callApi<{ applied: number }>(action, { json: { accountId } });
     setPending(false);
-    if (!response?.ok) return setFailed(true);
-    const body = (await response.json()) as { applied: number };
-    setResult(body.applied);
+    if (!result.ok) return setFailed(true);
+    setResult(result.data.applied);
     router.refresh();
   }
 

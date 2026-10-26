@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type ComponentProps, type FormEvent } from "react";
+import { callApi } from "@/shared/api-client";
 import { formatCents, formatEuro } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { CategorySelect, useCategoryName } from "@/transactions";
@@ -82,12 +83,9 @@ function BudgetRow({
   async function send(method: "PATCH" | "DELETE", body?: unknown) {
     setPending(true);
     setError(null);
-    const response = await fetch(`${action}/${budget.id}`, {
-      method,
-      ...(body === undefined ? {} : { headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
-    }).catch(() => null);
+    const result = await callApi(`${action}/${budget.id}`, { method, json: body });
     setPending(false);
-    if (!response?.ok) {
+    if (!result.ok) {
       setError(t("failed"));
       return false;
     }
@@ -186,14 +184,10 @@ function AddBudgetForm({
     if (!parsed.success) return setError(translateKey(parsed.error.issues[0].message));
     setPending(true);
     setError(null);
-    const response = await fetch(action, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(input),
-    }).catch(() => null);
+    const result = await callApi(action, { json: input });
     setPending(false);
-    if (response?.status === 409) return setError(t("add.duplicate"));
-    if (!response?.ok) return setError(t("section.failed"));
+    if (result.status === 409) return setError(t("add.duplicate"));
+    if (!result.ok) return setError(t("section.failed"));
     setCategory("");
     setLimit("");
     router.refresh();

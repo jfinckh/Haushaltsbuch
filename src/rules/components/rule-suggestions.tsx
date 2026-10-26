@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type ComponentProps } from "react";
+import { callApi } from "@/shared/api-client";
 import type { RuleAccount, RuleSuggestion } from "../types";
 import { RuleForm } from "./rule-form";
 
@@ -96,13 +97,9 @@ function DismissButton({ suggestion, action }: { suggestion: RuleSuggestion; act
     setPending(true);
     setFailed(false);
     // The pattern goes in the body, never in the URL.
-    const response = await fetch(action, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ field: suggestion.field, pattern: suggestion.pattern }),
-    }).catch(() => null);
+    const result = await callApi(action, { json: { field: suggestion.field, pattern: suggestion.pattern } });
     setPending(false);
-    if (!response?.ok) return setFailed(true);
+    if (!result.ok) return setFailed(true);
     router.refresh();
   }
 
