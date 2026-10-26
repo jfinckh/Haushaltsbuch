@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "transactions-interfaces",
+  "description": "Explicit interfaces for transactions",
+  "plan": {
+    "path": "docs/plans/2026-10-26-transactions-interfaces.md",
+    "sha256": "a9b63eef29ac544d0e5dd693892bdac3abad2dd8e50d0c0dab1e5cbaea3532ce"
+  },
+  "status": "final",
+  "base": "4c2e2f647b2f8ac45d1352648deb521a14181887",
+  "report": "Finalized transactions-interfaces (4c2e2f6..working-tree)\nFiles: 18 converge, 0 diverge, 0 absent. Elements: 4 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 4 approved.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-transactions-interfaces/map.html\n",
+  "shownAt": "2026-10-26T13:20:43Z"
+}

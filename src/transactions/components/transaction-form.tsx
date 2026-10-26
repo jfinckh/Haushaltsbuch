@@ -6,7 +6,7 @@ import { useState, type FormEvent } from "react";
 import { formatCents, parseGermanAmount } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { isCategoryFor, isOwnCategoryKey, type CategoryCatalog } from "../categories";
-import type { TransactionView } from "../create-transactions";
+import type { TransactionView } from "../contract";
 import { proposedKind, TRANSACTION_KINDS, type TransactionKind } from "../kinds";
 import { today } from "../months";
 import { createTransactionSchema } from "../validation";

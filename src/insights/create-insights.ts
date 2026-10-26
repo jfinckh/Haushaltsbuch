@@ -1,5 +1,5 @@
 import type { Caller } from "@/shared/rls";
-import type { Transactions } from "@/transactions/server";
+import type { BookingFigures } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
 import { currentBalances } from "./balances";
 import { categoryTrends, TREND_MONTHS, type CategoryTrends } from "./category-trends";
@@ -8,7 +8,7 @@ import { yearCategories, yearTotals, type YearTotals } from "./year-overview";
 
 export type InsightsOptions = {
   /** Month totals and balances of the accounts the caller may see. */
-  transactions: Pick<Transactions, "monthSummary" | "monthSummaries" | "categorySpendings" | "balances">;
+  transactions: Pick<BookingFigures, "monthSummary" | "monthSummaries" | "categorySpendings" | "balances">;
   /** The contribution of the caller's own private accounts to shared accounts. */
   transfers: Pick<Transfers, "sharedContribution" | "sharedContributions">;
   /** Today's date (YYYY-MM-DD), for the current year. Default: the local date. */

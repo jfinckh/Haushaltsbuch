@@ -1,7 +1,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import Link from "next/link";
 import { formatEuro } from "@/shared/money";
-import type { TransactionView } from "../create-transactions";
+import type { TransactionView } from "../contract";
 import { useCategoryName } from "./use-category-name";
 
 type Props = {

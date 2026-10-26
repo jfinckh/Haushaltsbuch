@@ -2,5 +2,6 @@
 import "server-only";
 
 export { createCategories, type Categories } from "./create-categories";
-export { createTransactions, type Transactions, type TransactionView } from "./create-transactions";
+export { createTransactions } from "./create-transactions";
+export type { BookingFigures, BookingService, BookingStore, MergedFrom, Transactions, TransactionView } from "./contract";
 export type { TransactionValues } from "./validation";

@@ -4,13 +4,13 @@ import type { Accounts } from "@/accounts/server";
 import type { Imports } from "@/import/server";
 import { formatCents } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
-import type { Transactions } from "@/transactions/server";
+import type { BookingFigures } from "@/transactions/server";
 import { asCaller, json, notFound, type GetCaller } from "./api";
 
 type Deps = {
   imports: Imports;
   accounts: Accounts;
-  transactions: Transactions;
+  transactions: Pick<BookingFigures, "balances">;
   /**
    * Runs first after a confirmed import with the ids of its new bookings: the rules. Returns how many
    * bookings they sorted and which ones became transfers. Its own database transaction: if it

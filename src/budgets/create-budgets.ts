@@ -1,13 +1,13 @@
 import { and, asc, eq, sql, type SQL } from "drizzle-orm";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import type { Transactions } from "@/transactions/server";
+import type { BookingStore } from "@/transactions/server";
 import { budget } from "./schema";
 import { createBudgetSchema, monthSchema, updateBudgetSchema } from "./validation";
 
 export type BudgetsOptions = {
   db: RlsDatabase;
   /** Reads the monthly expense totals of an account and checks a budget's category. */
-  transactions: Pick<Transactions, "expenseTotals" | "checkCategory">;
+  transactions: Pick<BookingStore, "expenseTotals" | "checkCategory">;
 };
 
 /** A budget as callers see it, with its spending in the listed month. No user ids. */

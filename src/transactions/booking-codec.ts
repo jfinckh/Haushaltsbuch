@@ -1,0 +1,66 @@
+import type { FieldCrypto } from "@/shared/field-crypto";
+import { formatIban } from "@/shared/iban";
+import type { TransactionView } from "./contract";
+import type { transaction } from "./schema";
+import type { TransactionValues } from "./validation";
+
+export type TransactionRow = typeof transaction.$inferSelect;
+
+const CONTEXT = {
+  counterparty: "transaction.counterparty",
+  counterpartyIban: "transaction.counterpartyIban",
+  reference: "transaction.reference",
+} as const;
+
+/** Turns stored rows into views and values, and values into encrypted columns. */
+export function createBookingCodec(fieldCrypto: FieldCrypto) {
+  const decrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.decrypt(value, context));
+  const encrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.encrypt(value, context));
+
+  return {
+    /** The booking as `userId` sees it. */
+    toView(row: TransactionRow, userId: string): TransactionView {
+      const iban = decrypt(row.counterpartyIbanEncrypted, CONTEXT.counterpartyIban);
+      return {
+        id: row.id,
+        accountId: row.accountId,
+        date: row.bookingDate,
+        amountCents: row.amountCents,
+        kind: row.kind,
+        category: row.category,
+        counterparty: decrypt(row.counterpartyEncrypted, CONTEXT.counterparty),
+        counterpartyIban: iban && formatIban(iban),
+        reference: decrypt(row.referenceEncrypted, CONTEXT.reference),
+        createdByMe: row.createdByUserId === userId,
+        classifiedBy: row.classifiedBy,
+      };
+    },
+
+    /** The booking's values, decrypted. */
+    toValues(row: TransactionRow): TransactionValues {
+      return {
+        accountId: row.accountId,
+        bookingDate: row.bookingDate,
+        amountCents: row.amountCents,
+        kind: row.kind,
+        category: row.category,
+        counterparty: decrypt(row.counterpartyEncrypted, CONTEXT.counterparty),
+        counterpartyIban: decrypt(row.counterpartyIbanEncrypted, CONTEXT.counterpartyIban),
+        reference: decrypt(row.referenceEncrypted, CONTEXT.reference),
+      };
+    },
+
+    /** The stored columns for a booking's values, encrypted. */
+    toColumns({ counterparty, counterpartyIban, reference, ...plain }: TransactionValues) {
+      return {
+        ...plain,
+        counterpartyEncrypted: encrypt(counterparty, CONTEXT.counterparty),
+        counterpartyIbanEncrypted: encrypt(counterpartyIban, CONTEXT.counterpartyIban),
+        counterpartyIbanIndex: counterpartyIban && fieldCrypto.blindIndex(counterpartyIban, CONTEXT.counterpartyIban),
+        referenceEncrypted: encrypt(reference, CONTEXT.reference),
+      };
+    },
+  };
+}
+
+export type BookingCodec = ReturnType<typeof createBookingCodec>;

@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import type { Transactions, TransactionValues, TransactionView } from "@/transactions/server";
+import type { BookingStore, MergedFrom, TransactionValues, TransactionView } from "@/transactions/server";
 import { fingerprint } from "./fingerprint";
 import { MERGE_DAYS, proposeMerges, shiftDate } from "./merge";
 import { parseBankFile } from "./parsing/detect";
@@ -14,7 +14,7 @@ export type ImportsOptions = {
   /** Encrypts the file, its name and the raw rows; makes the fingerprints. Keys come from the environment. */
   crypto: FieldCrypto;
   /** Writes and removes the bookings, inside the import's database transaction. */
-  transactions: Transactions;
+  transactions: Pick<BookingStore, "findBookings" | "insertBookings" | "deleteBookings" | "mergeImported" | "restoreMerged">;
 };
 
 /** A merge proposal the user accepted: the file's line and the booking entered by hand. */
@@ -143,9 +143,6 @@ async function accountIsVisible(tx: RlsTransaction, accountId: string): Promise<
 }
 
 type ClassifiedRow = ParsedRow & { fingerprint: string; status: PreviewRow["status"]; merge?: TransactionView };
-
-/** A booking's values before a merge, as transactions returns and restores them. */
-type MergedFrom = NonNullable<Awaited<ReturnType<Transactions["mergeImported"]>>>;
 
 const mergeTarget = (booking: TransactionView): MergeTarget => ({
   transactionId: booking.id,

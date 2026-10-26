@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:transactions:server:BookingService",
+      "itemHash": "sha256:0b59f9721259390d50b7d4e5d713e435af5c5efc6b0cc678f5fa8b7d0bc51c78",
+      "decision": "approve",
+      "at": "2026-10-26T13:14:33Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:BookingStore",
+      "itemHash": "sha256:89af570e7799b6873ab6dea4fd91a1620570162818f4258f62397ec597415a11",
+      "decision": "approve",
+      "at": "2026-10-26T13:14:33Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:BookingFigures",
+      "itemHash": "sha256:35ae041c75b2f88c4684bbb940707bdcd535bfb56893d4f7ca369f8d5171438e",
+      "decision": "approve",
+      "at": "2026-10-26T13:14:33Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:transactions:server:MergedFrom",
+      "itemHash": "sha256:8d05f6c99325e02b23e429e45ca7967e90b15c9159053316b9673019b66d76c8",
+      "decision": "approve",
+      "at": "2026-10-26T13:14:33Z",
+      "source": "hook"
+    }
+  ]
+}

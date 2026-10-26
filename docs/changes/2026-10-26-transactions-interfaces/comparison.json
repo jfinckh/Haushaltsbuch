@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "base": "4c2e2f647b2f8ac45d1352648deb521a14181887",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/transactions/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/access.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-codec.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-service.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-store.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-figures.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/create-rules.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/create-transfers.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/create-budgets.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/transactions-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:BookingService",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:BookingStore",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:BookingFigures",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "transactions:server:MergedFrom",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "export-add:transactions:server:BookingService",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:server:BookingStore",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:server:BookingFigures",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:transactions:server:MergedFrom",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

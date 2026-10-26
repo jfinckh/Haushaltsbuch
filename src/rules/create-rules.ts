@@ -1,7 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import type { Transactions, TransactionView } from "@/transactions/server";
+import type { BookingStore, TransactionView } from "@/transactions/server";
 import { normalizeText, pickRule, type MatchableRule, type RuleLevel } from "./matching";
 import { bookingRule, ruleSuggestionDismissal } from "./schema";
 import { findSuggestions, type RuleSuggestion, type SuggestionField } from "./suggestions";
@@ -13,7 +13,7 @@ export type RulesOptions = {
   /** Encrypts the patterns; keys come from the environment. */
   crypto: FieldCrypto;
   /** Reads bookings and sets their type and category. */
-  transactions: Transactions;
+  transactions: Pick<BookingStore, "findBookings" | "checkCategory" | "classifyBookings">;
 };
 
 export type SaveRuleResult =

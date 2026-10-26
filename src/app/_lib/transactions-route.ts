@@ -1,11 +1,11 @@
 import "server-only";
 import type { Rules } from "@/rules/server";
-import type { Transactions } from "@/transactions/server";
+import type { BookingService } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
 import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from "./api";
 
 type Deps = {
-  transactions: Transactions;
+  transactions: BookingService;
   /** Records a type changed in the booking form as a manual transfer decision. */
   transfers?: Transfers;
   /** Creates a rule from the booking when the form asks for it ("Künftig immer so"). */

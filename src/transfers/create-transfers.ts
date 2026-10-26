@@ -1,7 +1,7 @@
 import { inArray, isNull, sql, type SQL } from "drizzle-orm";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
-import type { Transactions, TransactionView } from "@/transactions/server";
+import type { BookingStore, TransactionView } from "@/transactions/server";
 import { transferBooking } from "./schema";
 import { transferSignals, type Member } from "./signals";
 import { proposalActionSchema, transferActionSchema } from "./validation";
@@ -20,7 +20,7 @@ export type TransfersOptions = {
   /** Makes the blind index of mentioned IBANs (same key and context as the accounts' IBAN index). */
   crypto: FieldCrypto;
   /** Reads bookings and changes their type. */
-  transactions: Transactions;
+  transactions: Pick<BookingStore, "findBookings" | "setKind">;
   /** Today's date (YYYY-MM-DD) for the 14-day mark. Default: the local date. */
   today?: () => string;
 };
