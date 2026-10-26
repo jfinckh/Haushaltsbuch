@@ -2,37 +2,21 @@ import "server-only";
 import { z } from "zod";
 import type { Accounts } from "@/accounts/server";
 import type { Imports } from "@/import/server";
-import { formatCents } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
-import type { BookingFigures } from "@/transactions/server";
 import { asCaller, json, notFound, type GetCaller } from "./api";
+import type { ImportWorkflow } from "./import-workflow";
 
 type Deps = {
-  imports: Imports;
-  accounts: Pick<Accounts, "getAccount" | "updateAccount">;
-  transactions: Pick<BookingFigures, "balances">;
-  /**
-   * Runs first after a confirmed import with the ids of its new bookings: the rules. Returns how many
-   * bookings they sorted and which ones became transfers. Its own database transaction: if it
-   * fails, the import stays.
-   */
-  applyRules?: (caller: Caller, bookingIds: string[]) => Promise<RulesApplied>;
-  /**
-   * Runs after the rules with the ids of the new bookings and the rules' transfers: transfer
-   * matching. Its own database transaction: if it fails, the import stays.
-   */
-  afterImport?: (
-    caller: Caller,
-    bookingIds: string[],
-    ruleTransfers: RulesApplied["transfers"],
-  ) => Promise<{ linked: number; proposed: number }>;
+  imports: Pick<Imports, "preview" | "listImports" | "undoImport">;
+  /** Confirms an upload and runs what follows it (rules, transfer matching). */
+  workflow: Pick<ImportWorkflow, "confirm">;
+  /** The account of an upload: whether the caller may see it, and which bank's files fit it. */
+  accounts: Pick<Accounts, "getAccount">;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
 
 type IdContext = { params: Promise<{ id: string }> };
-
-type RulesApplied = { applied: number; transfers: { id: string; target: "external" | null }[] };
 
 /**
  * Larger request bodies are refused before they are read in full: the import part's 1 MB file limit
@@ -99,7 +83,7 @@ async function readLimitedForm(request: Request): Promise<FormData | "too-large"
 }
 
 /** The upload as the import part takes it, for an account the caller may see; else an error response. */
-async function readUpload({ accounts, transactions }: Deps, caller: Caller, request: Request) {
+async function readUpload({ accounts }: Pick<Deps, "accounts">, caller: Caller, request: Request) {
   const form = await readLimitedForm(request);
   if (form === "too-large") return { ok: false as const, error: failed("too-large") };
   const parsed = uploadSchema.safeParse({
@@ -112,7 +96,6 @@ async function readUpload({ accounts, transactions }: Deps, caller: Caller, requ
   // Another member's private account does not exist for this caller: same 404 as an unknown id.
   const account = await accounts.getAccount(caller, accountId);
   if (!account) return { ok: false as const, error: notFound() };
-  const hasBookings = (await transactions.balances(caller))[accountId] !== undefined;
   const input = {
     accountId,
     fileName: file.name,
@@ -120,15 +103,14 @@ async function readUpload({ accounts, transactions }: Deps, caller: Caller, requ
     banks: [...FITTING_BANKS[account.bank]],
     merges,
   };
-  return { ok: true as const, input, hasBookings };
+  return { ok: true as const, input };
 }
 
 /**
  * Handlers for /api/imports. Imports exist only for accounts the caller may see: another member's
  * private account and its imports get the same 404 as unknown ids.
  */
-export function importsRoute(deps: Deps) {
-  const { imports, accounts, getCaller } = deps;
+export function importsRoute({ imports, workflow, accounts, getCaller }: Deps) {
   return {
     /** Query: accountId (optional). */
     async GET(request: Request) {
@@ -145,69 +127,35 @@ export function importsRoute(deps: Deps) {
      */
     async POST(request: Request) {
       return asCaller(getCaller, async (caller) => {
-        const upload = await readUpload(deps, caller, request);
+        const upload = await readUpload({ accounts }, caller, request);
         if (!upload.ok) return upload.error;
-        const result = await imports.confirm(caller, upload.input);
+        const result = await workflow.confirm(caller, upload.input);
         if (!result.ok) return failed(result.reason, result.line);
-        let openingBalanceCents: number | null = null;
-        if (!upload.hasBookings && result.openingBalanceFromFileCents !== null && result.import.newCount > 0) {
-          const updated = await accounts.updateAccount(caller, upload.input.accountId, {
-            openingBalance: formatCents(result.openingBalanceFromFileCents),
-          });
-          if (updated.ok) openingBalanceCents = updated.account.openingBalanceCents;
-        }
-        // Rules first, then matching: matching may still link a booking a rule typed, but never
-        // overrides a rule with its weaker "looks like a transfer" hint. Merged bookings go along: both
-        // leave what a person decided as it is.
-        const bookingIds = [...result.bookingIds, ...result.mergedIds];
-        let rules: RulesApplied | null = null;
-        if (deps.applyRules) {
-          try {
-            rules = await deps.applyRules(caller, bookingIds);
-          } catch (error) {
-            // The import is done; rules can be applied again on the rules page. Log no booking data.
-            console.error("Applying rules after import failed", error instanceof Error ? error.name : "unknown");
-          }
-        }
-        let transfers: { linked: number; proposed: number } | null = null;
-        if (deps.afterImport) {
-          try {
-            transfers = await deps.afterImport(caller, bookingIds, rules?.transfers ?? []);
-          } catch (error) {
-            // The import is done; matching can be redone by hand. Log no booking data.
-            console.error("Transfer matching after import failed", error instanceof Error ? error.name : "unknown");
-          }
-        }
-        return json(
-          { import: result.import, openingBalanceCents, transfers, rules: rules && { applied: rules.applied } },
-          201,
-        );
+        const { openingBalanceCents, transfers, rules } = result;
+        return json({ import: result.import, openingBalanceCents, transfers, rules }, 201);
       });
     },
   };
 }
 
 /** Handlers for /api/imports/preview. */
-export function importPreviewRoute(deps: Deps) {
-  const { imports, getCaller } = deps;
+export function importPreviewRoute({ imports, accounts, getCaller }: Omit<Deps, "workflow">) {
   return {
     /** What importing the file would do (multipart: accountId, file). Stores nothing. */
     async POST(request: Request) {
       return asCaller(getCaller, async (caller) => {
-        const upload = await readUpload(deps, caller, request);
+        const upload = await readUpload({ accounts }, caller, request);
         if (!upload.ok) return upload.error;
         const result = await imports.preview(caller, upload.input);
         if (!result.ok) return failed(result.reason, result.line);
-        const cents = result.preview.openingBalanceFromFileCents;
-        const willSet = !upload.hasBookings && cents !== null && result.preview.counts.new > 0;
-        return json({ preview: result.preview, openingBalance: { willSet, cents: willSet ? cents : null } });
+        return json({ preview: result.preview, openingBalance: result.openingBalance });
       });
     },
   };
 }
 
 /** Handlers for /api/imports/[id]. */
-export function importRoute({ imports, getCaller }: Deps) {
+export function importRoute({ imports, getCaller }: Pick<Deps, "imports" | "getCaller">) {
   return {
     /** Undoes the import: deletes its bookings and the import. */
     async DELETE(_request: Request, { params }: IdContext) {

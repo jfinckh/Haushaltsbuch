@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "base": "4a024b188b30afdaf870b3310e120ac5186ec9fb",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/app/_lib/import-workflow.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-store.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/imports-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/rules-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/preview/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/[id]/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/apply/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/imports/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transfers/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/rules/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/seed.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "edge",
+      "id": "app->accounts",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->import",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->rules",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->transfers",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "import->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

@@ -80,12 +80,20 @@ export type ImportFailure = {
   line?: number;
 };
 
-export type PreviewResult = { ok: true; preview: ImportPreview } | ImportFailure;
+/**
+ * Whether confirming will set the account's opening balance: only for an account without bookings,
+ * when the file states a balance and the import adds bookings. `cents`: the value, else null.
+ */
+export type OpeningBalancePlan = { willSet: boolean; cents: number | null };
+
+export type PreviewResult = { ok: true; preview: ImportPreview; openingBalance: OpeningBalancePlan } | ImportFailure;
 export type ConfirmResult =
   | {
       ok: true;
       import: ImportView;
       openingBalanceFromFileCents: number | null;
+      /** The opening balance this import set (see OpeningBalancePlan), or null if it set none. */
+      openingBalanceCents: number | null;
       /** The bookings this import created (e.g. for transfer matching). */
       bookingIds: string[];
       /** The bookings entered by hand this import merged into. */

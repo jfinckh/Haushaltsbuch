@@ -4,7 +4,7 @@ import { accountIsVisible, visibleAccount } from "@/db-contract/server";
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore, MergedFrom, TransactionView } from "@/transactions/server";
-import type { ConfirmResult, ImportFailure, Imports, ImportView, MergeTarget, PreviewResult, PreviewRow } from "./contract";
+import type { ConfirmResult, ImportFailure, Imports, ImportView, MergeTarget, OpeningBalancePlan, PreviewResult, PreviewRow } from "./contract";
 import { fingerprint } from "./fingerprint";
 import { MERGE_DAYS, proposeMerges, shiftDate } from "./merge";
 import { parseBankFile } from "./parsing/detect";
@@ -16,7 +16,13 @@ export type ImportsOptions = {
   /** Encrypts the file, its name and the raw rows; makes the fingerprints. Keys come from the environment. */
   crypto: FieldCrypto;
   /** Writes and removes the bookings, inside the import's database transaction. */
-  transactions: Pick<BookingStore, "findBookings" | "insertBookings" | "deleteBookings" | "mergeImported" | "restoreMerged">;
+  transactions: Pick<BookingStore, "hasBookings" | "findBookings" | "insertBookings" | "deleteBookings" | "mergeImported" | "restoreMerged">;
+  /**
+   * Sets an account's opening balance inside the import's database transaction (accounts' function,
+   * passed in by the app). Returns the stored value, or null if the caller may not see the account.
+   * Without it, imports never set an opening balance.
+   */
+  setOpeningBalance?: (tx: RlsTransaction, userId: string, accountId: string, cents: number) => Promise<number | null>;
 };
 
 const CONTEXT = {
@@ -61,7 +67,13 @@ const mergeTarget = (booking: TransactionView): MergeTarget => ({
 });
 
 /** The import part. Every call is about the caller's own view; their user id comes from the database. */
-export function createImports({ db, crypto: fieldCrypto, transactions }: ImportsOptions): Imports {
+export function createImports({ db, crypto: fieldCrypto, transactions, setOpeningBalance }: ImportsOptions): Imports {
+  /** Whether confirming sets the opening balance; asked before the import writes anything. */
+  async function openingBalancePlan(tx: RlsTransaction, accountId: string, fromFileCents: number | null, newCount: number): Promise<OpeningBalancePlan> {
+    const willSet = Boolean(setOpeningBalance) && fromFileCents !== null && newCount > 0 && !(await transactions.hasBookings(tx, accountId));
+    return { willSet, cents: willSet ? fromFileCents : null };
+  }
+
   /**
    * Bookings entered by hand that new rows may merge with: visible bookings of the account around the
    * rows' dates without a fingerprint (no import created or merged into them).
@@ -180,12 +192,14 @@ export function createImports({ db, crypto: fieldCrypto, transactions }: Imports
       return withSession(db, caller, async (tx, userId): Promise<PreviewResult> => {
         if (!(await accountIsVisible(tx, upload.accountId))) return { ok: false, reason: "not-found" };
         const rows = await classify(tx, userId, upload.accountId, file);
+        const totals = summary(file, rows);
         return {
           ok: true,
+          openingBalance: await openingBalancePlan(tx, upload.accountId, totals.openingBalanceFromFileCents, totals.counts.new),
           preview: {
             bank: file.bank,
             closingBalanceCents: file.closingBalanceCents,
-            ...summary(file, rows),
+            ...totals,
             rows: rows.map((row) => ({
               line: row.line,
               date: row.bookingDate,
@@ -220,6 +234,7 @@ export function createImports({ db, crypto: fieldCrypto, transactions }: Imports
           row.status === "merge" && !accepted.has(row.line) ? { ...row, status: "new", merge: undefined } : row,
         );
         const { counts, periodFrom, periodTo, openingBalanceFromFileCents } = summary(file, rows);
+        const openingBalance = await openingBalancePlan(tx, upload.accountId, openingBalanceFromFileCents, counts.new);
         const importId = crypto.randomUUID();
 
         await tx.insert(importBatch).values({
@@ -283,9 +298,16 @@ export function createImports({ db, crypto: fieldCrypto, transactions }: Imports
         ];
         if (values.length > 0) await tx.insert(importRow).values(values);
 
+        // Same database transaction as the bookings: the account's balance matches the file, or nothing is saved.
+        let openingBalanceCents: number | null = null;
+        if (openingBalance.willSet && setOpeningBalance) {
+          openingBalanceCents = await setOpeningBalance(tx, userId, upload.accountId, openingBalance.cents!);
+          if (openingBalanceCents === null) throw new Error("Account disappeared during import");
+        }
+
         const [view] = await views(tx, userId, eq(importBatch.id, importId));
         const mergedIds = merged.map((row) => row.merge!.id);
-        return { ok: true, import: view, openingBalanceFromFileCents, bookingIds, mergedIds };
+        return { ok: true, import: view, openingBalanceFromFileCents, openingBalanceCents, bookingIds, mergedIds };
       });
     },
 

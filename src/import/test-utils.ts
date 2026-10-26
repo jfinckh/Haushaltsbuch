@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { createFieldCrypto } from "@/shared/field-crypto";
-import type { Caller } from "@/shared/rls";
+import { rows, type Caller, type RlsTransaction } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
 import { createTransactions } from "@/transactions/server";
 
@@ -62,5 +62,25 @@ export async function createTestDatabase() {
     return result.rows;
   }
 
-  return { db, crypto, transactions, as, householdOf, addAccount, makePrivate, deleteAccount, bookingsOf };
+  /**
+   * Sets an opening balance as accounts does (straight into its table, under row-level security, so
+   * only visible accounts change). Stands in for accounts' setOpeningBalance in import tests.
+   */
+  async function setOpeningBalance(tx: RlsTransaction, _userId: string, accountId: string, cents: number) {
+    const [row] = await rows<{ cents: number }>(
+      tx,
+      sql`UPDATE account SET opening_balance_cents = ${cents} WHERE id = ${accountId} RETURNING opening_balance_cents AS cents`,
+    );
+    return row ? Number(row.cents) : null;
+  }
+
+  /** An account's opening balance, straight from the table. */
+  async function openingBalanceOf(accountId: string) {
+    const result = (await db.execute(sql`SELECT opening_balance_cents AS cents FROM account WHERE id = ${accountId}`)) as unknown as {
+      rows: { cents: string }[];
+    };
+    return Number(result.rows[0].cents);
+  }
+
+  return { db, crypto, transactions, as, householdOf, addAccount, makePrivate, deleteAccount, bookingsOf, setOpeningBalance, openingBalanceOf };
 }

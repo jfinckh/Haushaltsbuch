@@ -29,6 +29,15 @@ export function createBookingStore({ codec, today }: BookingStoreDeps): BookingS
       return inserted.map((row) => row.id);
     },
 
+    async hasBookings(tx, accountId) {
+      const [row] = await tx
+        .select({ id: transaction.id })
+        .from(transaction)
+        .where(and(eq(transaction.accountId, accountId), visible))
+        .limit(1);
+      return Boolean(row);
+    },
+
     async deleteBookings(tx, ids) {
       if (ids.length === 0) return 0;
       const deleted = await tx

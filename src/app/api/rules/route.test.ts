@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createAccounts, type Accounts } from "@/accounts/server";
+import { createImportWorkflow } from "@/app/_lib/import-workflow";
 import { importsRoute } from "@/app/_lib/imports-route";
 import { applyRulesRoute, ruleRoute, rulesRoute } from "@/app/_lib/rules-route";
 import { transactionRoute } from "@/app/_lib/transactions-route";
@@ -54,11 +55,13 @@ const jsonRequest = (method: string, body?: unknown) =>
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
 
+/** Import, rules and matching as the app wires them. */
+const workflow = () => createImportWorkflow({ imports, rules, transfers, householdMembers: async () => MEMBERS });
+
 const deps = (userId: string | null) => ({
   rules,
   getCaller: sessionOf(userId),
-  afterApply: async (c: Caller, ruleTransfers: { id: string; target: "external" | null }[]) =>
-    transfers.matchAfterImport(c, { bookingIds: ruleTransfers.map((r) => r.id), members: MEMBERS, ruleTransfers }),
+  afterApply: (c: Caller, ruleTransfers: { id: string; target: "external" | null }[]) => workflow().afterRulesApplied(c, ruleTransfers),
 });
 const listAs = (userId: string | null) => rulesRoute(deps(userId)).GET();
 const createAs = (userId: string | null, body: unknown) => rulesRoute(deps(userId)).POST(jsonRequest("POST", body));
@@ -89,14 +92,7 @@ async function importFile(userId: string, accountId: string, bytes: Buffer = ING
   const body = new FormData();
   body.set("accountId", accountId);
   body.set("file", new File([new Uint8Array(bytes)], "export.csv", { type: "text/csv" }));
-  const route = importsRoute({
-    imports,
-    accounts,
-    transactions,
-    getCaller: sessionOf(userId),
-    applyRules: (c, bookingIds) => rules.applyToBookings(c, bookingIds),
-    afterImport: (c, bookingIds, ruleTransfers) => transfers.matchAfterImport(c, { bookingIds, members: MEMBERS, ruleTransfers }),
-  });
+  const route = importsRoute({ imports, accounts, getCaller: sessionOf(userId), workflow: workflow() });
   const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
   expect(response.status).toBe(201);
   return response.json();
@@ -129,7 +125,7 @@ beforeEach(async () => {
   });
   accounts = createAccounts({ db, crypto });
   transactions = createTransactions({ db, crypto });
-  imports = createImports({ db, crypto, transactions });
+  imports = createImports({ db, crypto, transactions, setOpeningBalance: accounts.setOpeningBalance });
   transfers = createTransfers({ db, crypto, transactions, today: () => "2026-10-21" });
   rules = createRules({ db, crypto, transactions });
   const households = createHouseholds({ db, householdHoldsData: accounts.householdHasSharedAccounts });

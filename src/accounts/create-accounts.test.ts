@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { InvalidSessionError } from "@/shared/rls";
+import { InvalidSessionError, withSession } from "@/shared/rls";
 import { account } from "./schema";
 import { createTestAccounts, IBAN } from "./test-utils";
 
@@ -163,6 +163,18 @@ describe("privacy", () => {
     expect(await setup.accounts.updateAccount(dora, sharedId, { name: "x" })).toEqual({ ok: false, reason: "not-found" });
     expect(await setup.accounts.deleteAccount(dora, sharedId)).toBe(false);
     expect(await setup.db.select().from(account)).toHaveLength(2);
+  });
+
+  it("sets the opening balance only on accounts the caller may see (import's transaction)", async () => {
+    const setFor = async (userId: string, accountId: string, cents: number) =>
+      withSession(setup.db, await setup.as(userId), (tx, sessionUserId) => setup.accounts.setOpeningBalance(tx, sessionUserId, accountId, cents));
+    expect(await setFor("erika", privateId, 1)).toBeNull();
+    expect(await setFor("dora", sharedId, 1)).toBeNull();
+    expect(await setFor("erika", sharedId, 70326)).toBe(70326);
+    expect(await setFor("max", privateId, -500)).toBe(-500);
+    const max = await setup.as("max");
+    expect(await setup.accounts.getAccount(max, privateId)).toMatchObject({ openingBalanceCents: -500 });
+    expect(await setup.accounts.getAccount(max, sharedId)).toMatchObject({ openingBalanceCents: 70326 });
   });
 
   it("lets every member change a shared account, but only the owner its visibility", async () => {

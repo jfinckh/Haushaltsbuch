@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createAccounts, type Accounts } from "@/accounts/server";
+import { createImportWorkflow } from "@/app/_lib/import-workflow";
 import { importsRoute } from "@/app/_lib/imports-route";
 import { transactionRoute } from "@/app/_lib/transactions-route";
 import { proposalRoute, transferRoute, transfersRoute } from "@/app/_lib/transfers-route";
@@ -62,9 +63,8 @@ async function importFile(userId: string, accountId: string, bytes: Buffer) {
   const route = importsRoute({
     imports,
     accounts,
-    transactions,
     getCaller: sessionOf(userId),
-    afterImport: (c, bookingIds) => transfers.matchAfterImport(c, { bookingIds, members: MEMBERS }),
+    workflow: createImportWorkflow({ imports, transfers, householdMembers: async () => MEMBERS }),
   });
   const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
   expect(response.status).toBe(201);
@@ -108,7 +108,7 @@ beforeEach(async () => {
   });
   accounts = createAccounts({ db, crypto });
   transactions = createTransactions({ db, crypto });
-  imports = createImports({ db, crypto, transactions });
+  imports = createImports({ db, crypto, transactions, setOpeningBalance: accounts.setOpeningBalance });
   transfers = createTransfers({ db, crypto, transactions, today: () => "2026-10-21" });
   const households = createHouseholds({ db, householdHoldsData: accounts.householdHasSharedAccounts });
   await households.createHousehold(await caller("max"), { name: "Mustermann" });

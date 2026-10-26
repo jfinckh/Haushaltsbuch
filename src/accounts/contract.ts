@@ -51,6 +51,12 @@ export interface Accounts {
   deleteAccount(caller: Caller, id: string): Promise<boolean>;
 
   /**
+   * For import, inside its database transaction: sets the opening balance (cents) of an account the
+   * session's user `userId` may see. Returns the stored value, or null if the caller may not see it.
+   */
+  setOpeningBalance(tx: RlsTransaction, userId: string, accountId: string, cents: number): Promise<number | null>;
+
+  /**
    * For households: whether a household holds shared accounts, so it must not be given up when
    * its only member switches households. Runs on the owner connection households passes in.
    */

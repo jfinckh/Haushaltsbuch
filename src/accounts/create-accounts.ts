@@ -197,6 +197,16 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions): Ac
       });
     },
 
+    async setOpeningBalance(tx: RlsTransaction, userId: string, accountId: string, cents: number): Promise<number | null> {
+      if (!Number.isSafeInteger(cents)) throw new Error("Opening balance must be whole cents");
+      const [updated] = await tx
+        .update(account)
+        .set({ openingBalanceCents: cents, updatedAt: new Date() })
+        .where(and(eq(account.id, accountId), visibleTo(userId)))
+        .returning({ openingBalanceCents: account.openingBalanceCents });
+      return updated?.openingBalanceCents ?? null;
+    },
+
     async householdHasSharedAccounts(tx: RlsTransaction, householdId: string): Promise<boolean> {
       const [row] = await tx
         .select({ id: account.id })

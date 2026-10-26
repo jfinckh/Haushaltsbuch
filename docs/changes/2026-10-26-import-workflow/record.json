@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "import-workflow",
+  "description": "Import workflow out of the routes, opening balance in the import's transaction",
+  "plan": {
+    "path": "docs/plans/2026-10-26-import-workflow.md",
+    "sha256": "16c36f5e1d96e0bcbe5c6b68ffd83714935c6b6e9315657771a117aa20fc2cfb"
+  },
+  "status": "final",
+  "base": "4a024b188b30afdaf870b3310e120ac5186ec9fb",
+  "report": "Finalized import-workflow (4a024b1..working-tree)\nFiles: 22 converge, 0 diverge, 0 absent. Elements: 5 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-import-workflow/map.html\n",
+  "shownAt": "2026-10-26T15:18:11Z"
+}

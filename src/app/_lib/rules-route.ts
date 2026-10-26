@@ -6,10 +6,10 @@ import { asCaller, invalidInput, json, notFound, readJson, type GetCaller } from
 type Deps = {
   rules: Rules;
   /**
-   * Runs after rules were applied on demand with the bookings that became transfers, e.g. transfer
-   * matching. If it fails, the rules' changes stay.
+   * Runs after rules were applied on demand with the bookings that became transfers: transfer
+   * matching (the import workflow). It handles its own errors; the rules' changes stay.
    */
-  afterApply?: (caller: Caller, transfers: { id: string; target: "external" | null }[]) => Promise<unknown>;
+  afterApply?: (caller: Caller, transfers: { id: string; target: "external" | null }[]) => Promise<void>;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
@@ -72,14 +72,7 @@ export function applyRulesRoute({ rules, afterApply, getCaller }: Deps) {
       return asCaller(getCaller, async (caller) => {
         const result = await rules.applyToAccount(caller, await readJson(request));
         if (!result.ok) return failed(result.reason);
-        if (afterApply && result.transfers.length > 0) {
-          try {
-            await afterApply(caller, result.transfers);
-          } catch (error) {
-            // The rules' changes stay; matching runs again with the next import. Log no booking data.
-            console.error("Transfer matching after applying rules failed", error instanceof Error ? error.name : "unknown");
-          }
-        }
+        if (afterApply) await afterApply(caller, result.transfers);
         return json({ applied: result.applied });
       });
     },

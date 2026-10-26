@@ -7,7 +7,7 @@ import type { Rules } from "@/rules/server";
 import type { Caller } from "@/shared/rls";
 import type { Transactions } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
-import { importsRoute } from "./imports-route";
+import { createImportWorkflow } from "./import-workflow";
 
 // Seed data for local development (docs/konzept.md, "Lokal starten"): two users, their household,
 // the accounts from the concept and the four test files, imported like an upload in the browser.
@@ -69,27 +69,14 @@ async function createAccount(accounts: Accounts, caller: Caller, input: Record<s
   return result.accounts;
 }
 
-/** Uploads a file through the app's import handler: import, opening balance, rules, matching. */
+/** Imports a file as an upload does: import with opening balance, rules, matching. */
 async function upload(deps: SeedDeps, caller: Caller, accountId: string, name: string, bytes: Uint8Array) {
-  const { imports, accounts, transactions, rules, transfers, householdMembers } = deps;
-  // Same wiring as src/app/api/imports/route.ts.
-  const route = importsRoute({
-    imports,
-    accounts,
-    transactions,
-    getCaller: async () => caller,
-    applyRules: (c, bookingIds) => rules.applyToBookings(c, bookingIds),
-    afterImport: async (c, bookingIds, ruleTransfers) =>
-      transfers.matchAfterImport(c, { bookingIds, members: await householdMembers(c), ruleTransfers }),
-  });
-  const body = new FormData();
-  body.set("accountId", accountId);
-  body.set("file", new File([new Uint8Array(bytes)], name, { type: "text/csv" }));
-  const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
-  const json = await response.json();
-  // Only the status and the error code: never booking data.
-  if (response.status !== 201) throw new Error(`Importing ${name} failed: ${response.status} ${json.error ?? ""}`);
-  return { newCount: json.import.newCount as number, linked: (json.transfers?.linked ?? 0) as number };
+  // Same workflow as src/app/api/imports/route.ts.
+  const workflow = createImportWorkflow(deps);
+  const result = await workflow.confirm(caller, { accountId, fileName: name, bytes });
+  // Only the error code: never booking data.
+  if (!result.ok) throw new Error(`Importing ${name} failed: ${result.reason}`);
+  return { newCount: result.import.newCount, linked: result.transfers?.linked ?? 0 };
 }
 
 /** Creates the seed users, household and accounts and imports the test files. */

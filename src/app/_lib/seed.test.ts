@@ -52,7 +52,7 @@ beforeEach(async () => {
     households,
     accounts,
     transactions,
-    imports: createImports({ db, crypto, transactions }),
+    imports: createImports({ db, crypto, transactions, setOpeningBalance: accounts.setOpeningBalance }),
     rules: createRules({ db, crypto, transactions }),
     transfers: createTransfers({ db, crypto, transactions }),
     householdMembers: householdMembersOf({

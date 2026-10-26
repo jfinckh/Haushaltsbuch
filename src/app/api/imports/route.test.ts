@@ -4,6 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
+import { createImportWorkflow } from "@/app/_lib/import-workflow";
 import { importPreviewRoute, importRoute, importsRoute, MAX_UPLOAD_BYTES } from "@/app/_lib/imports-route";
 import { createAccounts, type Accounts } from "@/accounts/server";
 import { createHouseholds } from "@/households/server";
@@ -37,7 +38,14 @@ function sessionOf(userId: string | null) {
 }
 
 const caller = async (userId: string) => (await sessionOf(userId)())!;
-const deps = (userId: string | null) => ({ imports, accounts, transactions, getCaller: sessionOf(userId) });
+type Flow = Omit<Parameters<typeof createImportWorkflow>[0], "imports" | "householdMembers">;
+/** The routes' dependencies; `flow`: the workflow's rules and matching (none by default). */
+const deps = (userId: string | null, flow: Flow = {}) => ({
+  imports,
+  accounts,
+  getCaller: sessionOf(userId),
+  workflow: createImportWorkflow({ imports, householdMembers: async () => [], ...flow }),
+});
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
 
 function upload(accountId: string, bytes: Buffer = ING, name = "Umsatzanzeige.csv") {
@@ -88,7 +96,7 @@ beforeEach(async () => {
   });
   accounts = createAccounts({ db, crypto });
   transactions = createTransactions({ db, crypto });
-  imports = createImports({ db, crypto, transactions });
+  imports = createImports({ db, crypto, transactions, setOpeningBalance: accounts.setOpeningBalance });
   rules = createRules({ db, crypto, transactions });
   const households = createHouseholds({ db, householdHoldsData: accounts.householdHasSharedAccounts });
   await households.createHousehold(await caller("max"), { name: "Mustermann" });
@@ -147,13 +155,16 @@ describe("after a confirmed import", () => {
     const body = new FormData();
     body.set("accountId", maxPrivate);
     body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
-    const route = importsRoute({
-      ...deps("max"),
-      afterImport: async (_caller, bookingIds) => {
-        calls.push(bookingIds);
-        return { linked: 2, proposed: 1 };
-      },
-    });
+    const route = importsRoute(
+      deps("max", {
+        transfers: {
+          matchAfterImport: async (_caller, { bookingIds }) => {
+            calls.push(bookingIds);
+            return { linked: 2, proposed: 1 };
+          },
+        },
+      }),
+    );
     const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
     expect(response.status).toBe(201);
     expect((await response.json()).transfers).toEqual({ linked: 2, proposed: 1 });
@@ -166,18 +177,23 @@ describe("after a confirmed import", () => {
     const body = new FormData();
     body.set("accountId", maxPrivate);
     body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
-    const route = importsRoute({
-      ...deps("max"),
-      applyRules: async (_caller, bookingIds) => {
-        order.push("rules");
-        return { applied: 2, transfers: [{ id: bookingIds[0], target: "external" as const }] };
-      },
-      afterImport: async (_caller, bookingIds, ruleTransfers) => {
-        order.push("matching");
-        expect(ruleTransfers).toEqual([{ id: bookingIds[0], target: "external" }]);
-        return { linked: 0, proposed: 0 };
-      },
-    });
+    const route = importsRoute(
+      deps("max", {
+        rules: {
+          applyToBookings: async (_caller, bookingIds) => {
+            order.push("rules");
+            return { applied: 2, transfers: [{ id: bookingIds[0], target: "external" as const }] };
+          },
+        },
+        transfers: {
+          matchAfterImport: async (_caller, { bookingIds, ruleTransfers }) => {
+            order.push("matching");
+            expect(ruleTransfers).toEqual([{ id: bookingIds[0], target: "external" }]);
+            return { linked: 0, proposed: 0 };
+          },
+        },
+      }),
+    );
     const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
     expect(response.status).toBe(201);
     expect((await response.json()).rules).toEqual({ applied: 2 });
@@ -189,16 +205,21 @@ describe("after a confirmed import", () => {
     const body = new FormData();
     body.set("accountId", maxPrivate);
     body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
-    const route = importsRoute({
-      ...deps("max"),
-      applyRules: async () => {
-        throw new Error("boom");
-      },
-      afterImport: async (_caller, _ids, ruleTransfers) => {
-        matched = ruleTransfers.length === 0;
-        return { linked: 0, proposed: 0 };
-      },
-    });
+    const route = importsRoute(
+      deps("max", {
+        rules: {
+          applyToBookings: async () => {
+            throw new Error("boom");
+          },
+        },
+        transfers: {
+          matchAfterImport: async (_caller, { ruleTransfers = [] }) => {
+            matched = ruleTransfers.length === 0;
+            return { linked: 0, proposed: 0 };
+          },
+        },
+      }),
+    );
     const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
     expect(response.status).toBe(201);
     expect((await response.json()).rules).toBeNull();
@@ -210,12 +231,15 @@ describe("after a confirmed import", () => {
     const body = new FormData();
     body.set("accountId", maxPrivate);
     body.set("file", new File([new Uint8Array(ING)], "Umsatzanzeige.csv", { type: "text/csv" }));
-    const route = importsRoute({
-      ...deps("max"),
-      afterImport: async () => {
-        throw new Error("boom");
-      },
-    });
+    const route = importsRoute(
+      deps("max", {
+        transfers: {
+          matchAfterImport: async () => {
+            throw new Error("boom");
+          },
+        },
+      }),
+    );
     const response = await route.POST(new Request("http://localhost/api/imports", { method: "POST", body }));
     expect(response.status).toBe(201);
     expect((await response.json()).transfers).toBeNull();
@@ -381,17 +405,22 @@ describe("merging bookings entered by hand", () => {
     });
     expect(rule.ok).toBe(true);
     const seen: { rules: string[]; matching: string[] } = { rules: [], matching: [] };
-    const response = await importsRoute({
-      ...deps("max"),
-      applyRules: async (who, ids) => {
-        seen.rules = ids;
-        return rules.applyToBookings(who, ids);
-      },
-      afterImport: async (_who, ids) => {
-        seen.matching = ids;
-        return { linked: 0, proposed: 0 };
-      },
-    }).POST(uploadWith(maxPrivate, [{ line: 15, transactionId: booking.id }]));
+    const response = await importsRoute(
+      deps("max", {
+        rules: {
+          applyToBookings: async (who, ids) => {
+            seen.rules = ids;
+            return rules.applyToBookings(who, ids);
+          },
+        },
+        transfers: {
+          matchAfterImport: async (_who, { bookingIds }) => {
+            seen.matching = bookingIds;
+            return { linked: 0, proposed: 0 };
+          },
+        },
+      }),
+    ).POST(uploadWith(maxPrivate, [{ line: 15, transactionId: booking.id }]));
     expect(response.status).toBe(201);
     expect((await response.json()).import).toMatchObject({ newCount: 28, mergedCount: 1 });
     expect(seen.rules).toContain(booking.id);

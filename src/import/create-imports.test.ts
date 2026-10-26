@@ -44,7 +44,7 @@ async function preview(caller: Caller, input: UploadInput) {
 
 beforeEach(async () => {
   setup = await createTestDatabase();
-  imports = createImports({ db: setup.db, crypto: setup.crypto, transactions: setup.transactions });
+  imports = createImports({ db: setup.db, crypto: setup.crypto, transactions: setup.transactions, setOpeningBalance: setup.setOpeningBalance });
   await setup.householdOf("home", "max", "erika");
   await setup.householdOf("other", "dora");
   await setup.addAccount("max-private", "max");
@@ -192,6 +192,48 @@ describe("confirm", () => {
     for (const plain of ["Umsatzanzeige", "Trade Republic", "MUSTERFIRMA", "DE94", "703,26", "Miete"]) {
       expect(stored).not.toContain(plain);
     }
+  });
+});
+
+describe("opening balance", () => {
+  it("sets it with the first import into an empty account, so the balance matches the file", async () => {
+    expect(await imports.preview(max, upload("max-private"))).toMatchObject({
+      openingBalance: { willSet: true, cents: 180000 },
+    });
+    expect((await confirm(max, upload("max-private"))).openingBalanceCents).toBe(180000);
+    expect(await setup.openingBalanceOf("max-private")).toBe(180000);
+    const sum = (await setup.bookingsOf("max-private")).reduce((total, b) => total + Number(b.amount_cents), 0);
+    expect(180000 + sum).toBe(70326);
+  });
+
+  it("leaves it alone when the account already has bookings or the import adds none", async () => {
+    await confirm(max, upload("max-private", olderIngExport(3)));
+    const result = await imports.preview(max, upload("max-private"));
+    expect(result).toMatchObject({ ok: true, openingBalance: { willSet: false, cents: null } });
+    expect((await confirm(max, upload("max-private"))).openingBalanceCents).toBeNull();
+    expect((await confirm(max, upload("max-private"))).openingBalanceCents).toBeNull();
+  });
+
+  it("is saved together with the import: if setting it fails, nothing is imported", async () => {
+    const failing = createImports({
+      db: setup.db,
+      crypto: setup.crypto,
+      transactions: setup.transactions,
+      setOpeningBalance: async () => {
+        throw new Error("boom");
+      },
+    });
+    await expect(failing.confirm(max, upload("max-private"))).rejects.toThrow();
+    expect(await setup.bookingsOf("max-private")).toEqual([]);
+    expect(await imports.listImports(max)).toEqual([]);
+  });
+
+  it("is never set without the accounts function", async () => {
+    const plain = createImports({ db: setup.db, crypto: setup.crypto, transactions: setup.transactions });
+    expect(await plain.preview(max, upload("max-private"))).toMatchObject({ openingBalance: { willSet: false, cents: null } });
+    const result = await plain.confirm(max, upload("max-private"));
+    expect(result).toMatchObject({ ok: true, openingBalanceCents: null });
+    expect(await setup.openingBalanceOf("max-private")).toBe(0);
   });
 });
 

@@ -120,6 +120,9 @@ export interface BookingStore {
    */
   insertBookings(tx: RlsTransaction, userId: string, values: TransactionValues[]): Promise<string[]>;
 
+  /** Whether a visible account has any bookings the caller may see. */
+  hasBookings(tx: RlsTransaction, accountId: string): Promise<boolean>;
+
   /** Deletes the visible bookings among `ids`; returns how many. */
   deleteBookings(tx: RlsTransaction, ids: string[]): Promise<number>;
 
