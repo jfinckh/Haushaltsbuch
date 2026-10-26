@@ -32,8 +32,9 @@ function routeAs(userId: string | null) {
   return householdsRoute({ households, getCaller: sessionOf(userId) });
 }
 
-function membershipAs(userId: string | null) {
-  return householdMembershipRoute({ households, getCaller: sessionOf(userId) });
+/** `invite`: the invite auth has on record for the caller. */
+function membershipAs(userId: string | null, invite: { inviterId: string; invitedAt: Date } | null = null) {
+  return householdMembershipRoute({ households, getCaller: sessionOf(userId), currentInvite: async () => invite });
 }
 
 function post(body: unknown) {
@@ -108,11 +109,25 @@ describe("/api/households/membership", () => {
 
     const first = await membershipAs("erika").DELETE();
     expect(first.status).toBe(200);
-    expect(await first.json()).toEqual({ householdDeleted: false });
+    expect(await first.json()).toEqual({ householdDeleted: false, joined: false });
     expect((await routeAs("erika").GET()).status).toBe(404);
 
-    expect(await (await membershipAs("max").DELETE()).json()).toEqual({ householdDeleted: true });
+    expect(await (await membershipAs("max").DELETE()).json()).toEqual({ householdDeleted: true, joined: false });
     expect((await routeAs("max").GET()).status).toBe(404);
+  });
+
+  it("joins the inviter's household right after leaving, as the kept-household notice promises", async () => {
+    await routeAs("max").POST(post({ name: "Mustermann" }));
+    await routeAs("erika").POST(post({ name: "Erikas" }));
+    await households.joinInvitersHousehold((await sessionOf("dora")())!, { inviterId: "erika", invitedAt: new Date(1000) });
+    const fromMax = { inviterId: "max", invitedAt: new Date(2000) };
+    // Erika's household has another member, so the invite stays open.
+    expect(await households.joinInvitersHousehold((await sessionOf("erika")())!, fromMax)).toMatchObject({ keptReason: "other-members" });
+
+    const left = await membershipAs("erika", fromMax).DELETE();
+    expect(await left.json()).toEqual({ householdDeleted: false, joined: true });
+    expect((await (await routeAs("erika").GET()).json()).household).toMatchObject({ name: "Mustermann", memberCount: 2 });
+    expect((await (await routeAs("dora").GET()).json()).household).toMatchObject({ name: "Erikas", memberCount: 1 });
   });
 
   it("never removes anyone from another household", async () => {

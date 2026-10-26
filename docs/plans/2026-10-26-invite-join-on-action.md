@@ -114,4 +114,14 @@ files:
     change: changed
     purpose: Banner texts (English).
 signoff: []
+amendments:
+  - id: A1
+    at: 2026-10-26T15:47:16Z
+    on: file
+    action: add
+    item:
+      path: src/app/_lib/current-invite.ts
+      change: new
+      purpose: Reads the signed-in user's invite from auth's record, for the server action and the leave route.
+    reason: Every export of a server action file can be called from the browser, so the shared helper must live in its own file.
 ```

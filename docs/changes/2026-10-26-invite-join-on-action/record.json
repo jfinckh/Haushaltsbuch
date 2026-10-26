@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "invite-join-on-action",
+  "description": "Join the inviter's household on an action, not while rendering",
+  "plan": {
+    "path": "docs/plans/2026-10-26-invite-join-on-action.md",
+    "sha256": "5568d02367a129efcb49282b8d490416b6b3976299c26c2cbe34f8d51bcc7693"
+  },
+  "status": "final",
+  "base": "ac2dd04ee8d5bc365c9f3b239706203231a189fc",
+  "report": "Finalized invite-join-on-action (ac2dd04..working-tree)\nFiles: 15 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-invite-join-on-action/map.html\n",
+  "shownAt": "2026-10-26T15:47:28Z"
+}

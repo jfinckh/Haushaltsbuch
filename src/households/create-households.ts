@@ -6,9 +6,11 @@ import type {
   Household,
   Households,
   JoinResult,
+  KeptReason,
   LeaveHouseholdResult,
   Member,
   Membership,
+  PendingInvite,
   RenameHouseholdResult,
 } from "./contract";
 import { household, householdInviteUse, householdMember } from "./schema";
@@ -106,6 +108,35 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
     return Boolean(used);
   }
 
+  type InviteState =
+    | { kind: "none"; own: Membership | null }
+    | { kind: "same-household"; own: Membership }
+    | { kind: "open"; own: Membership | null; inviters: Membership };
+
+  /** Where an invite stands for `userId`, without changing anything. */
+  async function inviteState(userId: string, invite: AcceptedInvite | null): Promise<InviteState> {
+    const own = await findMembership(userId);
+    if (!invite || invite.inviterId === userId) return { kind: "none", own };
+    const inviters = await findMembership(invite.inviterId);
+    if (!inviters) return { kind: "none", own };
+    if (own?.householdId === inviters.householdId) return { kind: "same-household", own };
+    if (await inviteUsed(userId, invite)) return { kind: "none", own };
+    return { kind: "open", own, inviters };
+  }
+
+  /**
+   * Owner connection. Why the own household must be kept when joining another: it has other
+   * members, or other parts keep data in it; null if it may be given up. `lock` locks it first.
+   */
+  async function keptReasonFor(tx: RlsTransaction, own: Membership | null, lock: boolean): Promise<KeptReason | null> {
+    if (!own) return null;
+    if (lock) await tx.select({ id: household.id }).from(household).where(eq(household.id, own.householdId)).for("update");
+    const [members] = await tx.select({ value: count() }).from(householdMember).where(eq(householdMember.householdId, own.householdId));
+    if (members.value > 1) return "other-members";
+    if (householdHoldsData && (await householdHoldsData(tx, own.householdId))) return "holds-data";
+    return null;
+  }
+
   return {
     getMembership,
     getHousehold,
@@ -188,31 +219,29 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
       return { ok: true, household: created };
     },
 
+    async pendingInvite(caller: Caller, invite: AcceptedInvite | null): Promise<PendingInvite | null> {
+      const state = await inviteState(await sessionUserId(caller), invite);
+      if (state.kind !== "open") return null;
+      const keptReason = await db.transaction((tx) => keptReasonFor(tx, state.own, false));
+      return keptReason ? { canJoin: false, keptReason } : { canJoin: true };
+    },
+
     async joinInvitersHousehold(caller: Caller, invite: AcceptedInvite | null): Promise<JoinResult> {
       const userId = await sessionUserId(caller);
-      const own = await findMembership(userId);
-      const unchanged: JoinResult = { membership: own, keptOwnHousehold: false, keptReason: null };
-      if (!invite || invite.inviterId === userId) return unchanged;
-      const inviters = await findMembership(invite.inviterId);
-      if (!inviters) return unchanged;
-      if (own?.householdId === inviters.householdId) {
+      const state = await inviteState(userId, invite);
+      const unchanged: JoinResult = { membership: state.own, keptOwnHousehold: false, keptReason: null };
+      if (state.kind === "none" || !invite) return unchanged;
+      if (state.kind === "same-household") {
         await claimInvite(db, userId, invite);
         return unchanged;
       }
-      if (await inviteUsed(userId, invite)) return unchanged;
+      const { own, inviters } = state;
 
       // Owner connection: crosses households, checked above and again under the lock below.
-      const keptReason = await db.transaction(async (tx): Promise<JoinResult["keptReason"]> => {
-        if (own) {
-          await tx.select({ id: household.id }).from(household).where(eq(household.id, own.householdId)).for("update");
-          const [members] = await tx
-            .select({ value: count() })
-            .from(householdMember)
-            .where(eq(householdMember.householdId, own.householdId));
-          // Only an empty household is given up: no other members, and no data other parts keep in it.
-          if (members.value > 1) return "other-members";
-          if (householdHoldsData && (await householdHoldsData(tx, own.householdId))) return "holds-data";
-        }
+      const keptReason = await db.transaction(async (tx): Promise<KeptReason | null> => {
+        // Only an empty household is given up: no other members, and no data other parts keep in it.
+        const kept = await keptReasonFor(tx, own, true);
+        if (kept) return kept;
         if (!(await claimInvite(tx, userId, invite))) return null;
         if (own) await tx.delete(household).where(eq(household.id, own.householdId));
         await tx

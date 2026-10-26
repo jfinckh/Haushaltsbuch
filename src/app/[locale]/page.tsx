@@ -6,12 +6,12 @@ import { BudgetSection } from "@/budgets";
 import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { bookingsHref } from "@/app/_lib/bookings-href";
 import { accounts } from "@/app/_lib/accounts";
-import { auth } from "@/app/_lib/auth";
 import { budgets } from "@/app/_lib/budgets";
 import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { households } from "@/app/_lib/households";
 import { insights } from "@/app/_lib/insights";
+import { PendingInvite } from "@/app/_lib/pending-invite";
 import { transactions } from "@/app/_lib/transactions";
 import { AppShell, PageHeader, Section } from "@/app/_lib/app-shell";
 import { ALL_MINE, selectAccount } from "@/insights";
@@ -42,11 +42,6 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ? 
  */
 async function Dashboard({ searchParams }: Props) {
   const { user, caller } = await requireCaller("/sign-in");
-  const inviter = await auth.getInviter(user.id);
-  const { keptReason } = await households.joinInvitersHousehold(
-    caller,
-    inviter && { inviterId: inviter.id, invitedAt: inviter.invitedAt },
-  );
   const household = await households.getHousehold(caller);
   if (!household) redirect("/household/new");
   // Only accounts the caller may see; any other id falls back to the first active account.
@@ -68,15 +63,7 @@ async function Dashboard({ searchParams }: Props) {
         }
       />
       <div className="flex flex-col gap-6">
-        {keptReason && inviter && (
-          <div role="status" className="alert alert-info alert-soft">
-            <span>
-              {keptReason === "other-members"
-                ? t("keptOtherMembers", { name: inviter.name })
-                : t("keptSharedAccounts", { name: inviter.name })}
-            </span>
-          </div>
-        )}
+        <PendingInvite caller={caller} userId={user.id} />
         {selected ? (
           <>
             <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/" />

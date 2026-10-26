@@ -198,6 +198,50 @@ describe("joining through an invite", () => {
   });
 });
 
+describe("a pending invite", () => {
+  const pending = async (userId: string, from: ReturnType<typeof invite> | null) =>
+    setup.households.pendingInvite(await setup.as(userId), from);
+
+  it("is null when nothing would change", async () => {
+    expect(await pending("erika", null)).toBeNull();
+    expect(await pending("erika", invite("max"))).toBeNull(); // inviter has no household yet
+    await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    expect(await pending("max", invite("max"))).toBeNull(); // own invite
+    await setup.households.joinInvitersHousehold(await setup.as("erika"), invite("max"));
+    expect(await pending("erika", invite("max"))).toBeNull(); // already in it
+  });
+
+  it("tells whether the user can join now, and changes nothing", async () => {
+    const maxs = await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    const own = await setup.households.createHousehold(await setup.as("erika"), { name: "Erikas" });
+    if (!maxs.ok || !own.ok) throw new Error("setup failed");
+    expect(await pending("erika", invite("max"))).toEqual({ canJoin: true });
+    expect(await pending("erika", invite("max"))).toEqual({ canJoin: true });
+    expect(await setup.households.getMembership(await setup.as("erika"))).toEqual({ householdId: own.household.id });
+    expect(await setup.households.getMembership(await setup.as("max"))).toEqual({ householdId: maxs.household.id });
+  });
+
+  it("names why the own household is kept", async () => {
+    await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    await setup.households.createHousehold(await setup.as("erika"), { name: "Erikas" });
+    await setup.households.joinInvitersHousehold(await setup.as("dora"), invite("erika"));
+    expect(await pending("erika", invite("max"))).toEqual({ canJoin: false, keptReason: "other-members" });
+
+    setup = await createTestHouseholds({ householdHoldsData: async () => true });
+    await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    await setup.households.createHousehold(await setup.as("erika"), { name: "Erikas" });
+    expect(await pending("erika", invite("max"))).toEqual({ canJoin: false, keptReason: "holds-data" });
+  });
+
+  it("is gone once the invite was acted on", async () => {
+    await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    await setup.households.joinInvitersHousehold(await setup.as("erika"), invite("max"));
+    await setup.households.leaveHousehold(await setup.as("erika"));
+    expect(await pending("erika", invite("max"))).toBeNull();
+    expect(await pending("erika", invite("max", 2))).toEqual({ canJoin: true });
+  });
+});
+
 describe("listing members", () => {
   it("returns the own household's members, oldest first", async () => {
     await setup.households.createHousehold(await setup.as("max"), { name: "A" });

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { InviteAcceptance } from "@/auth";
 import { auth } from "@/app/_lib/auth";
+import { joinInvitersHousehold } from "@/app/_lib/invite-actions";
 import { inviteReturn } from "@/app/_lib/invite-return";
 import { AuthFrame } from "@/app/_lib/app-shell";
 
@@ -20,5 +21,5 @@ async function Invite({ params }: Pick<PageProps<"/[locale]/invite/[token]">, "p
   // Signing in from here leads back to this page, where the user accepts the invite.
   const { signInHref } = inviteReturn(token);
   if (!(await auth.getSession())) redirect(signInHref);
-  return <InviteAcceptance token={token} signInHref={signInHref} continueHref="/" />;
+  return <InviteAcceptance token={token} signInHref={signInHref} continueHref="/" onAccepted={joinInvitersHousehold} />;
 }

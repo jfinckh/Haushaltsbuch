@@ -30,13 +30,18 @@ export type AcceptedInvite = {
   invitedAt: Date;
 };
 
+/** Why the own household is kept when joining another: it has other members, or it holds data. */
+export type KeptReason = "other-members" | "holds-data";
+
 export type JoinResult = {
   membership: Membership | null;
   /** The user was invited but stays in their own household (see keptReason). */
   keptOwnHousehold: boolean;
-  /** Why the own household was kept: it has other members, or it holds data. */
-  keptReason: "other-members" | "holds-data" | null;
+  keptReason: KeptReason | null;
 };
+
+/** An invite the user has not acted on yet: whether joining would move them now, or why not. */
+export type PendingInvite = { canJoin: true } | { canJoin: false; keptReason: KeptReason };
 
 /** Households. Every call is about the caller's own household only. */
 export interface Households {
@@ -60,6 +65,13 @@ export interface Households {
 
   /** Creates a household with the user as its first member. A user can have only one. */
   createHousehold(caller: Caller, input: unknown): Promise<CreateHouseholdResult>;
+
+  /**
+   * What joinInvitersHousehold would do with `invite`, without doing it: null if nothing would
+   * change (no invite, an own one, the inviter has no household, already in it, or this invite was
+   * acted on). Changes nothing, so pages may call it.
+   */
+  pendingInvite(caller: Caller, invite: AcceptedInvite | null): Promise<PendingInvite | null>;
 
   /**
    * Moves the user into the household of the person who invited them most recently. `invite`

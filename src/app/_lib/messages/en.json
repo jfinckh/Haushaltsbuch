@@ -7,6 +7,8 @@
     "invitedBy": "invited by {name}",
     "keptOtherMembers": "{name} invited you to their household. You stay in yours because it has other members. Leave it to join theirs.",
     "keptSharedAccounts": "{name} invited you to their household. You stay in yours because it has shared accounts. Leave it to join theirs. Leaving deletes the shared accounts; your private accounts stay with you.",
+    "canJoin": "{name} invited you to their household. You can join now. Your private accounts stay private.",
+    "joinNow": "Join now",
     "accounts": "Accounts",
     "addAccount": "Add account",
     "invitePartner": "Invite your partner",

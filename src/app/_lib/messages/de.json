@@ -7,6 +7,8 @@
     "invitedBy": "eingeladen von {name}",
     "keptOtherMembers": "{name} hat dich in den eigenen Haushalt eingeladen. Du bleibst in deinem, weil er weitere Mitglieder hat. Verlass ihn, um beizutreten.",
     "keptSharedAccounts": "{name} hat dich in den eigenen Haushalt eingeladen. Du bleibst in deinem, weil er gemeinsame Konten hat. Verlass ihn, um beizutreten. Dabei werden die gemeinsamen Konten gelöscht; deine privaten Konten bleiben bei dir.",
+    "canJoin": "{name} hat dich in den eigenen Haushalt eingeladen. Du kannst jetzt beitreten. Deine privaten Konten bleiben privat.",
+    "joinNow": "Jetzt beitreten",
     "accounts": "Konten",
     "addAccount": "Konto anlegen",
     "invitePartner": "Lade deine Partnerin oder deinen Partner ein",

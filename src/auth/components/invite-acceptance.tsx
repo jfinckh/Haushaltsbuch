@@ -11,6 +11,8 @@ type Props = {
   signInHref: string;
   /** Where the user continues to after accepting, declining or for their own invite. */
   continueHref?: string;
+  /** Runs after the invite was accepted, e.g. the app's server action that acts on it. */
+  onAccepted?: () => Promise<void>;
 };
 
 type State =
@@ -25,7 +27,7 @@ const openInvite = (token: string) => authClient.invite.open({ token });
  * Landing view for an invite link. Opening it only shows who invites; a signed-in user joins with
  * "Beitreten", so a link alone never moves anyone into a household.
  */
-export function InviteAcceptance({ token, signInHref, continueHref = "/" }: Props) {
+export function InviteAcceptance({ token, signInHref, continueHref = "/", onAccepted }: Props) {
   const t = useTranslations("auth.inviteAcceptance");
   const [state, setState] = useState<State>({ status: "loading" });
   const [pending, setPending] = useState(false);
@@ -48,6 +50,8 @@ export function InviteAcceptance({ token, signInHref, continueHref = "/" }: Prop
   async function accept(inviterName: string) {
     setPending(true);
     const { data } = await authClient.invite.accept({ token });
+    // The invite is recorded either way; if acting on it fails, the start page offers it again.
+    if (data?.applied) await onAccepted?.().catch(() => undefined);
     setPending(false);
     setState(data?.applied ? { status: "accepted", inviterName } : { status: "invalid" });
   }

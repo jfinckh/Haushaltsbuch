@@ -40,15 +40,29 @@ export function householdsRoute({ households, getCaller }: Deps) {
   };
 }
 
+type Invite = { inviterId: string; invitedAt: Date };
+
 /** Handlers for /api/households/membership: the caller's own membership only. */
-export function householdMembershipRoute({ households, getCaller }: Deps) {
+export function householdMembershipRoute({
+  households,
+  getCaller,
+  currentInvite,
+}: Deps & {
+  /** The invite the caller accepted most recently, from auth's record (never from the request). */
+  currentInvite?: () => Promise<Invite | null>;
+}) {
   return {
-    /** Leaves the caller's household. The last member to leave deletes it. */
+    /**
+     * Leaves the caller's household. The last member to leave deletes it. Then the caller joins the
+     * household of whoever invited them, if an invite is still open (`joined`).
+     */
     async DELETE() {
       return asCaller(getCaller, async (caller) => {
         const result = await households.leaveHousehold(caller);
         if (!result.left) return notFound();
-        return json({ householdDeleted: result.householdDeleted });
+        const invite = currentInvite ? await currentInvite() : null;
+        const joined = invite ? (await households.joinInvitersHousehold(caller, invite)).membership !== null : false;
+        return json({ householdDeleted: result.householdDeleted, joined });
       });
     },
   };
