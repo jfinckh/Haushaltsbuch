@@ -131,6 +131,48 @@ describe("/api/transactions", () => {
   });
 });
 
+describe("bookings query with scope and total", () => {
+  const refs = (body: { transactions: { reference: string }[] }) => body.transactions.map((t) => t.reference).sort();
+
+  it("lists only the caller's own private bookings with scope own-private", async () => {
+    const erikasPrivate = await createAccount("erika", "private", "Erikas Giro");
+    await book("max", booking(maxPrivate, { reference: "MaxPrivat" }));
+    await book("erika", booking(erikasPrivate, { reference: "ErikaPrivat" }));
+    await book("erika", booking(shared, { reference: "Gemeinsam" }));
+
+    const erika = await (await listAs("erika").GET(request("GET", undefined, "?scope=own-private"))).json();
+    expect(refs(erika)).toEqual(["ErikaPrivat"]);
+    const max = await (await listAs("max").GET(request("GET", undefined, "?scope=own-private"))).json();
+    expect(refs(max)).toEqual(["Brötchen", "MaxPrivat"]);
+    expect(JSON.stringify(max)).not.toContain("ErikaPrivat");
+    expect(JSON.stringify(max)).not.toContain("Gemeinsam");
+    // Another household sees none of it.
+    const dora = await (await listAs("dora").GET(request("GET", undefined, "?scope=own-private"))).json();
+    expect(dora.transactions).toEqual([]);
+  });
+
+  it("answers 404 for another member's private account in any query", async () => {
+    const response = await listAs("erika").GET(
+      request("GET", undefined, `?accountId=${maxPrivate}&year=2026&category=none&limit=10`),
+    );
+    expect(response.status).toBe(404);
+    expect(await response.text()).not.toContain("Bäckerei");
+  });
+
+  it("answers 400 without accountId and scope", async () => {
+    expect((await listAs("max").GET(request("GET", undefined, "?year=2026"))).status).toBe(400);
+    expect((await listAs("max").GET(request("GET", undefined, `?accountId=${shared}&scope=own-private`))).status).toBe(400);
+  });
+
+  it("returns the total of all hits", async () => {
+    await book("erika", booking(shared, { amount: "-1,50", reference: "Zwei" }));
+    await book("erika", booking(shared, { amount: "-2,00", reference: "Drei" }));
+    const body = await (await listAs("max").GET(request("GET", undefined, `?accountId=${shared}&limit=1`))).json();
+    expect(body.transactions).toHaveLength(1);
+    expect(body.total).toEqual({ count: 3, sumCents: -350 - 150 - 200 });
+  });
+});
+
 describe("another member's private account", () => {
   it("cannot be listed or booked on, and looks like an unknown account", async () => {
     const list = await listAs("erika").GET(request("GET", undefined, `?accountId=${maxPrivate}`));

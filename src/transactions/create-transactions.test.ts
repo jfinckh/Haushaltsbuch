@@ -155,6 +155,108 @@ describe("listing bookings", () => {
   });
 });
 
+describe("listing bookings across accounts, years and without category", () => {
+  const OWN = { scope: "own-private" } as const;
+
+  beforeEach(async () => {
+    await setup.addAccount("max-tr", "max");
+    await setup.addAccount("erika-private", "erika");
+  });
+
+  it("lists all own private accounts with scope own-private, never shared or another member's", async () => {
+    await create(max, { date: "2026-10-01" });
+    await create(max, { accountId: "max-tr", date: "2026-10-02" });
+    await create(max, { accountId: "home-shared", date: "2026-10-03" });
+    await create(erika, { accountId: "erika-private", date: "2026-10-04" });
+    const rows = await list(max, OWN);
+    expect(rows.map((r) => r.accountId).sort()).toEqual(["max-private", "max-tr"]);
+  });
+
+  it("lists a calendar year", async () => {
+    for (const date of ["2025-12-31", "2026-01-01", "2026-06-15", "2026-12-31", "2027-01-01"]) {
+      await create(max, { date });
+    }
+    const rows = await list(max, { ...OWN, year: "2026" });
+    expect(rows.map((r) => r.date)).toEqual(["2026-12-31", "2026-06-15", "2026-01-01"]);
+  });
+
+  it("filters bookings without category with category none", async () => {
+    await create(max, { date: "2026-10-01", category: null });
+    await create(max, { date: "2026-10-02", amount: "20,00", kind: "income", category: null });
+    await create(max, { date: "2026-10-03", category: "groceries" });
+    await create(max, { date: "2026-10-04", kind: "transfer", category: null });
+    await create(max, { date: "2026-10-05", kind: "saving", category: null });
+    const rows = await list(max, { ...OWN, category: "none" });
+    expect(rows.map((r) => r.date)).toEqual(["2026-10-02", "2026-10-01"]);
+  });
+
+  it("leaves out saving on savings accounts for own-private with kind saving", async () => {
+    await setup.addAccount("max-savings", "max");
+    await setup.db.execute(sql`UPDATE account SET role = 'savings' WHERE id = 'max-savings'`);
+    await create(max, { date: "2026-10-05", amount: "-100,00", kind: "saving", category: null });
+    await create(max, { accountId: "max-savings", date: "2026-10-05", amount: "100,00", kind: "saving", category: null });
+    const result = await transactions.listTransactions(max, { ...OWN, kind: "saving" });
+    expect(result).toMatchObject({ ok: true, total: { count: 1, sumCents: -10000 } });
+    expect(await list(max, { accountId: "max-savings", kind: "saving" })).toHaveLength(1);
+    expect(await list(max, { accountId: "max-savings" })).toHaveLength(1);
+    await create(max, { accountId: "max-savings", date: "2026-10-06", amount: "5,00", kind: "income", category: "salary" });
+    expect(await list(max, { accountId: "max-savings" })).toHaveLength(2);
+  });
+
+  it("limits after the search and totals all hits", async () => {
+    for (let day = 1; day <= 5; day++) {
+      await create(max, { date: `2026-10-0${day}`, amount: `-${day},00`, reference: "Miete" });
+    }
+    await create(max, { date: "2026-10-06", amount: "-100,00", reference: "Other" });
+    const result = await transactions.listTransactions(max, { ...OWN, q: "miete", limit: 2 });
+    if (!result.ok) throw new Error("list failed");
+    expect(result.transactions.map((r) => r.date)).toEqual(["2026-10-05", "2026-10-04"]);
+    expect(result.total).toEqual({ count: 5, sumCents: -1500 });
+  });
+
+  it("agrees with the month figures", async () => {
+    await setup.addAccount("max-savings", "max");
+    await setup.db.execute(sql`UPDATE account SET role = 'savings' WHERE id = 'max-savings'`);
+    await create(max, { date: "2026-10-01", amount: "-30,00" });
+    await create(max, { accountId: "max-tr", date: "2026-10-02", amount: "-20,00" });
+    await create(max, { date: "2026-10-03", amount: "2.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-04", amount: "-250,00", kind: "saving", category: null });
+    await create(max, { accountId: "max-savings", date: "2026-10-04", amount: "250,00", kind: "saving", category: null });
+    await create(max, { date: "2026-10-05", amount: "-500,00", kind: "transfer", category: null });
+    const summary = await transactions.monthSummary(max, { ownPrivate: true }, "2026-10");
+    if (!summary.ok) throw new Error("summary failed");
+    const total = async (kind: string) => {
+      const result = await transactions.listTransactions(max, { ...OWN, month: "2026-10", kind });
+      if (!result.ok) throw new Error("list failed");
+      return result.total.sumCents;
+    };
+    expect(await total("expense")).toBe(summary.expenseCents);
+    expect(await total("income")).toBe(summary.incomeCents);
+    expect(await total("saving")).toBe(summary.savingCents);
+  });
+
+  it("rejects invalid queries", async () => {
+    const invalid = [
+      {},
+      { accountId: "max-private", scope: "own-private" },
+      { ...OWN, month: "2026-10", year: "2026" },
+      { ...OWN, from: "2026-10-05", to: "2026-10-01" },
+      { ...OWN, year: "abcd" },
+      { ...OWN, limit: 0 },
+      { ...OWN, limit: 99999 },
+    ];
+    for (const query of invalid) {
+      expect(await transactions.listTransactions(max, query)).toEqual({ ok: false, reason: "invalid-input" });
+    }
+  });
+
+  it("finds nothing for a category of another household", async () => {
+    await create(max, { date: "2026-10-01" });
+    const result = await transactions.listTransactions(max, { ...OWN, category: "c_999999" });
+    expect(result).toMatchObject({ ok: true, transactions: [], total: { count: 0, sumCents: 0 } });
+  });
+});
+
 describe("reading, changing and deleting one booking", () => {
   it("gets a visible booking, and null for another member's private one", async () => {
     const booking = await create(max);

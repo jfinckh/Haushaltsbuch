@@ -13,6 +13,7 @@ import { formatEuro } from "@/shared/money";
 import { CategoryTrends } from "./category-trends";
 import { chosenMonth, MonthSwitcher } from "./month-switcher";
 import Link from "next/link";
+import { bookingsHref } from "@/app/_lib/bookings-href";
 import { ViewTabs } from "./view-tabs";
 import type { Caller } from "@/shared/rls";
 import { AppShell, PageHeader, Section } from "@/app/_lib/app-shell";
@@ -83,8 +84,8 @@ async function MonthSeries({ caller, accountId, month }: { caller: Caller; accou
 
   return (
     <>
-      <CurrentMonth row={rows[0]} comparison={comparison} previousMonth={rows[1]?.month} />
-      {trends.ok && <CategoryTrends trends={trends} accountId={accountId} categoryNames={names} />}
+      <CurrentMonth row={rows[0]} account={accountParam} comparison={comparison} previousMonth={rows[1]?.month} />
+      {trends.ok && <CategoryTrends trends={trends} account={accountParam} categoryNames={names} />}
       <Section title={t("history", { from: shortName(rows.at(-1)!.month), to: shortName(rows[0].month) })}>
         <ol className="flex flex-col divide-y divide-base-300">
           {rows.map((row) => (
@@ -108,10 +109,13 @@ const ARROW: Record<Tone, string> = { good: "↓", bad: "↑", same: "=" };
 /** The current month as figure tiles; spending and savings rate compared with the month before. */
 async function CurrentMonth({
   row,
+  account,
   comparison,
   previousMonth,
 }: {
   row: StatisticsRow;
+  /** An account id or "all". */
+  account: string;
   comparison: MonthComparison | null;
   previousMonth: string | undefined;
 }) {
@@ -146,10 +150,11 @@ async function CurrentMonth({
     }
   }
 
-  const tiles: { label: string; value: string; note?: typeof expenseNote }[] = [
-    { label: t("expenses"), value: formatEuro(-row.expenseCents), note: expenseNote },
-    { label: t("income"), value: formatEuro(row.incomeCents) },
-    { label: t("saved"), value: formatEuro(-row.savingCents) },
+  const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, month: row.month, kind });
+  const tiles: { label: string; value: string; note?: typeof expenseNote; href?: string }[] = [
+    { label: t("expenses"), value: formatEuro(-row.expenseCents), note: expenseNote, href: bookings("expense") },
+    { label: t("income"), value: formatEuro(row.incomeCents), href: bookings("income") },
+    { label: t("saved"), value: formatEuro(-row.savingCents), href: bookings("saving") },
     { label: t("savingsRate"), value: rate(row.savingsRate), note: rateNote },
     ...(row.contributionCents === null ? [] : [{ label: t("contribution"), value: formatEuro(row.contributionCents) }]),
   ];
@@ -158,10 +163,22 @@ async function CurrentMonth({
     <section className="flex flex-col gap-3">
       <h2 className="sr-only">{t("overview")}</h2>
       <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
-        {tiles.map(({ label, value, note }) => (
-          <div key={label} className="flex-[1_1_9rem] flex min-w-0 flex-col bg-base-100 px-4 py-3">
+        {tiles.map(({ label, value, note, href }) => (
+          // A linked tile's link sits in the value and stretches over the whole tile.
+          <div
+            key={label}
+            className={`flex-[1_1_9rem] relative flex min-w-0 flex-col bg-base-100 px-4 py-3 ${href ? "transition-colors has-[a:hover]:bg-base-200" : ""}`}
+          >
             <dt className="text-xs leading-snug text-base-content/60">{label}</dt>
-            <dd className="mt-0.5 text-xl font-semibold tracking-tight">{value}</dd>
+            <dd className="mt-0.5 text-xl font-semibold tracking-tight">
+              {href ? (
+                <Link href={href} className="before:absolute before:inset-0">
+                  {value}
+                </Link>
+              ) : (
+                value
+              )}
+            </dd>
             {note && (
               <dd className={`mt-1 flex gap-1 text-xs leading-snug ${TONE[note.tone]}`}>
                 <span aria-hidden>{note.arrow}</span>

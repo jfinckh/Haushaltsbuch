@@ -5,8 +5,10 @@
   "description": "Bookings page and statistics drill-down",
   "plan": {
     "path": "docs/superpowers/plans/2026-10-25-bookings-page.md",
-    "sha256": "c5daf9b422ae0e225b3e86cb24edf13e4cf687472032f41846ddaba4276c8d93"
+    "sha256": "f813e48eb91b666f6ca3329ea0a9adada92f457b40a05188d0426c6aab0bf838"
   },
-  "status": "approved",
-  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601"
+  "status": "final",
+  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601",
+  "report": "Finalized bookings-page (1e6c9b7..working-tree)\nFiles: 27 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-25-bookings-page/map.html\n",
+  "shownAt": "2026-10-26T08:06:09Z"
 }

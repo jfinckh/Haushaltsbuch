@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import type { Insights } from "@/insights/server";
+import { bookingsHref } from "@/app/_lib/bookings-href";
 import { formatEuro } from "@/shared/money";
 import { useCategoryName } from "@/transactions";
 
@@ -16,16 +17,16 @@ const ARROW: Record<Direction, string> = { more: "↑", less: "↓", same: "≈"
 /**
  * Spending per category group in the chosen month (the trend's last month): the amount, its share of
  * the month's spending as a bar, and in words whether it is more, less or about the same as usual
- * (the average of the 3 months before). With an account, the name links to that account's bookings
- * of the month and group.
+ * (the average of the 3 months before). The name links to the bookings of the month and group.
  */
 export function CategoryTrends({
   trends,
-  accountId,
+  account,
   categoryNames,
 }: {
   trends: Trends;
-  accountId: string | null;
+  /** An account id or "all". */
+  account: string;
   /** Names of own categories (the page's catalog). */
   categoryNames: Record<string, string>;
 }) {
@@ -63,20 +64,14 @@ export function CategoryTrends({
                 : direction === "same"
                   ? t("usualSame")
                   : t(direction === "more" ? "usualMore" : "usualLess", { amount: formatEuro(Math.abs(difference)) });
-            // No filter exists for bookings without category, and several accounts have no single list.
-            const href =
-              accountId && g.group ? `/accounts/${accountId}?${new URLSearchParams({ month, kind: "expense", category: g.group })}` : null;
+            const href = bookingsHref({ account, month, kind: "expense", category: g.group });
             return (
               <li key={g.group ?? ""} className="flex flex-col gap-1.5 py-3">
                 <div className="flex items-baseline justify-between gap-3 text-sm">
                   <h3 className="min-w-0 truncate font-medium">
-                    {href ? (
-                      <Link href={href} className="link link-hover">
-                        {label}
-                      </Link>
-                    ) : (
-                      label
-                    )}
+                    <Link href={href} className="link link-hover">
+                      {label}
+                    </Link>
                   </h3>
                   <span className="shrink-0 tabular-nums">
                     <span className="font-medium">{formatEuro(cents)}</span>{" "}

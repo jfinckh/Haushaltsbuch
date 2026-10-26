@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "base": "1e6c9b70d484e27a4f25ea4e8d6c97ae817d5601",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/transactions/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/transactions-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/transactions/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-filters.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/category-select.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/transactions/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/app-shell.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/bookings-href.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/bookings-href.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/category-trends.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/year/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "file",
+      "id": "docs/superpowers/plans/2026-10-25-saving-own-private.md",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0025_account_roles.sql",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0025_snapshot.json",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/rls.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A6"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A7"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/bookings-query.ts",
+      "status": "convergence",
+      "viaAmendment": "A8"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/bookings-query.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A9"
+    },
+    {
+      "kind": "edge",
+      "id": "app->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->insights",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

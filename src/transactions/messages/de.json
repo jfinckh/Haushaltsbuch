@@ -36,7 +36,17 @@
     "allCategories": "Alle Kategorien",
     "search": "Suche",
     "searchPlaceholder": "Name oder Verwendungszweck suchen",
-    "apply": "Anwenden"
+    "apply": "Anwenden",
+    "periodMonth": "Monat",
+    "periodYear": "Jahr",
+    "periodRange": "Zeitraum",
+    "previousYear": "Vorheriges Jahr",
+    "nextYear": "Nächstes Jahr",
+    "from": "Von",
+    "to": "Bis",
+    "uncategorized": "Ohne Kategorie",
+    "active": "Aktive Filter",
+    "remove": "{label} entfernen"
   },
   "form": {
     "amount": "Betrag (€)",

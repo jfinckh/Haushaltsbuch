@@ -235,4 +235,86 @@ signoff: []
 expectedEdges:
   - { from: app, to: transactions, plain: The page and the API use the booking list. }
   - { from: app, to: insights, plain: The page uses the same account choice as the statistics. }
+amendments:
+  - id: A1
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: docs/konzept.md
+      change: changed
+      purpose: Says that a transfer into an own savings account counts once as saved.
+    reason: Changed by slice 0 (Gespart fix), which was approved and finalized after this plan was approved.
+  - id: A2
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: docs/superpowers/plans/2026-10-25-saving-own-private.md
+      change: new
+      purpose: The plan of slice 0, the Gespart fix.
+    reason: Slice 0 was planned and built after this plan was approved. It is its own finalized plan.
+  - id: A3
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: drizzle/0025_account_roles.sql
+      change: new
+      purpose: Adds the database helper that lists the roles of visible accounts.
+    reason: Part of slice 0, approved and finalized in its own record. This slice uses the helper for the saving rule.
+  - id: A4
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: drizzle/meta/0025_snapshot.json
+      change: new
+      purpose: Drizzle snapshot for the slice 0 migration.
+    reason: Part of slice 0, approved and finalized in its own record.
+  - id: A5
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: drizzle/meta/_journal.json
+      change: changed
+      purpose: Lists the slice 0 migration.
+    reason: Part of slice 0, approved and finalized in its own record.
+  - id: A6
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: src/accounts/rls.test.ts
+      change: changed
+      purpose: Tests the account roles helper.
+    reason: Part of slice 0, approved and finalized in its own record.
+  - id: A7
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: src/insights/create-insights.test.ts
+      change: changed
+      purpose: Expects the corrected Gespart figures.
+    reason: Part of slice 0, approved and finalized in its own record.
+  - id: A8
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: src/app/_lib/bookings-query.ts
+      change: new
+      purpose: Cleans the address of the bookings page. It keeps one period, a valid type, the limit and known categories.
+    reason: The final review found that invalid periods showed a warning and hidden categories were dropped. A small tested helper keeps the page thin.
+  - id: A9
+    at: 2026-10-26T08:01:20Z
+    on: file
+    action: add
+    item:
+      path: src/app/_lib/bookings-query.test.ts
+      change: new
+      purpose: Tests how the bookings page cleans its address.
+    reason: The plan asked for tests of the fallback, and the page itself has no test setup.
 ```

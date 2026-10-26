@@ -7,7 +7,7 @@ import { Suspense, type ReactNode } from "react";
 import { SignOutButton } from "@/auth";
 import { LocaleSwitcher } from "@/shared/locale-switcher";
 
-type NavKey = "overview" | "statistics" | "imports" | "rules" | "categories" | "household";
+type NavKey = "overview" | "transactions" | "statistics" | "imports" | "rules" | "categories" | "household";
 
 type NavItem = {
   key: NavKey;
@@ -25,9 +25,14 @@ const NAV: NavItem[] = [
   {
     key: "overview",
     href: "/",
-    also: ["/transactions"],
     mobile: true,
     icon: <path {...stroke} d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z" />,
+  },
+  {
+    key: "transactions",
+    href: "/transactions",
+    mobile: true,
+    icon: <path {...stroke} d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />,
   },
   {
     key: "statistics",
@@ -44,7 +49,7 @@ const NAV: NavItem[] = [
   {
     key: "rules",
     href: "/rules",
-    mobile: true,
+    mobile: false,
     icon: <path {...stroke} d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />,
   },
   {

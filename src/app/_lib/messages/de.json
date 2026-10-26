@@ -100,6 +100,10 @@
     "importCsv": "CSV importieren"
   },
   "transactions": {
+    "title": "Buchungen",
+    "count": "{count, plural, one {# Buchung} other {# Buchungen}} · {sum}",
+    "loadMore": "Mehr laden",
+    "invalidPeriod": "Der Zeitraum ist ungültig.",
     "addTitle": "Buchung hinzufügen",
     "editTitle": "Buchung bearbeiten",
     "back": "Zurück",
@@ -130,6 +134,7 @@
     "appName": "Haushaltsbuch",
     "label": "Hauptnavigation",
     "overview": "Übersicht",
+    "transactions": "Buchungen",
     "statistics": "Statistik",
     "imports": "Import",
     "rules": "Regeln",

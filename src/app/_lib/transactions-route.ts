@@ -22,12 +22,15 @@ type IdContext = { params: Promise<{ id: string }> };
  */
 export function transactionsRoute({ transactions, getCaller }: Deps) {
   return {
-    /** Query: accountId (required), month or from/to, kind, category, q. */
+    /**
+     * Query: accountId or scope=own-private (exactly one), month / year / from+to, kind, category (or
+     * "none"), q, limit. Response: `{ transactions, total }`, the total covering all hits.
+     */
     async GET(request: Request) {
       return asCaller(getCaller, async (caller) => {
         const query = Object.fromEntries(new URL(request.url).searchParams);
         const result = await transactions.listTransactions(caller, query);
-        if (result.ok) return json({ transactions: result.transactions });
+        if (result.ok) return json({ transactions: result.transactions, total: result.total });
         return result.reason === "not-found" ? notFound() : invalidInput();
       });
     },

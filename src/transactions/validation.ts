@@ -106,19 +106,40 @@ export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
 const optionalFilter = <T extends z.ZodType<string>>(schema: T) =>
   z.preprocess((value) => (value === "" || value === null ? undefined : value), schema.optional());
 
-/** Which bookings of an account to list: a month, or from/to. Without any, the current month. */
-export const listQuerySchema = z.object({
-  accountId: z.string().min(1),
-  month: optionalFilter(z.string().refine(isMonth)),
-  from: optionalFilter(dateSchema),
-  to: optionalFilter(dateSchema),
-  kind: optionalFilter(z.enum(TRANSACTION_KINDS)),
-  category: optionalFilter(z.string().max(100)),
-  q: z.preprocess(
-    (value) => (typeof value === "string" ? value.trim() || undefined : value),
-    z.string().max(100).optional(),
-  ),
-});
+const isYear = (value: string) => /^\d{4}$/.test(value) && Number(value) >= 1970;
+
+/**
+ * Which bookings to list: one account, or all own private accounts (`scope`); a month, a year, or
+ * from/to (at most one of them); without any, the current month. `category: "none"` means without
+ * category. `limit` cuts the list after the search; the total still covers all hits.
+ */
+export const listQuerySchema = z
+  .object({
+    accountId: optionalFilter(z.string().min(1)),
+    scope: optionalFilter(z.enum(["own-private"])),
+    month: optionalFilter(z.string().refine(isMonth)),
+    year: optionalFilter(z.string().refine(isYear)),
+    from: optionalFilter(dateSchema),
+    to: optionalFilter(dateSchema),
+    kind: optionalFilter(z.enum(TRANSACTION_KINDS)),
+    category: optionalFilter(z.string().max(100)),
+    q: z.preprocess(
+      (value) => (typeof value === "string" ? value.trim() || undefined : value),
+      z.string().max(100).optional(),
+    ),
+    limit: z.preprocess(
+      (value) => (value === "" || value === null ? undefined : value),
+      z.coerce.number().int().min(1).max(5000).optional(),
+    ),
+  })
+  .superRefine((value, ctx) => {
+    if ((value.accountId === undefined) === (value.scope === undefined)) {
+      ctx.addIssue({ code: "custom", message: "Exactly one of accountId and scope" });
+    }
+    const periods = [value.month, value.year, value.from || value.to].filter(Boolean).length;
+    if (periods > 1) ctx.addIssue({ code: "custom", message: "At most one of month, year and from/to" });
+    if (value.from && value.to && value.from > value.to) ctx.addIssue({ code: "custom", message: "from after to" });
+  });
 
 export type ListQuery = z.infer<typeof listQuerySchema>;
 

@@ -61,6 +61,10 @@ type MergedFrom = ImportedDetails & Pick<TransactionValues, "kind" | "category">
 export type Classification = { id: string; kind: TransactionKind; category: string | null };
 
 export type ListTransactionsResult =
+  | { ok: true; transactions: TransactionView[]; total: { count: number; sumCents: number } }
+  | { ok: false; reason: "invalid-input" | "not-found" };
+
+export type LatestTransactionsResult =
   | { ok: true; transactions: TransactionView[] }
   | { ok: false; reason: "invalid-input" | "not-found" };
 
@@ -302,30 +306,43 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
 
   return {
     /**
-     * Bookings of one account, newest first, for a month or from/to; without either, the current
-     * calendar month. The search
-     * text is matched against counterparty and reference after decryption, so only within the range.
+     * Bookings of one account, or of all own private accounts (`scope`), newest first, for a month, a
+     * year or from/to; without any, the current calendar month. The search text is matched against
+     * counterparty and reference after decryption, so only within the range. `total` covers all hits;
+     * `limit` cuts the list after the search. With `kind=saving` within the own private accounts,
+     * saving bookings on savings accounts are left out (the other side of one on an everyday account).
      */
     async listTransactions(caller: Caller, query: unknown): Promise<ListTransactionsResult> {
       const parsed = listQuerySchema.safeParse(query);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
-      const { accountId, kind, category, q } = parsed.data;
-      const range = parsed.data.month
+      const { accountId, scope, kind, category, q, limit } = parsed.data;
+      const { from, to } = parsed.data.month
         ? monthRange(parsed.data.month)
-        : parsed.data.from || parsed.data.to
-          ? { from: parsed.data.from, to: parsed.data.to }
-          : monthRange(monthOf(today()));
-      const { from, to } = range;
+        : parsed.data.year
+          ? { from: `${parsed.data.year}-01-01`, to: `${parsed.data.year}-12-31` }
+          : parsed.data.from || parsed.data.to
+            ? { from: parsed.data.from, to: parsed.data.to }
+            : monthRange(monthOf(today()));
 
       return withSession(db, caller, async (tx, userId): Promise<ListTransactionsResult> => {
-        if (!(await accountIsVisible(tx, accountId))) return { ok: false, reason: "not-found" };
+        let target: SQL;
+        if (scope) {
+          target = ownPrivate;
+        } else {
+          const id = accountId as string;
+          if (!(await accountIsVisible(tx, id))) return { ok: false, reason: "not-found" };
+          target = eq(transaction.accountId, id);
+        }
         const filters = [
-          eq(transaction.accountId, accountId),
+          target,
           visible,
+          scope && kind === "saving" && notOnSavingsAccount,
           from && gte(transaction.bookingDate, from),
           to && lte(transaction.bookingDate, to),
           kind && eq(transaction.kind, kind),
-          category && or(eq(transaction.category, category), like(transaction.category, `${category}.%`)),
+          category === "none"
+            ? and(isNull(transaction.category), inArray(transaction.kind, ["expense", "income"]))
+            : category && or(eq(transaction.category, category), like(transaction.category, `${category}.%`)),
         ].filter((filter): filter is SQL => Boolean(filter));
         const rows = await tx
           .select()
@@ -339,7 +356,8 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
             [view.counterparty, view.reference].some((text) => text?.toLocaleLowerCase("de").includes(needle)),
           );
         }
-        return { ok: true, transactions: views };
+        const total = { count: views.length, sumCents: views.reduce((sum, view) => sum + view.amountCents, 0) };
+        return { ok: true, transactions: limit ? views.slice(0, limit) : views, total };
       });
     },
 
@@ -643,9 +661,9 @@ export function createTransactions({ db, crypto: fieldCrypto, today = localToday
      * The newest bookings of a visible account, any month, at most `limit` (1–50). With
      * `{ ownPrivate: true }`, of all of the caller's own private accounts together.
      */
-    async latestTransactions(caller: Caller, target: AccountTarget, limit: number): Promise<ListTransactionsResult> {
+    async latestTransactions(caller: Caller, target: AccountTarget, limit: number): Promise<LatestTransactionsResult> {
       if (!Number.isInteger(limit) || limit < 1 || limit > 50) return { ok: false, reason: "invalid-input" };
-      return withSession(db, caller, async (tx, userId): Promise<ListTransactionsResult> => {
+      return withSession(db, caller, async (tx, userId): Promise<LatestTransactionsResult> => {
         const accounts = await targetFilter(tx, target);
         if (!accounts) return { ok: false, reason: "not-found" };
         const rows = await tx

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { bookingsHref } from "@/app/_lib/bookings-href";
 import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { requireCaller } from "@/app/_lib/caller";
@@ -91,31 +92,45 @@ async function YearFigures({ caller, accountId, year }: { caller: Caller; accoun
     categoryService.catalog(caller),
   ]);
   if (!overview.ok) return null;
+  const account = accountId ?? ALL_MINE;
   return (
     <>
-      <Totals overview={overview} />
-      <MonthTable overview={overview} />
-      <YearCategories categories={overview.categories} categoryNames={names} />
+      <Totals overview={overview} account={account} year={year} />
+      <MonthTable overview={overview} account={account} year={year} />
+      <YearCategories categories={overview.categories} categoryNames={names} account={account} year={year} />
     </>
   );
 }
 
-async function Totals({ overview: { totals } }: { overview: Overview }) {
+async function Totals({ overview: { totals }, account, year }: { overview: Overview; account: string; year: number }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
-  const figures: [string, string][] = [
-    [t("income"), formatEuro(totals.incomeCents)],
-    [t("expenses"), formatEuro(-totals.expenseCents)],
-    [t("saved"), formatEuro(-totals.savingCents)],
+  const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, year, kind });
+  const figures: [string, string, string?][] = [
+    [t("income"), formatEuro(totals.incomeCents), bookings("income")],
+    [t("expenses"), formatEuro(-totals.expenseCents), bookings("expense")],
+    [t("saved"), formatEuro(-totals.savingCents), bookings("saving")],
     [t("savingsRate"), totals.savingsRate === null ? t("noRate") : format.number(totals.savingsRate, { style: "percent", maximumFractionDigits: 1 })],
     ...(totals.contributionCents === null ? [] : ([[t("contribution"), formatEuro(totals.contributionCents)]] as [string, string][])),
   ];
   return (
     <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
-      {figures.map(([label, value]) => (
-        <div key={label} className="flex-[1_1_9rem] min-w-0 bg-base-100 px-4 py-3">
+      {figures.map(([label, value, href]) => (
+        // A linked tile's link sits in the value and stretches over the whole tile.
+        <div
+          key={label}
+          className={`flex-[1_1_9rem] relative min-w-0 bg-base-100 px-4 py-3 ${href ? "transition-colors has-[a:hover]:bg-base-200" : ""}`}
+        >
           <dt className="text-xs leading-snug text-base-content/60">{label}</dt>
-          <dd className="mt-0.5 text-xl font-semibold tracking-tight">{value}</dd>
+          <dd className="mt-0.5 text-xl font-semibold tracking-tight">
+            {href ? (
+              <Link href={href} className="before:absolute before:inset-0">
+                {value}
+              </Link>
+            ) : (
+              value
+            )}
+          </dd>
         </div>
       ))}
     </dl>
@@ -123,16 +138,25 @@ async function Totals({ overview: { totals } }: { overview: Overview }) {
 }
 
 /** One row per month, January first, and the year's totals at the bottom. */
-async function MonthTable({ overview: { months, totals } }: { overview: Overview }) {
+async function MonthTable({ overview: { months, totals }, account, year }: { overview: Overview; account: string; year: number }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const withContribution = totals.contributionCents !== null;
   const rate = (value: number | null) => (value === null ? t("noRate") : format.number(value, { style: "percent", maximumFractionDigits: 1 }));
-  const cells = (row: { incomeCents: number; expenseCents: number; savingCents: number; savingsRate: number | null; contributionCents: number | null }) => (
+  // The amounts link to the bookings of the month, or of the year for the totals row.
+  const amount = (cents: number, kind: "expense" | "income" | "saving", period: { month: string } | { year: number }) => (
+    <Link href={bookingsHref({ account, ...period, kind })} className="link decoration-base-content/30 underline-offset-2">
+      {formatCents(cents)}
+    </Link>
+  );
+  const cells = (
+    row: { incomeCents: number; expenseCents: number; savingCents: number; savingsRate: number | null; contributionCents: number | null },
+    period: { month: string } | { year: number },
+  ) => (
     <>
-      <td className="text-right">{formatCents(row.incomeCents)}</td>
-      <td className="text-right">{formatCents(-row.expenseCents)}</td>
-      <td className="text-right">{formatCents(-row.savingCents)}</td>
+      <td className="text-right">{amount(row.incomeCents, "income", period)}</td>
+      <td className="text-right">{amount(-row.expenseCents, "expense", period)}</td>
+      <td className="text-right">{amount(-row.savingCents, "saving", period)}</td>
       <td className="text-right">{rate(row.savingsRate)}</td>
       {withContribution && <td className="text-right">{formatCents(row.contributionCents ?? 0)}</td>}
     </>
@@ -172,14 +196,14 @@ async function MonthTable({ overview: { months, totals } }: { overview: Overview
             {months.map((row) => (
               <tr key={row.month}>
                 <th className="font-normal">{format.dateTime(new Date(`${row.month}-01T00:00:00Z`), { month: "short", timeZone: "UTC" })}</th>
-                {cells(row)}
+                {cells(row, { month: row.month })}
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr>
               <th>{t("total")}</th>
-              {cells(totals)}
+              {cells(totals, { year })}
             </tr>
           </tfoot>
         </table>
@@ -192,7 +216,11 @@ async function MonthTable({ overview: { months, totals } }: { overview: Overview
 function YearCategories({
   categories: { totalCents, groups },
   categoryNames,
+  account,
+  year,
 }: {
+  account: string;
+  year: number;
   categories: Overview["categories"];
   /** Names of own categories (the page's catalog). */
   categoryNames: Record<string, string>;
@@ -212,7 +240,11 @@ function YearCategories({
             return (
               <li key={group ?? ""} className="flex flex-col gap-1">
                 <span className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 truncate font-medium">{name}</span>
+                  <span className="min-w-0 truncate font-medium">
+                    <Link href={bookingsHref({ account, year, kind: "expense", category: group })} className="link link-hover">
+                      {name}
+                    </Link>
+                  </span>
                   <span className="shrink-0 tabular-nums">
                     {formatEuro(cents)} <span className="text-base-content/50">· {t("share", { percent: Math.round((cents * 100) / totalCents) })}</span>
                   </span>
