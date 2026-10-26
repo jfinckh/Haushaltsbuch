@@ -5,8 +5,8 @@ import type { GroupSpending } from "../categories";
 import { useCategoryName } from "./use-category-name";
 
 type Props = {
-  /** The rows link to this account's bookings; without it (several accounts) they are not links. */
-  accountId?: string;
+  /** An account id or "all"; the rows link to its bookings. Without it they are not links. */
+  account?: string;
   /** The calendar month of the figures, YYYY-MM. */
   month: string;
   /** Sum of the rows (cents). */
@@ -17,8 +17,8 @@ type Props = {
   categoryNames?: Record<string, string>;
 };
 
-/** A month's expenses per category group: a bar per group, each linking to the account's bookings if one is given. */
-export function CategorySpending({ accountId, month, totalCents, groups, categoryNames }: Props) {
+/** A month's expenses per category group: a bar per group, each linking to the matching bookings if an account is given. */
+export function CategorySpending({ account, month, totalCents, groups, categoryNames }: Props) {
   const t = useTranslations("transactions.spending");
   const categoryName = useCategoryName(categoryNames);
   return (
@@ -29,8 +29,7 @@ export function CategorySpending({ accountId, month, totalCents, groups, categor
       ) : (
         <ul className="flex flex-col gap-0.5">
           {groups.map(({ group, cents }) => {
-            const params = new URLSearchParams({ month, kind: "expense" });
-            if (group) params.set("category", group);
+            const params = new URLSearchParams({ account: account ?? "", month, kind: "expense", category: group ?? "none" });
             const name = group ? categoryName(group) : t("uncategorized");
             const percent = Math.round((cents * 100) / totalCents);
             const content = (
@@ -46,8 +45,8 @@ export function CategorySpending({ accountId, month, totalCents, groups, categor
             );
             return (
               <li key={group ?? ""}>
-                {accountId ? (
-                  <Link href={`/accounts/${accountId}?${params}`} className="group flex flex-col gap-1.5 rounded-box px-1 py-2 [&:hover_progress]:opacity-80">
+                {account ? (
+                  <Link href={`/transactions?${params}`} className="group flex flex-col gap-1.5 rounded-box px-1 py-2 [&:hover_progress]:opacity-80">
                     {content}
                   </Link>
                 ) : (

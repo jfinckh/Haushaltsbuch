@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "bookings-links",
+  "description": "Bookings links from dashboard and account page",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-10-26-bookings-links.md",
+    "sha256": "d346f61808a09a11ed664a09e95e5e5ef9239798aef6ffd0c82d3cff94be758b"
+  },
+  "status": "final",
+  "base": "0b0de9be938fdb40613a10e5921ae8e4d58f6f3d",
+  "report": "Finalized bookings-links (0b0de9b..working-tree)\nFiles: 11 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-bookings-links/map.html\n",
+  "shownAt": "2026-10-26T08:43:07Z"
+}

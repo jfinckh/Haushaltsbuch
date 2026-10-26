@@ -68,6 +68,8 @@ async function Bookings({ searchParams }: Props) {
   const more = listed.ok && limit < MAX_LIMIT && listed.total.count > listed.transactions.length;
   const moreHref = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, limit: String(Math.min(limit + PAGE_SIZE, MAX_LIMIT)) })}`;
 
+  const back = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, ...(limit !== PAGE_SIZE && { limit: String(limit) }) })}`;
+
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <PageHeader title={t("title")} />
@@ -76,7 +78,7 @@ async function Bookings({ searchParams }: Props) {
       {listed.ok ? (
         <>
           <p className="text-sm text-base-content/70">{t("count", { count: listed.total.count, sum: formatEuro(listed.total.sumCents) })}</p>
-          <TransactionList transactions={listed.transactions} accountNames={accountNames} categoryNames={catalog.names} />
+          <TransactionList transactions={listed.transactions} accountNames={accountNames} categoryNames={catalog.names} back={back} />
           {more && (
             <Link href={moreHref} className="btn btn-sm self-center">
               {t("loadMore")}

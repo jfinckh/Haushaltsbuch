@@ -41,7 +41,12 @@ async function AccountBookings({ params, searchParams }: Props) {
   const account = await accounts.getAccount(caller, id);
   if (!account) notFound();
   const query = await searchParams;
-  const filters = { month: first(query.month), kind: first(query.kind), category: first(query.category), q: first(query.q) };
+  const category = first(query.category);
+  // "No category" is a filter of the bookings page only.
+  const filters = { month: first(query.month), kind: first(query.kind), category: category === "none" ? undefined : category, q: first(query.q) };
+  const listParams = Object.fromEntries(Object.entries(filters).filter(([, value]) => !!value)) as Record<string, string>;
+  const back = `/accounts/${id}${Object.keys(listParams).length > 0 ? `?${new URLSearchParams(listParams)}` : ""}`;
+  const allBookingsHref = `/transactions?${new URLSearchParams({ account: id, ...listParams })}`;
   const [listed, budgetList, balances, transferOverview, visible, catalog] = await Promise.all([
     transactions.listTransactions(caller, { accountId: id, ...filters }),
     budgets.listBudgets(caller, id, filters.month || undefined),
@@ -90,9 +95,14 @@ async function AccountBookings({ params, searchParams }: Props) {
       </div>
       <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-4 border-t border-base-300 pt-5">
+          {!account.archived && (
+            <Link href={allBookingsHref} className="link link-hover self-end text-sm">
+              {t("allBookings")}
+            </Link>
+          )}
           <TransactionFilters values={filters} categoryGroups={groups} categoryNames={catalog.names} />
           {listed.ok ? (
-            <TransactionList transactions={listed.transactions} categoryNames={catalog.names} />
+            <TransactionList transactions={listed.transactions} categoryNames={catalog.names} back={back} />
           ) : (
             <div role="alert" className="alert alert-warning alert-soft">
               <span>{t("invalidFilter")}</span>

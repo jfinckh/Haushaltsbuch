@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
 import { BudgetSection } from "@/budgets";
 import { AccountSwitcher } from "@/app/_lib/account-switcher";
+import { bookingsHref } from "@/app/_lib/bookings-href";
 import { accounts } from "@/app/_lib/accounts";
 import { auth } from "@/app/_lib/auth";
 import { budgets } from "@/app/_lib/budgets";
@@ -118,6 +119,8 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
           {summary.ok && (
             <MonthFigures
               availableCents={summary.availableCents}
+              month={summary.month}
+              account={accountId}
               figures={[
                 ["income", summary.incomeCents],
                 ["expenses", summary.expenseCents],
@@ -135,7 +138,7 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
           )}
           {spending.ok && (
             <Section>
-              <CategorySpending accountId={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
+              <CategorySpending account={accountId} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
             </Section>
           )}
         </>
@@ -145,12 +148,12 @@ async function AccountDashboard({ caller, accountId }: { caller: Caller; account
           <Section
             title={t("latest")}
             actions={
-              <Link href={`/accounts/${accountId}`} className="link link-hover text-sm text-base-content/70">
+              <Link href={`/transactions?account=${accountId}`} className="link link-hover text-sm text-base-content/70">
                 {t("allBookings")}
               </Link>
             }
           >
-            <TransactionList transactions={latest.transactions} categoryNames={names} />
+            <TransactionList transactions={latest.transactions} categoryNames={names} back={`/?account=${accountId}`} />
           </Section>
         )
       }
@@ -171,7 +174,17 @@ function DashboardColumns({ main, side }: { main: ReactNode; side: ReactNode }) 
 type FigureKey = "income" | "expenses" | "saving" | "contribution";
 
 /** The big available amount and the figures below it (cents, signed as booked). */
-async function MonthFigures({ availableCents, figures }: { availableCents: number; figures: [FigureKey, number][] }) {
+async function MonthFigures({
+  availableCents,
+  month,
+  account,
+  figures,
+}: {
+  availableCents: number;
+  month: string;
+  account: string;
+  figures: [FigureKey, number][];
+}) {
   const t = await getTranslations("app.home");
   return (
     <section className="flex flex-col gap-5">
@@ -182,12 +195,25 @@ async function MonthFigures({ availableCents, figures }: { availableCents: numbe
         </p>
       </div>
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-box border border-base-300 bg-base-300 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
-        {figures.map(([key, cents]) => (
-          <div key={key} className="min-w-0 bg-base-100 px-4 py-3">
-            <dt className="text-xs leading-snug text-base-content/60">{t(key)}</dt>
-            <dd className="mt-0.5 font-medium">{formatEuro(cents)}</dd>
-          </div>
-        ))}
+        {figures.map(([key, cents]) => {
+          const kind = key === "income" ? "income" : key === "expenses" ? "expense" : key === "saving" ? "saving" : undefined;
+          const href = kind && bookingsHref({ account, month, kind });
+          // A linked tile's link sits in the value and stretches over the whole tile.
+          return (
+            <div key={key} className={`relative min-w-0 bg-base-100 px-4 py-3 ${href ? "transition-colors has-[a:hover]:bg-base-200" : ""}`}>
+              <dt className="text-xs leading-snug text-base-content/60">{t(key)}</dt>
+              <dd className="mt-0.5 font-medium">
+                {href ? (
+                  <Link href={href} className="before:absolute before:inset-0">
+                    {formatEuro(cents)}
+                  </Link>
+                ) : (
+                  formatEuro(cents)
+                )}
+              </dd>
+            </div>
+          );
+        })}
       </dl>
     </section>
   );
@@ -211,6 +237,8 @@ async function CombinedDashboard({ caller, accountNames }: { caller: Caller; acc
           {summary.ok && (
             <MonthFigures
               availableCents={summary.availableCents}
+              month={summary.month}
+              account={ALL_MINE}
               figures={[
                 ["income", summary.incomeCents],
                 ["expenses", summary.expenseCents],
@@ -221,15 +249,22 @@ async function CombinedDashboard({ caller, accountNames }: { caller: Caller; acc
           )}
           {spending.ok && (
             <Section>
-              <CategorySpending month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
+              <CategorySpending account={ALL_MINE} month={spending.month} totalCents={spending.totalCents} groups={spending.groups} categoryNames={names} />
             </Section>
           )}
         </>
       }
       side={
         latest.ok && (
-          <Section title={t("latest")}>
-            <TransactionList transactions={latest.transactions} accountNames={accountNames} categoryNames={names} />
+          <Section
+            title={t("latest")}
+            actions={
+              <Link href={`/transactions?account=${ALL_MINE}`} className="link link-hover text-sm text-base-content/70">
+                {t("allBookings")}
+              </Link>
+            }
+          >
+            <TransactionList transactions={latest.transactions} accountNames={accountNames} categoryNames={names} back={`/?account=${ALL_MINE}`} />
           </Section>
         )
       }

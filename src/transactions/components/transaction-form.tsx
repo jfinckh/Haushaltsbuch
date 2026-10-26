@@ -30,6 +30,8 @@ type Props = {
    * carries `rule: { field, pattern }`, and the app creates a rule from the booking.
    */
   offerRule?: boolean;
+  /** Where to go after saving instead of the booking's account page (a checked address from the app). */
+  returnTo?: string;
 };
 
 type RuleField = "counterparty" | "reference";
@@ -54,6 +56,7 @@ export function TransactionForm({
   action = "/api/transactions",
   accountsHref = "/accounts",
   offerRule = false,
+  returnTo,
 }: Props) {
   const t = useTranslations("transactions.form");
   const tKinds = useTranslations("transactions.kinds");
@@ -140,7 +143,7 @@ export function TransactionForm({
         return setErrors({ rule: "transactions.form.ruleFailed" });
       }
     }
-    router.push(`${accountsHref}/${account}`);
+    router.push(returnTo ?? `${accountsHref}/${account}`);
     router.refresh();
   }
 

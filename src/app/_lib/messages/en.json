@@ -97,7 +97,8 @@
     "balance": "Balance",
     "addBooking": "Add booking",
     "invalidFilter": "These filters are not valid. Showing nothing.",
-    "importCsv": "Import CSV"
+    "importCsv": "Import CSV",
+    "allBookings": "See all bookings"
   },
   "transactions": {
     "title": "Bookings",

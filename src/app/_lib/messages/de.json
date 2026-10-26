@@ -97,7 +97,8 @@
     "balance": "Kontostand",
     "addBooking": "Buchung hinzufügen",
     "invalidFilter": "Diese Filter sind ungültig. Es wird nichts angezeigt.",
-    "importCsv": "CSV importieren"
+    "importCsv": "CSV importieren",
+    "allBookings": "Alle Buchungen ansehen"
   },
   "transactions": {
     "title": "Buchungen",

@@ -12,6 +12,8 @@ type Props = {
   accountNames?: Record<string, string>;
   /** Names of own categories (the page's catalog). */
   categoryNames?: Record<string, string>;
+  /** Address of the list, passed to the detail page as `?back=` so it can lead back here. */
+  back?: string;
 };
 
 function byDate(transactions: TransactionView[]): [string, TransactionView[]][] {
@@ -29,7 +31,7 @@ function amountClass(transaction: TransactionView): string {
  * One booking. In a narrow container: name, a line below, amount. From a wide container (@xl) on:
  * columns for name, category, account (when given) and amount.
  */
-function Row({ transaction, href, accountName, categoryNames }: { transaction: TransactionView; href: string; accountName?: string; categoryNames?: Record<string, string> }) {
+function Row({ transaction, href, accountName, categoryNames, back }: { transaction: TransactionView; href: string; accountName?: string; categoryNames?: Record<string, string>; back?: string }) {
   const t = useTranslations("transactions");
   const categoryName = useCategoryName(categoryNames);
   const categorized = transaction.kind === "transfer" || transaction.kind === "saving" || transaction.category !== null;
@@ -39,7 +41,7 @@ function Row({ transaction, href, accountName, categoryNames }: { transaction: T
   return (
     <li>
       <Link
-        href={`${href}/${transaction.id}`}
+        href={back ? `${href}/${transaction.id}?back=${encodeURIComponent(back)}` : `${href}/${transaction.id}`}
         className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-0.5 border-b border-base-300/70 px-1 py-2.5 transition-colors last:border-b-0 hover:bg-base-200/60 ${columns}`}
       >
         <div className="min-w-0">
@@ -62,7 +64,7 @@ function Row({ transaction, href, accountName, categoryNames }: { transaction: T
 }
 
 /** Bookings grouped by date, newest first; uncategorized expenses and income are marked. */
-export function TransactionList({ transactions, href = "/transactions", accountNames, categoryNames }: Props) {
+export function TransactionList({ transactions, href = "/transactions", accountNames, categoryNames, back }: Props) {
   const t = useTranslations("transactions.list");
   const format = useFormatter();
   if (transactions.length === 0) return <p className="text-sm text-base-content/60">{t("empty")}</p>;
@@ -81,6 +83,7 @@ export function TransactionList({ transactions, href = "/transactions", accountN
                 href={href}
                 accountName={accountNames ? (accountNames[transaction.accountId] ?? "") : undefined}
                 categoryNames={categoryNames}
+                back={back}
               />
             ))}
           </ul>
