@@ -47,6 +47,8 @@ src/insights/       dashboard and statistics figures, balances, account choice i
 
 Parts never import accounts or households to learn what the caller may see. They ask the database through the SQL functions accounts and households define in their migrations, and call those only through `db-contract` (never as SQL text). A new function for other parts gets its typed call there.
 
+Parts may pass their open database transaction (`RlsTransaction` from `shared/rls`, a Drizzle transaction) into another part's methods, e.g. import into transactions' `BookingStore` or accounts' `setOpeningBalance`. Why: work that spans parts must be saved together or not at all (an import's bookings, fingerprints and opening balance), and row-level security only holds inside the transaction `withSession` opened for the caller. Decided 2026-10-26 against an own unit-of-work interface: it would hide nothing (every part already uses Drizzle and Postgres) and cost a wrapper around every query. Such a method takes the transaction as its first parameter, works only inside it (never opens its own) and never commits it. Pages and routes never see a transaction; they call methods that take a `Caller`.
+
 ## Rules that apply everywhere
 
 - **Privacy:** a private account is visible only to its owner: bookings, budgets, summaries, even its existence. Shared accounts are visible to all household members. Enforce in the server code (and Postgres row-level security), never only in the UI. Every query is scoped to the household and the user's visible accounts.
