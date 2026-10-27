@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-27",
+  "slug": "deploy-hetzner",
+  "description": "Automatic deployment to Hetzner behind Cloudflare Access",
+  "plan": {
+    "path": "docs/plans/2026-10-27-deploy-hetzner.md",
+    "sha256": "0ea5779ed30350f2e6a1c9aa1804c3f1f89fd3931b651ee095f1ebb84045bf5f"
+  },
+  "status": "final",
+  "base": "ed0a5aecd02701efe14706e9fe7cb6e849a5146c",
+  "report": "Finalized deploy-hetzner (ed0a5ae..working-tree)\nFiles: 20 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-27-deploy-hetzner/map.html\n",
+  "shownAt": "2026-10-27T11:31:12Z"
+}

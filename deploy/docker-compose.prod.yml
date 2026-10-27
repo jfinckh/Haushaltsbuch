@@ -1,0 +1,59 @@
+# Production services on the Hetzner server, copied to /opt/haushaltsbuch/compose.yml by the deploy
+# job. Values like ${IMAGE_TAG} come from /opt/haushaltsbuch/.env, which deploy.sh writes.
+#
+# Nothing here is reachable from the internet:
+#   - postgres has no published port; only the containers in this project reach it.
+#   - app is published on 127.0.0.1:3000 only; cloudflared on the host forwards the tunnel to it.
+#   - the Hetzner firewall blocks all inbound traffic anyway.
+name: haushaltsbuch
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Read by postgres-init.sh on the very first start: the app's own (non-superuser) owner.
+      APP_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /mnt/data/postgres:/var/lib/postgresql/data
+      - ./postgres-init.sh:/docker-entrypoint-initdb.d/10-app-owner.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # One-shot: applies the SQL migrations, then exits. deploy.sh runs it before starting the app.
+  migrate:
+    image: ghcr.io/jfinckh/haushaltsbuch-migrate:${IMAGE_TAG}
+    profiles: [tools]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgres://haushaltsbuch:${DB_PASSWORD}@postgres:5432/haushaltsbuch
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    image: ghcr.io/jfinckh/haushaltsbuch:${IMAGE_TAG}
+    restart: unless-stopped
+    env_file: app.env
+    environment:
+      DATABASE_URL: postgres://haushaltsbuch:${DB_PASSWORD}@postgres:5432/haushaltsbuch
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # Any answer below 500 means the server runs (without a login token it redirects or says 401).
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12

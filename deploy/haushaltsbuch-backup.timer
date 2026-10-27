@@ -1,0 +1,12 @@
+# Runs the backup every night at about 03:00 German time. Persistent: a run missed while the
+# server was off happens at the next boot. Check with: systemctl --user list-timers
+[Unit]
+Description=Haushaltsbuch: nightly database backup
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 Europe/Berlin
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

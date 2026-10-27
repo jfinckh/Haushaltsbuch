@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "base": "ed0a5aecd02701efe14706e9fe7cb6e849a5146c",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "Dockerfile",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".dockerignore",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "scripts/migrate.mjs",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/docker-compose.prod.yml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/versions.tf",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/variables.tf",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/hetzner.tf",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/cloudflare.tf",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/cloud-init.yaml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/outputs.tf",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".github/workflows/deploy.yml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/backup.sh",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/haushaltsbuch-backup.service",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/haushaltsbuch-backup.timer",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "next.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".gitignore",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "README.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/deployment.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/deploy.sh",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/postgres-init.sh",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

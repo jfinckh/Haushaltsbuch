@@ -1,0 +1,9 @@
+# Systemd user service of the "deploy" user: one encrypted database backup to R2.
+# Installed to ~/.config/systemd/user/ by the deploy job; started by haushaltsbuch-backup.timer.
+# Logs: journalctl --user -u haushaltsbuch-backup
+[Unit]
+Description=Haushaltsbuch: encrypted database backup to R2
+
+[Service]
+Type=oneshot
+ExecStart=/opt/haushaltsbuch/backup.sh run

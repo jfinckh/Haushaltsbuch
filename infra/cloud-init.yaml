@@ -1,0 +1,67 @@
+#cloud-config
+# First boot of the server (runs once). Template variables come from hetzner.tf.
+# Result: Docker, a "deploy" user that may run Docker, SSH by key only, the database volume at
+# /mnt/data, and cloudflared connected to the tunnel. Nothing listens on a public port.
+
+package_update: true
+package_upgrade: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - curl
+  - unattended-upgrades
+
+# Fixed host key, so the deploy job can check it (known_hosts from the OpenTofu output).
+ssh_deletekeys: true
+ssh_genkeytypes: []
+ssh_keys:
+  ed25519_private: |
+    ${indent(4, host_private_key)}
+  ed25519_public: ${trimspace(host_public_key)}
+
+disable_root: true
+ssh_pwauth: false
+
+users:
+  - name: deploy
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${trimspace(ssh_public_key)}
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/10-haushaltsbuch.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+      AllowUsers deploy
+  - path: /etc/docker/daemon.json
+    content: |
+      { "log-driver": "json-file", "log-opts": { "max-size": "10m", "max-file": "3" } }
+
+runcmd:
+  # Database volume: wait until Hetzner has attached it, then mount it for good.
+  - for i in $(seq 1 60); do [ -e /dev/disk/by-id/scsi-0HC_Volume_${volume_id} ] && break; sleep 5; done
+  - mkdir -p /mnt/data
+  - echo "/dev/disk/by-id/scsi-0HC_Volume_${volume_id} /mnt/data ext4 discard,nofail,defaults 0 0" >> /etc/fstab
+  - mount -a
+  - mkdir -p /mnt/data/postgres /mnt/data/secrets
+  - chown deploy:deploy /mnt/data/secrets
+  - chmod 700 /mnt/data/secrets
+
+  # Docker for the deploy user; its own systemd timers (backup) run without a login.
+  - usermod -aG docker deploy
+  - systemctl enable --now docker
+  - loginctl enable-linger deploy
+  - install -d -o deploy -g deploy -m 750 /opt/haushaltsbuch
+
+  - systemctl restart ssh
+
+  # cloudflared from Cloudflare's package repository, connected to the tunnel.
+  - mkdir -p --mode=0755 /usr/share/keyrings
+  - curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-main.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main" > /etc/apt/sources.list.d/cloudflared.list
+  - apt-get update
+  - apt-get install -y cloudflared
+  - cloudflared service install ${tunnel_token}

@@ -42,3 +42,9 @@ yarn-error.log*
 next-env.d.ts
 
 .idea
+
+# OpenTofu (infra/): working files and local state; the real state lives in R2
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/*.tfstate*
+infra/*.tfplan

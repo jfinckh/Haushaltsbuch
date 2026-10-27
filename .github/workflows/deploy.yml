@@ -1,0 +1,294 @@
+# Production deployment. Every push to main: check → image → release (infrastructure + deploy).
+# Setup and the list of secrets and variables: README.md, section "Deployment".
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Roll back: deploy this existing image tag (a commit SHA) without building. Empty = current commit."
+        required: false
+        default: ""
+      rebuild_server:
+        description: "Replace the Hetzner server with a fresh one (the database volume is kept)."
+        type: boolean
+        default: false
+
+# Never two deployments at once; a newer push waits for the running one.
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  APP_IMAGE: ghcr.io/jfinckh/haushaltsbuch
+  MIGRATE_IMAGE: ghcr.io/jfinckh/haushaltsbuch-migrate
+
+jobs:
+  check:
+    name: Lint, types, tests
+    if: inputs.image_tag == ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read # the dev dependency @jfinckh/change-map comes from GitHub Packages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@jfinckh"
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npx eslint .
+      - run: npx tsc --noEmit
+      - run: npx vitest run
+
+  image:
+    name: Build images
+    needs: check
+    if: inputs.image_tag == ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # npm login for the build, passed as a build secret (never stored in an image layer).
+      - name: Write npm credentials
+        run: |
+          umask 077
+          printf '%s\n' "@jfinckh:registry=https://npm.pkg.github.com" \
+            "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > "$RUNNER_TEMP/npmrc"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: App image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: app
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.APP_IMAGE }}:${{ github.sha }},${{ env.APP_IMAGE }}:latest
+          secret-files: npmrc=${{ runner.temp }}/npmrc
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,mode=max,scope=app
+      - name: Migrate image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: migrate
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.MIGRATE_IMAGE }}:${{ github.sha }},${{ env.MIGRATE_IMAGE }}:latest
+          secret-files: npmrc=${{ runner.temp }}/npmrc
+          cache-from: type=gha,scope=migrate
+          cache-to: type=gha,mode=max,scope=migrate
+      # Keep the newest 10 versions of each image (rollback), stay inside the free storage.
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: haushaltsbuch
+          package-type: container
+          min-versions-to-keep: 10
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: haushaltsbuch-migrate
+          package-type: container
+          min-versions-to-keep: 10
+
+  release:
+    name: Infrastructure and deploy
+    needs: [check, image]
+    # Runs after a successful build, or alone for a rollback (check and image skipped).
+    if: >-
+      always() &&
+      (needs.image.result == 'success' || (inputs.image_tag != '' && needs.image.result == 'skipped'))
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag || github.sha }}
+      # OpenTofu: provider logins, R2 state, state encryption, variables
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_STATE_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_STATE_SECRET_ACCESS_KEY }}
+      TF_ENCRYPTION: |
+        key_provider "pbkdf2" "main" {
+          passphrase = "${{ secrets.STATE_PASSPHRASE }}"
+        }
+        method "aes_gcm" "main" {
+          keys = key_provider.pbkdf2.main
+        }
+        state {
+          method   = method.aes_gcm.main
+          enforced = true
+        }
+        plan {
+          method   = method.aes_gcm.main
+          enforced = true
+        }
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_domain: ${{ vars.DOMAIN }}
+      TF_VAR_allowed_emails: ${{ vars.ALLOWED_EMAILS }}
+      TF_VAR_ssh_public_key: ${{ vars.SSH_PUBLIC_KEY }}
+      TF_VAR_backup_bucket: ${{ vars.R2_BACKUP_BUCKET }}
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.10.0
+          tofu_wrapper: false
+
+      # Optional variables: only set when the GitHub variable exists, otherwise variables.tf's default.
+      - name: Optional settings
+        run: |
+          [ -n "${{ vars.SERVER_TYPE }}" ] && echo "TF_VAR_server_type=${{ vars.SERVER_TYPE }}" >> "$GITHUB_ENV"
+          [ -n "${{ vars.SERVER_LOCATION }}" ] && echo "TF_VAR_location=${{ vars.SERVER_LOCATION }}" >> "$GITHUB_ENV"
+          [ -n "${{ vars.APP_SUBDOMAIN }}" ] && echo "TF_VAR_app_subdomain=${{ vars.APP_SUBDOMAIN }}" >> "$GITHUB_ENV"
+          true
+
+      - name: tofu init
+        run: |
+          tofu init -input=false \
+            -backend-config="bucket=${{ vars.R2_STATE_BUCKET }}" \
+            -backend-config="endpoints={s3=\"https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com\"}"
+
+      - name: tofu apply
+        run: |
+          replace=()
+          [ "${{ inputs.rebuild_server }}" = "true" ] && replace=(-replace=hcloud_server.app)
+          tofu apply -input=false -auto-approve "${replace[@]}"
+
+      - name: Read infrastructure outputs
+        run: |
+          token_id=$(tofu output -raw ssh_service_token_id)
+          token_secret=$(tofu output -raw ssh_service_token_secret)
+          echo "::add-mask::$token_id"
+          echo "::add-mask::$token_secret"
+          {
+            echo "TUNNEL_SERVICE_TOKEN_ID=$token_id"
+            echo "TUNNEL_SERVICE_TOKEN_SECRET=$token_secret"
+            echo "SSH_HOST=$(tofu output -raw ssh_host)"
+            echo "SSH_HOST_KEY=$(tofu output -raw ssh_host_public_key)"
+            echo "APP_URL=$(tofu output -raw app_url)"
+            echo "ACCESS_AUDIENCE=$(tofu output -raw access_audience)"
+          } >> "$GITHUB_ENV"
+
+      # SSH goes through Cloudflare Access: cloudflared presents the service token
+      # (TUNNEL_SERVICE_TOKEN_ID / _SECRET from the environment), then normal key login.
+      - name: Set up SSH over the tunnel
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/cloudflared.deb" \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i "$RUNNER_TEMP/cloudflared.deb"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          echo "$SSH_HOST $SSH_HOST_KEY" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host server
+            HostName $SSH_HOST
+            User deploy
+            IdentityFile ~/.ssh/deploy
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ProxyCommand cloudflared access ssh --hostname %h
+            ServerAliveInterval 30
+          EOF
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # A new server needs a few minutes: boot, cloud-init, cloudflared connecting.
+      - name: Wait for the server
+        run: |
+          for i in $(seq 1 60); do
+            if timeout 30 ssh server true 2>/dev/null; then break; fi
+            [ "$i" = 60 ] && { echo "Server not reachable over SSH after 10 minutes"; exit 1; }
+            sleep 10
+          done
+          ssh server 'cloud-init status --wait > /dev/null || true; docker info > /dev/null'
+
+      - name: Copy files
+        working-directory: deploy
+        run: |
+          scp -q docker-compose.prod.yml server:/opt/haushaltsbuch/compose.yml
+          scp -q postgres-init.sh deploy.sh backup.sh server:/opt/haushaltsbuch/
+          ssh server 'chmod 755 /opt/haushaltsbuch/*.sh && mkdir -p ~/.config/systemd/user'
+          scp -q haushaltsbuch-backup.service haushaltsbuch-backup.timer server:.config/systemd/user/
+
+      # Secrets travel inside the SSH connection and land in files only the deploy user can read.
+      - name: Write settings
+        run: |
+          ssh server 'umask 077 && cat > /opt/haushaltsbuch/app.env' <<EOF
+          AUTH_MODE=identity
+          BETTER_AUTH_URL=$APP_URL
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          IDENTITY_ISSUER=https://$ACCESS_TEAM.cloudflareaccess.com
+          IDENTITY_JWKS_URL=https://$ACCESS_TEAM.cloudflareaccess.com/cdn-cgi/access/certs
+          IDENTITY_AUDIENCE=$ACCESS_AUDIENCE
+          FIELD_ENCRYPTION_KEYS=$FIELD_ENCRYPTION_KEYS
+          BLIND_INDEX_KEY=$BLIND_INDEX_KEY
+          EOF
+          ssh server 'umask 077 && cat > /opt/haushaltsbuch/backup.env' <<EOF
+          R2_ENDPOINT=https://$CLOUDFLARE_ACCOUNT_ID.r2.cloudflarestorage.com
+          R2_BUCKET=$R2_BACKUP_BUCKET
+          R2_ACCESS_KEY_ID=$R2_BACKUP_ACCESS_KEY_ID
+          R2_SECRET_ACCESS_KEY=$R2_BACKUP_SECRET_ACCESS_KEY
+          BACKUP_PASSPHRASE=$BACKUP_PASSPHRASE
+          EOF
+        env:
+          ACCESS_TEAM: ${{ vars.ACCESS_TEAM }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          FIELD_ENCRYPTION_KEYS: ${{ secrets.FIELD_ENCRYPTION_KEYS }}
+          BLIND_INDEX_KEY: ${{ secrets.BLIND_INDEX_KEY }}
+          R2_BACKUP_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+          R2_BACKUP_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+
+      - name: Deploy
+        run: |
+          echo "$GHCR_TOKEN" | ssh server docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          ssh server /opt/haushaltsbuch/deploy.sh "$IMAGE_TAG"
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log out of the registry
+        if: always()
+        run: ssh server docker logout ghcr.io || true
+
+      - name: Turn on the nightly backup
+        run: |
+          ssh server 'export XDG_RUNTIME_DIR=/run/user/$(id -u) &&
+            systemctl --user daemon-reload &&
+            systemctl --user enable --now haushaltsbuch-backup.timer'
+
+      # From outside, without a login, Cloudflare Access must answer (redirect to its login page).
+      - name: Check the app is behind Cloudflare Access
+        run: |
+          location=$(curl -s -o /dev/null -w '%{redirect_url}' "$APP_URL")
+          echo "Redirects to: $location"
+          case "$location" in
+            *cloudflareaccess.com*) echo "OK: login required" ;;
+            *) echo "Expected a redirect to Cloudflare Access"; exit 1 ;;
+          esac
