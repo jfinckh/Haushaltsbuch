@@ -1,3 +1,4 @@
+import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { RuleSuggestion } from "./suggestions";
 import type { ApplyResult, RuleView } from "./types";
@@ -5,11 +6,9 @@ import type { ApplyResult, RuleView } from "./types";
 // The contract of the rules part. createRules implements it. Views shared with the client
 // components live in types.ts.
 
-export type SaveRuleResult =
-  | { ok: true; rule: RuleView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "no-household" };
+export type SaveRuleResult = Result<{ rule: RuleView }, "invalid-input" | "not-found" | "no-household">;
 
-export type ApplyToAccountResult = ({ ok: true } & ApplyResult) | { ok: false; reason: "invalid-input" | "not-found" };
+export type ApplyToAccountResult = Result<ApplyResult, "invalid-input" | "not-found">;
 
 /**
  * Rules that sort bookings. Every call is about the caller's own view; their user id comes from

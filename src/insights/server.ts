@@ -2,4 +2,4 @@
 import "server-only";
 
 export { createInsights } from "./create-insights";
-export type { Insights, StatisticsRow } from "./contract";
+export type { CategoryTrends, Insights, StatisticsRow, YearOverview } from "./contract";

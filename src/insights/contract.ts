@@ -1,8 +1,10 @@
+import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { CategoryTrends } from "./category-trends";
 import type { MonthComparison, StatisticsRow } from "./statistics";
 import type { YearTotals } from "./year-overview";
 
+export type { CategoryTrends } from "./category-trends";
 export type { StatisticsRow } from "./statistics";
 
 // The contract of the insights part. createInsights implements it.
@@ -10,7 +12,8 @@ export type { StatisticsRow } from "./statistics";
 /** One visible account, or all of the caller's own private accounts together ("Alle privaten Konten"). */
 export type InsightsTarget = string | { ownPrivate: true };
 
-type Failure = { ok: false; reason: "invalid-input" | "not-found" };
+/** Why a call fails: invalid input, or an account the caller may not see (same as unknown). */
+type Reason = "invalid-input" | "not-found";
 
 /** The dashboard's current month (cents, signed as booked: money out is negative). */
 export type MonthFigures = {
@@ -24,33 +27,33 @@ export type MonthFigures = {
   availableCents: number;
 };
 
-export type MonthFiguresResult = ({ ok: true } & MonthFigures) | Failure;
+export type MonthFiguresResult = Result<MonthFigures, Reason>;
 
-export type StatisticsResult =
-  | {
-      ok: true;
-      /** One row per calendar month, newest first. */
-      rows: StatisticsRow[];
-      /** The newest month compared with the one before, or null with a single month. */
-      comparison: MonthComparison | null;
-      /** The amount a full bar stands for. */
-      scaleCents: number;
-    }
-  | Failure;
+/** The statistics page's months. */
+export type Statistics = {
+  /** One row per calendar month, newest first. */
+  rows: StatisticsRow[];
+  /** The newest month compared with the one before, or null with a single month. */
+  comparison: MonthComparison | null;
+  /** The amount a full bar stands for. */
+  scaleCents: number;
+};
 
-export type CategoryTrendsResult = ({ ok: true } & CategoryTrends) | Failure;
+export type StatisticsResult = Result<Statistics, Reason>;
 
-export type YearOverviewResult =
-  | {
-      ok: true;
-      year: number;
-      /** The year's months up to the current one, January first. */
-      months: StatisticsRow[];
-      totals: YearTotals;
-      /** Spending per category group over these months, largest first. */
-      categories: { totalCents: number; groups: { group: string | null; cents: number }[] };
-    }
-  | Failure;
+export type CategoryTrendsResult = Result<CategoryTrends, Reason>;
+
+/** One calendar year as the year overview shows it. */
+export type YearOverview = {
+  year: number;
+  /** The year's months up to the current one, January first. */
+  months: StatisticsRow[];
+  totals: YearTotals;
+  /** Spending per category group over these months, largest first. */
+  categories: { totalCents: number; groups: { group: string | null; cents: number }[] };
+};
+
+export type YearOverviewResult = Result<YearOverview, Reason>;
 
 /**
  * Figures of the dashboard and the statistics page. Combines what the bookings and transfers

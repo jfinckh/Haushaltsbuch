@@ -1,3 +1,4 @@
+import type { Failure, Result } from "@/shared/result";
 import type { Caller, RlsTransaction } from "@/shared/rls";
 import type { CategoryCatalog, GroupSpending } from "./categories";
 import type { ClassifiedBy, TransactionKind } from "./kinds";
@@ -31,15 +32,14 @@ export type AccountTarget = string | { ownPrivate: true };
 /** Where a category is used: one visible account, or a whole rule scope (shared or private accounts). */
 export type CategoryTarget = string | { visibility: "shared" | "private" };
 
-type Failure = { ok: false; reason: "invalid-input" | "not-found" };
+/** Why most calls fail: invalid input, or something the caller may not see (same as unknown). */
+type Reason = "invalid-input" | "not-found";
 
-export type ListTransactionsResult =
-  | { ok: true; transactions: TransactionView[]; total: { count: number; sumCents: number } }
-  | Failure;
+export type ListTransactionsResult = Result<{ transactions: TransactionView[]; total: { count: number; sumCents: number } }, Reason>;
 
-export type LatestTransactionsResult = { ok: true; transactions: TransactionView[] } | Failure;
+export type LatestTransactionsResult = Result<{ transactions: TransactionView[] }, Reason>;
 
-export type SaveTransactionResult = { ok: true; transaction: TransactionView } | Failure;
+export type SaveTransactionResult = Result<{ transaction: TransactionView }, Reason>;
 
 /** Which bookings findBookings returns; all given criteria must hold. */
 export type FindBookingsCriteria = {
@@ -65,16 +65,16 @@ export type Classification = { id: string; kind: TransactionKind; category: stri
 /** Income, expenses and saving of one calendar month (cents, signed as booked), and what is available. */
 export type MonthSummary = { month: string; incomeCents: number; expenseCents: number; savingCents: number; availableCents: number };
 
-export type MonthSummaryResult = ({ ok: true } & MonthSummary) | Failure;
+export type MonthSummaryResult = Result<MonthSummary, Reason>;
 
-export type MonthSummariesResult = { ok: true; months: MonthSummary[] } | Failure;
+export type MonthSummariesResult = Result<{ months: MonthSummary[] }, Reason>;
 
 /** What was spent in one calendar month per category group (positive cents), largest first. */
 export type MonthCategorySpending = { month: string; totalCents: number; groups: GroupSpending[] };
 
-export type CategorySpendingResult = ({ ok: true } & MonthCategorySpending) | Failure;
+export type CategorySpendingResult = Result<MonthCategorySpending, Reason>;
 
-export type CategorySpendingsResult = { ok: true; months: MonthCategorySpending[] } | Failure;
+export type CategorySpendingsResult = Result<{ months: MonthCategorySpending[] }, Reason>;
 
 /** Bookings for pages and routes. Every call is about the caller's own view. */
 export interface BookingService {
@@ -241,11 +241,9 @@ export type ListCategoriesResult = {
   personal: CategoryScopeView;
 };
 
-export type SaveCategoryResult =
-  | { ok: true; category: CategoryView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "duplicate" };
+export type SaveCategoryResult = Result<{ category: CategoryView }, Reason | "duplicate">;
 
-export type HideCategoryResult = { ok: true } | Failure;
+export type HideCategoryResult = { ok: true } | Failure<Reason>;
 
 /** Own categories and hidden standard ones, per household and per person. */
 export interface Categories {

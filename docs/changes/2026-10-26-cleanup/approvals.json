@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:insights:server:YearOverview",
+      "itemHash": "sha256:99a7c03d9a87a4cb0a685e2cc15b2d2621bbd50df0e6f8423a3db2a6beceff0f",
+      "decision": "approve",
+      "at": "2026-10-26T16:19:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:server:CategoryTrends",
+      "itemHash": "sha256:b300bc41ea25dbe59ac7897cfa61b09aaffe076601c0a888662b65788e04c3e9",
+      "decision": "approve",
+      "at": "2026-10-26T16:19:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:import:server:ConfirmResult",
+      "itemHash": "sha256:70afbc37ee54257d6e396c8cc937511af8d75ede19124870b0f3a3e5778dbd0f",
+      "decision": "approve",
+      "at": "2026-10-26T16:19:19Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:rules:server:ApplyResult",
+      "itemHash": "sha256:700316a38ec1c4775085d8b818c506178a3904515943edff3bc38a43a0d390ca",
+      "decision": "approve",
+      "at": "2026-10-26T16:19:19Z",
+      "source": "hook"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { Member } from "./signals";
 import type { AccountTransfers, NoPartnerTarget, TransferKind, TransferStatus } from "./types";
@@ -5,9 +6,9 @@ import type { AccountTransfers, NoPartnerTarget, TransferKind, TransferStatus } 
 // The contract of the transfers part. createTransfers implements it. Views shared with the client
 // components live in types.ts.
 
-export type SharedContributionResult = { ok: true; month: string; cents: number } | { ok: false; reason: "invalid-input" };
+export type SharedContributionResult = Result<{ month: string; cents: number }, "invalid-input">;
 
-export type SharedContributionsResult = { ok: true; months: { month: string; cents: number }[] } | { ok: false; reason: "invalid-input" };
+export type SharedContributionsResult = Result<{ months: { month: string; cents: number }[] }, "invalid-input">;
 
 /** A booking a rule typed as transfer or saving; target external: from or to an external own account. */
 export type RuleTransfer = { id: string; target: "external" | null };

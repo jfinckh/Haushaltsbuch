@@ -1,3 +1,4 @@
+import type { Result } from "@/shared/result";
 import type { Caller, RlsTransaction } from "@/shared/rls";
 import type { AccountRole, AccountType, Bank, Visibility } from "./validation";
 
@@ -18,13 +19,9 @@ export type AccountView = {
   ownedByMe: boolean;
 };
 
-export type CreateAccountResult =
-  | { ok: true; accounts: AccountView[] }
-  | { ok: false; reason: "invalid-input" | "no-household" };
+export type CreateAccountResult = Result<{ accounts: AccountView[] }, "invalid-input" | "no-household">;
 
-export type UpdateAccountResult =
-  | { ok: true; account: AccountView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "no-household" | "not-owner" };
+export type UpdateAccountResult = Result<{ account: AccountView }, "invalid-input" | "not-found" | "no-household" | "not-owner">;
 
 /** Accounts. Every call is about the caller's own view; their user id comes from the database. */
 export interface Accounts {

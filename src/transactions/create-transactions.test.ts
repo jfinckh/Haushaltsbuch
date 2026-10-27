@@ -897,6 +897,34 @@ describe("who set a booking's type and category", () => {
     expect(await storedRow(manual)).toMatchObject({ category: "shopping", classifiedBy: "manual" });
   });
 
+  it("classifies many bookings with different types and categories in one call, in the given order", async () => {
+    const [a, b, c, d] = [await imported(), await imported(), await imported(), await imported()];
+    const changed = await withSession(setup.db, max, (tx) =>
+      transactions.classifyBookings(tx, [
+        { id: c, kind: "income", category: null },
+        { id: a, kind: "expense", category: "groceries.supermarket" },
+        { id: d, kind: "transfer", category: null },
+        { id: b, kind: "expense", category: "groceries.supermarket" },
+      ]),
+    );
+    expect(changed).toEqual([c, a, d, b]);
+    expect(await storedRow(a)).toMatchObject({ kind: "expense", category: "groceries.supermarket", classifiedBy: "rule" });
+    expect(await storedRow(b)).toMatchObject({ kind: "expense", category: "groceries.supermarket", classifiedBy: "rule" });
+    expect(await storedRow(c)).toMatchObject({ kind: "income", category: null, classifiedBy: "rule" });
+    expect(await storedRow(d)).toMatchObject({ kind: "transfer", category: null, classifiedBy: "rule" });
+  });
+
+  it("sets one type on many bookings, keeping only categories that fit it", async () => {
+    const fits = await imported({ category: "groceries" });
+    const none = await imported();
+    const changed = await withSession(setup.db, max, (tx) => transactions.setKind(tx, [fits, none], "expense"));
+    expect(changed).toBe(2);
+    expect(await storedRow(fits)).toMatchObject({ kind: "expense", category: "groceries", classifiedBy: "manual" });
+    expect(await storedRow(none)).toMatchObject({ kind: "expense", category: null, classifiedBy: "manual" });
+    await withSession(setup.db, max, (tx) => transactions.setKind(tx, [fits, none], "transfer"));
+    expect(await storedRow(fits)).toMatchObject({ kind: "transfer", category: null });
+  });
+
   it("refuses a rule category that does not fit the type, and bookings the caller may not see", async () => {
     const id = await imported();
     await expect(

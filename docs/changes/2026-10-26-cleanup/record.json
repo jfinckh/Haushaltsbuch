@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-26",
+  "slug": "cleanup",
+  "description": "Cleanup, one Result type, fewer queries, named types",
+  "plan": {
+    "path": "docs/plans/2026-10-26-cleanup.md",
+    "sha256": "fbac150a5d05e2904f4cdd2159a3727138eec2abd3e6c605ab2adad5ac139470"
+  },
+  "status": "final",
+  "base": "ff445d5f553a0bebeaf9454788f2d94ed35c9a6b",
+  "report": "Finalized cleanup (ff445d5..working-tree)\nFiles: 18 converge, 0 diverge, 0 absent. Elements: 14 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 4 approved.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-26-cleanup/map.html\n",
+  "shownAt": "2026-10-26T16:28:02Z"
+}

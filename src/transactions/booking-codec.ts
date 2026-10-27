@@ -12,14 +12,30 @@ const CONTEXT = {
   reference: "transaction.reference",
 } as const;
 
+/** The encrypted columns of a booking, as stored. */
+export type TransactionColumns = Omit<TransactionValues, "counterparty" | "counterpartyIban" | "reference"> & {
+  counterpartyEncrypted: string | null;
+  counterpartyIbanEncrypted: string | null;
+  counterpartyIbanIndex: string | null;
+  referenceEncrypted: string | null;
+};
+
 /** Turns stored rows into views and values, and values into encrypted columns. */
-export function createBookingCodec(fieldCrypto: FieldCrypto) {
+export interface BookingCodec {
+  /** The booking as `userId` sees it. */
+  toView(row: TransactionRow, userId: string): TransactionView;
+  /** The booking's values, decrypted. */
+  toValues(row: TransactionRow): TransactionValues;
+  /** The stored columns for a booking's values, encrypted. */
+  toColumns(values: TransactionValues): TransactionColumns;
+}
+
+export function createBookingCodec(fieldCrypto: FieldCrypto): BookingCodec {
   const decrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.decrypt(value, context));
   const encrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.encrypt(value, context));
 
   return {
-    /** The booking as `userId` sees it. */
-    toView(row: TransactionRow, userId: string): TransactionView {
+    toView(row, userId) {
       const iban = decrypt(row.counterpartyIbanEncrypted, CONTEXT.counterpartyIban);
       return {
         id: row.id,
@@ -36,8 +52,7 @@ export function createBookingCodec(fieldCrypto: FieldCrypto) {
       };
     },
 
-    /** The booking's values, decrypted. */
-    toValues(row: TransactionRow): TransactionValues {
+    toValues(row) {
       return {
         accountId: row.accountId,
         bookingDate: row.bookingDate,
@@ -50,8 +65,7 @@ export function createBookingCodec(fieldCrypto: FieldCrypto) {
       };
     },
 
-    /** The stored columns for a booking's values, encrypted. */
-    toColumns({ counterparty, counterpartyIban, reference, ...plain }: TransactionValues) {
+    toColumns({ counterparty, counterpartyIban, reference, ...plain }) {
       return {
         ...plain,
         counterpartyEncrypted: encrypt(counterparty, CONTEXT.counterparty),
@@ -63,4 +77,3 @@ export function createBookingCodec(fieldCrypto: FieldCrypto) {
   };
 }
 
-export type BookingCodec = ReturnType<typeof createBookingCodec>;

@@ -2,4 +2,4 @@
 import "server-only";
 
 export { createImports } from "./create-imports";
-export type { Imports } from "./contract";
+export type { ConfirmResult, Imports } from "./contract";

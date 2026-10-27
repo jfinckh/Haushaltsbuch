@@ -11,7 +11,7 @@ import { households } from "@/app/_lib/households";
 import { categories as categoryService } from "@/app/_lib/categories";
 import { insights } from "@/app/_lib/insights";
 import { ALL_MINE, selectAccount } from "@/insights";
-import type { Insights } from "@/insights/server";
+import type { YearOverview as Overview } from "@/insights/server";
 import { formatCents, formatEuro } from "@/shared/money";
 import type { Caller } from "@/shared/rls";
 import { useCategoryName } from "@/transactions";
@@ -19,8 +19,6 @@ import { ViewTabs } from "../view-tabs";
 import { AppShell, PageHeader } from "@/app/_lib/app-shell";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
-
-type Overview = Extract<Awaited<ReturnType<Insights["yearOverview"]>>, { ok: true }>;
 
 /** The earliest year the switcher links to (the overview accepts nothing earlier). */
 const FIRST_YEAR = 1970;

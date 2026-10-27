@@ -1,6 +1,6 @@
 import "server-only";
-import type { Imports } from "@/import/server";
-import type { Rules } from "@/rules/server";
+import type { ConfirmResult, Imports } from "@/import/server";
+import type { ApplyResult, Rules } from "@/rules/server";
 import type { Caller } from "@/shared/rls";
 import type { Transfers } from "@/transfers/server";
 
@@ -21,16 +21,16 @@ type Deps = {
   householdMembers: (caller: Caller) => Promise<{ userId: string; name: string }[]>;
 };
 
-type RuleTransfers = Awaited<ReturnType<Rules["applyToBookings"]>>["transfers"];
+type RuleTransfers = ApplyResult["transfers"];
 
-export type ConfirmedImport = Extract<Awaited<ReturnType<Imports["confirm"]>>, { ok: true }> & {
+export type ConfirmedImport = Extract<ConfirmResult, { ok: true }> & {
   /** How many bookings the rules sorted, or null if they did not run. */
   rules: { applied: number } | null;
   /** What matching linked and proposed, or null if it did not run. */
   transfers: { linked: number; proposed: number } | null;
 };
 
-export type ConfirmImportResult = ConfirmedImport | Extract<Awaited<ReturnType<Imports["confirm"]>>, { ok: false }>;
+export type ConfirmImportResult = ConfirmedImport | Extract<ConfirmResult, { ok: false }>;
 
 export interface ImportWorkflow {
   /** Confirms an upload (see Imports.confirm), then applies the rules and matches transfers. */
@@ -56,7 +56,7 @@ export function createImportWorkflow({ imports, rules, transfers, householdMembe
       if (!result.ok) return result;
       // Merged bookings go along: rules and matching both leave what a person decided as it is.
       const bookingIds = [...result.bookingIds, ...result.mergedIds];
-      let applied: Awaited<ReturnType<Rules["applyToBookings"]>> | null = null;
+      let applied: ApplyResult | null = null;
       if (rules) {
         try {
           applied = await rules.applyToBookings(caller, bookingIds);

@@ -1,3 +1,4 @@
+import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 
 // The contract of the households part. createHouseholds implements it.
@@ -13,13 +14,9 @@ export type Household = {
 
 export type Member = { userId: string; joinedAt: Date };
 
-export type CreateHouseholdResult =
-  | { ok: true; household: Household }
-  | { ok: false; reason: "invalid-input" | "already-member" };
+export type CreateHouseholdResult = Result<{ household: Household }, "invalid-input" | "already-member">;
 
-export type RenameHouseholdResult =
-  | { ok: true; household: Household }
-  | { ok: false; reason: "invalid-input" | "no-household" };
+export type RenameHouseholdResult = Result<{ household: Household }, "invalid-input" | "no-household">;
 
 export type LeaveHouseholdResult = { left: boolean; householdDeleted: boolean };
 

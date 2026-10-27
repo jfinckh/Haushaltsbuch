@@ -1,3 +1,4 @@
+import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 
 // The contract of the budgets part. createBudgets implements it.
@@ -13,13 +14,9 @@ export type BudgetView = {
   spentCents: number;
 };
 
-export type ListBudgetsResult =
-  | { ok: true; month: string; budgets: BudgetView[] }
-  | { ok: false; reason: "invalid-input" | "not-found" };
+export type ListBudgetsResult = Result<{ month: string; budgets: BudgetView[] }, "invalid-input" | "not-found">;
 
-export type SaveBudgetResult =
-  | { ok: true; budget: BudgetView }
-  | { ok: false; reason: "invalid-input" | "not-found" | "duplicate" };
+export type SaveBudgetResult = Result<{ budget: BudgetView }, "invalid-input" | "not-found" | "duplicate">;
 
 /** Budgets. Every call is about the caller's own view; their user id comes from the database. */
 export interface Budgets {

@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import type { Insights } from "@/insights/server";
+import type { CategoryTrends as Trends } from "@/insights/server";
 import { bookingsHref } from "@/app/_lib/bookings-href";
 import { formatEuro } from "@/shared/money";
 import { useCategoryName } from "@/transactions";
 
-type Trends = Extract<Awaited<ReturnType<Insights["categoryTrends"]>>, { ok: true }>;
 type Direction = Trends["groups"][number]["difference"]["direction"];
 
 /** The first day of a YYYY-MM month as a date, for the month-name formatter. */

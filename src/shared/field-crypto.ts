@@ -18,7 +18,21 @@ export type FieldCryptoOptions = {
   indexKey: string;
 };
 
-export type FieldCrypto = ReturnType<typeof createFieldCrypto>;
+/**
+ * Encrypts and decrypts single field values. `context` names where the value lives (e.g.
+ * "account.iban"); it is authenticated, so a value copied to another column does not decrypt.
+ */
+export interface FieldCrypto {
+  /** Encrypts `plaintext` with the newest key: `<version>:<base64 iv‖tag‖ciphertext>`. */
+  encrypt(plaintext: string, context: string): string;
+  /** Decrypts a value from `encrypt`; throws DecryptionError if it cannot. */
+  decrypt(value: string, context: string): string;
+  /**
+   * A keyed hash for exact-match lookups without decrypting (hex). Normalize `value` first; the
+   * same value in another context gives another index.
+   */
+  blindIndex(value: string, context: string): string;
+}
 
 /** Thrown for a value that cannot be decrypted (unknown key version, tampered, wrong context). */
 export class DecryptionError extends Error {
@@ -49,18 +63,14 @@ function parseKeyRing(keys: string): Map<number, Buffer> {
   return ring;
 }
 
-/**
- * Encrypts and decrypts single field values. `context` names where the value lives (e.g.
- * "account.iban"); it is authenticated, so a value copied to another column does not decrypt.
- */
-export function createFieldCrypto({ keys, indexKey }: FieldCryptoOptions) {
+/** The field encryption for the given keys (documented on FieldCrypto). */
+export function createFieldCrypto({ keys, indexKey }: FieldCryptoOptions): FieldCrypto {
   const ring = parseKeyRing(keys);
   const currentVersion = Math.max(...ring.keys());
   const hmacKey = decodeKey(indexKey, "Blind index key");
 
   return {
-    /** Encrypts `plaintext` with the newest key: `<version>:<base64 iv‖tag‖ciphertext>`. */
-    encrypt(plaintext: string, context: string): string {
+    encrypt(plaintext, context) {
       const iv = randomBytes(IV_BYTES);
       const cipher = createCipheriv(ALGORITHM, ring.get(currentVersion)!, iv);
       cipher.setAAD(Buffer.from(context, "utf8"));
@@ -68,8 +78,7 @@ export function createFieldCrypto({ keys, indexKey }: FieldCryptoOptions) {
       return `${currentVersion}:${Buffer.concat([iv, cipher.getAuthTag(), ciphertext]).toString("base64")}`;
     },
 
-    /** Decrypts a value from `encrypt`; throws DecryptionError if it cannot. */
-    decrypt(value: string, context: string): string {
+    decrypt(value, context) {
       const separator = value.indexOf(":");
       const key = ring.get(Number(value.slice(0, separator)));
       const payload = Buffer.from(value.slice(separator + 1), "base64");
@@ -84,11 +93,7 @@ export function createFieldCrypto({ keys, indexKey }: FieldCryptoOptions) {
       }
     },
 
-    /**
-     * A keyed hash for exact-match lookups without decrypting (hex). Normalize `value` first; the
-     * same value in another context gives another index.
-     */
-    blindIndex(value: string, context: string): string {
+    blindIndex(value, context) {
       return createHmac("sha256", hmacKey).update(context, "utf8").update("\0").update(value, "utf8").digest("hex");
     },
   };

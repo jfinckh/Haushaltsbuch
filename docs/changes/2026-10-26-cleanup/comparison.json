@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "base": "ff445d5f553a0bebeaf9454788f2d94ed35c9a6b",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/shared/result.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/budgets/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transfers/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/rules/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/shared/field-crypto.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-codec.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/booking-store.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/create-transactions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/year/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/category-trends.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/import-workflow.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "accounts->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "budgets->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "households->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "insights->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "rules->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "transactions->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "transfers->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->insights",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->import",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->rules",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:YearOverview",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:CategoryTrends",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "import:server:ConfirmResult",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "rules:server:ApplyResult",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "export-add:insights:server:YearOverview",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:server:CategoryTrends",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:import:server:ConfirmResult",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:rules:server:ApplyResult",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}
