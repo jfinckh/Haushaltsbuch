@@ -48,6 +48,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npx eslint .
+      # PageProps / LayoutProps are global types Next.js generates into .next/types (normally by
+      # `next dev` or `next build`); a fresh checkout has none.
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npx vitest run
 
