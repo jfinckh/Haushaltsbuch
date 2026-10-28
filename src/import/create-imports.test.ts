@@ -25,9 +25,12 @@ const upload = (accountId: string, bytes: Uint8Array | Buffer = ING, fileName = 
 
 /** The ING test file without its newest `drop` bookings (an older, overlapping export). */
 function olderIngExport(drop: number): Uint8Array {
-  const lines = ING.toString("utf8").split("\r\n");
+  const text = ING.toString("utf8");
+  const eol = text.includes("\r\n") ? "\r\n" : "\n";
+  const lines = text.split(eol);
   const header = lines.findIndex((line) => line.startsWith("Buchung;"));
-  return new TextEncoder().encode([...lines.slice(0, header + 1), ...lines.slice(header + 1 + drop)].join("\r\n"));
+  if (header < 0) throw new Error("ING test file has no header line");
+  return new TextEncoder().encode([...lines.slice(0, header + 1), ...lines.slice(header + 1 + drop)].join(eol));
 }
 
 async function confirm(caller: Caller, input: UploadInput) {

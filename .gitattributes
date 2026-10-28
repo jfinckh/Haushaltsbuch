@@ -1,0 +1,3 @@
+# Bank exports are test fixtures: keep their bytes exactly (ING uses CRLF line endings).
+# Without this, core.autocrlf=input turns CRLF into LF on commit and CI tests see another file.
+test-data/*.csv -text
