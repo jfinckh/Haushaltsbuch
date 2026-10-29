@@ -3,8 +3,9 @@ import type { BookingFigures } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
 import { currentBalances } from "./balances";
 import { categoryTrends, TREND_MONTHS } from "./category-trends";
-import type { CategoryTrendsResult, Insights, InsightsTarget, MonthFiguresResult, StatisticsResult, YearOverviewResult } from "./contract";
-import { barScale, compareMonths, statisticsRows } from "./statistics";
+import type { CategoryTrendsResult, Insights, InsightsTarget, MoneyFlowResult, MonthFiguresResult, StatisticsResult, YearOverviewResult } from "./contract";
+import { moneyFlow } from "./money-flow";
+import { barScale, statisticsComparison, statisticsRows } from "./statistics";
 import { yearCategories, yearTotals } from "./year-overview";
 
 export type InsightsOptions = {
@@ -64,9 +65,29 @@ export function createInsights({ transactions, transfers, today = localToday }: 
       return {
         ok: true,
         rows,
-        comparison: rows.length > 1 ? compareMonths(rows[0], rows[1]) : null,
+        comparison: statisticsComparison(rows),
+        running: rows[0].month === today().slice(0, 7),
         scaleCents: barScale(rows),
       };
+    },
+
+    async moneyFlow(caller: Caller, target: InsightsTarget, month?: string): Promise<MoneyFlowResult> {
+      if (month !== undefined && !isPastMonth(month, today())) return { ok: false, reason: "invalid-input" };
+      const [summaries, spendings] = await Promise.all([
+        transactions.monthSummaries(caller, target, 1, month),
+        transactions.categorySpendings(caller, target, 1, month),
+      ]);
+      if (!summaries.ok) return summaries;
+      if (!spendings.ok) return spendings;
+      const [summary] = summaries.months;
+      let contributions;
+      if (isOwnPrivate(target)) {
+        const result = await transfers.sharedContribution(caller, summary.month);
+        if (!result.ok) return result;
+        contributions = [{ month: summary.month, cents: result.cents }];
+      }
+      const [row] = statisticsRows([summary], contributions);
+      return { ok: true, ...moneyFlow(row, spendings.months[0]?.groups ?? []) };
     },
 
     async categoryTrends(caller: Caller, target: InsightsTarget, until?: string): Promise<CategoryTrendsResult> {

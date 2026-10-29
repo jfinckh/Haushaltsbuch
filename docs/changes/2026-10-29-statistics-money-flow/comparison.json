@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "base": "019381a44d6322fdd9f92772be3feb4ebb74839d",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/insights/statistics.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/statistics.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/money-flow.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/money-flow.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/create-insights.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/insights/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/money-flow-layout.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/money-flow-layout.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/money-flow.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:MoneyFlow",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "insights:server:StatisticsComparison",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "export-add:insights:server:MoneyFlow",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:insights:server:StatisticsComparison",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

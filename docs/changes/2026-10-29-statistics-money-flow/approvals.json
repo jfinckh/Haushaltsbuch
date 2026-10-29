@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:insights:server:MoneyFlow",
+      "itemHash": "sha256:e5345be921b95ded28ac93c41f955918d35fd7fc2e6f196f76e8c9f31aee6226",
+      "decision": "approve",
+      "at": "2026-10-29T20:11:22Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:insights:server:StatisticsComparison",
+      "itemHash": "sha256:26d638ac5e3523c8d8991fd38570f436cb293c1c573b7ec1f4b2890427f1ea3f",
+      "decision": "approve",
+      "at": "2026-10-29T20:11:22Z",
+      "source": "hook"
+    }
+  ]
+}

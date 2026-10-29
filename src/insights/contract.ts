@@ -1,11 +1,13 @@
 import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { CategoryTrends } from "./category-trends";
-import type { MonthComparison, StatisticsRow } from "./statistics";
+import type { MoneyFlow } from "./money-flow";
+import type { StatisticsComparison, StatisticsRow } from "./statistics";
 import type { YearTotals } from "./year-overview";
 
 export type { CategoryTrends } from "./category-trends";
-export type { StatisticsRow } from "./statistics";
+export type { MoneyFlow } from "./money-flow";
+export type { StatisticsComparison, StatisticsRow } from "./statistics";
 
 // The contract of the insights part. createInsights implements it.
 
@@ -33,13 +35,17 @@ export type MonthFiguresResult = Result<MonthFigures, Reason>;
 export type Statistics = {
   /** One row per calendar month, newest first. */
   rows: StatisticsRow[];
-  /** The newest month compared with the one before, or null with a single month. */
-  comparison: MonthComparison | null;
+  /** The newest month compared with the one before and with the usual month (the 3 months before with bookings). */
+  comparison: StatisticsComparison;
+  /** Whether the newest month is the current one, so its figures are not complete yet. */
+  running: boolean;
   /** The amount a full bar stands for. */
   scaleCents: number;
 };
 
 export type StatisticsResult = Result<Statistics, Reason>;
+
+export type MoneyFlowResult = Result<MoneyFlow, Reason>;
 
 export type CategoryTrendsResult = Result<CategoryTrends, Reason>;
 
@@ -68,6 +74,13 @@ export interface Insights {
    * statistics page shows them. A month after the current one gives invalid-input.
    */
   statistics(caller: Caller, target: InsightsTarget, months: number, until?: string): Promise<StatisticsResult>;
+
+  /**
+   * Where the money of `month` (YYYY-MM, default: the current month) came from and where it went:
+   * the month's figures as the statistics rows have them and its spending per category group.
+   * A month after the current one gives invalid-input.
+   */
+  moneyFlow(caller: Caller, target: InsightsTarget, month?: string): Promise<MoneyFlowResult>;
 
   /**
    * Spending per category group over the 12 calendar months up to `until` (YYYY-MM, default: the

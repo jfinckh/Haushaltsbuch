@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-29",
+  "slug": "statistics-money-flow",
+  "description": "Statistics money flow and comparisons",
+  "plan": {
+    "path": "docs/plans/2026-10-29-statistics-money-flow.md",
+    "sha256": "9fcb295600c61b099b9146a9debc5055f55f97ead0401e29abac403d1180326c"
+  },
+  "status": "final",
+  "base": "019381a44d6322fdd9f92772be3feb4ebb74839d",
+  "report": "Finalized statistics-money-flow (019381a..working-tree)\nFiles: 14 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 2 approved.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-29-statistics-money-flow/map.html\n",
+  "shownAt": "2026-10-29T20:26:04Z"
+}

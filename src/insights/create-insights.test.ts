@@ -128,7 +128,15 @@ describe("month figures", () => {
 });
 
 describe("statistics", () => {
-  it("gives the rows newest first, the comparison with the previous month and the bar scale", async () => {
+  it("gives the rows newest first, the comparisons, whether the month is running and the bar scale", async () => {
+    // October against September: 150 € less spent, 250 € more saved.
+    const september = {
+      income: { direction: "more", cents: 100000 },
+      spent: { direction: "less", cents: -15000 },
+      saved: { direction: "more", cents: 25000 },
+      available: { direction: "more", cents: 90000 },
+      savingsRate: { direction: "more", points: 12.5 },
+    };
     const result = await insights.statistics(max, "max-giro", 3);
     expect(result).toEqual({
       ok: true,
@@ -137,8 +145,12 @@ describe("statistics", () => {
         { month: "2026-09", incomeCents: 100000, expenseCents: -40000, savingCents: 0, availableCents: 60000, contributionCents: null, savingsRate: 0 },
         { month: "2026-08", incomeCents: 0, expenseCents: 0, savingCents: 0, availableCents: 0, contributionCents: null, savingsRate: null },
       ],
-      // 150 € less spent than in September.
-      comparison: { expenseChangeCents: -15000, savingsRateChangePoints: 12.5 },
+      comparison: {
+        previous: september,
+        // August has no bookings, so the usual month is September alone.
+        usual: { month: { months: 1, incomeCents: 100000, expenseCents: -40000, savingCents: 0, availableCents: 60000, savingsRate: 0 }, changes: september },
+      },
+      running: true,
       scaleCents: 200000,
     });
   });
@@ -152,7 +164,7 @@ describe("statistics", () => {
   });
 
   it("has no comparison for a single month", async () => {
-    expect(await insights.statistics(max, "max-giro", 1)).toMatchObject({ ok: true, comparison: null });
+    expect(await insights.statistics(max, "max-giro", 1)).toMatchObject({ ok: true, comparison: { previous: null, usual: null } });
   });
 
   it("never gives another member's private account, and never mixes members", async () => {
@@ -176,13 +188,61 @@ describe("statistics", () => {
       ["2026-09", 100000],
       ["2026-08", 0],
     ]);
-    expect(result.ok && result.comparison).toEqual({ expenseChangeCents: 40000, savingsRateChangePoints: null });
+    // August has no bookings: nothing to compare with. September is over.
+    expect(result.ok && result.comparison).toEqual({ previous: null, usual: null });
+    expect(result.ok && result.running).toBe(false);
   });
 
   it("rejects a chosen month after the current one or a malformed one", async () => {
     expect(await insights.statistics(max, "max-giro", 12, "2026-11")).toEqual({ ok: false, reason: "invalid-input" });
     expect(await insights.statistics(max, "max-giro", 12, "2026-13")).toEqual({ ok: false, reason: "invalid-input" });
     expect(await insights.statistics(max, "max-giro", 12, "2026-9")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
+describe("money flow", () => {
+  it("gives one account's month from income to categories, saving and what is left over", async () => {
+    expect(await insights.moneyFlow(max, "max-giro")).toEqual({
+      ok: true,
+      month: "2026-10",
+      totalCents: 200000,
+      sources: [{ kind: "income", cents: 200000 }],
+      targets: [
+        { kind: "category", group: "groceries", cents: 25000 },
+        { kind: "saving", cents: 25000 },
+        { kind: "left", cents: 150000 },
+      ],
+    });
+  });
+
+  it("shows the contribution to shared accounts for Alle privaten Konten", async () => {
+    const flow = await insights.moneyFlow(max, { ownPrivate: true });
+    expect(flow.ok && flow.targets).toEqual([
+      { kind: "category", group: "groceries", cents: 25000 },
+      { kind: "saving", cents: 25000 },
+      { kind: "toShared", cents: 80000 },
+      { kind: "left", cents: 70000 },
+    ]);
+  });
+
+  it("gives a chosen month and rejects a future or malformed one", async () => {
+    const flow = await insights.moneyFlow(max, "max-giro", "2026-09");
+    expect(flow.ok && flow.targets).toEqual([
+      { kind: "category", group: "leisure", cents: 40000 },
+      { kind: "left", cents: 60000 },
+    ]);
+    expect(await insights.moneyFlow(max, "max-giro", "2026-11")).toEqual({ ok: false, reason: "invalid-input" });
+    expect(await insights.moneyFlow(max, "max-giro", "2026-9")).toEqual({ ok: false, reason: "invalid-input" });
+  });
+
+  it("never gives another member's private account, and never mixes members", async () => {
+    expect(await insights.moneyFlow(erika, "max-giro")).toEqual({ ok: false, reason: "not-found" });
+    expect(await insights.moneyFlow(dora, "shared")).toEqual({ ok: false, reason: "not-found" });
+    const erikas = await insights.moneyFlow(erika, { ownPrivate: true });
+    expect(erikas.ok && erikas.targets).toEqual([
+      { kind: "category", group: "shopping", cents: 99900 },
+      { kind: "left", cents: 200100 },
+    ]);
   });
 });
 

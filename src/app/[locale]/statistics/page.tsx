@@ -8,9 +8,10 @@ import { households } from "@/app/_lib/households";
 import { categories } from "@/app/_lib/categories";
 import { insights } from "@/app/_lib/insights";
 import { ALL_MINE, selectAccount } from "@/insights";
-import type { StatisticsRow } from "@/insights/server";
+import type { StatisticsComparison, StatisticsRow } from "@/insights/server";
 import { formatEuro } from "@/shared/money";
 import { CategoryTrends } from "./category-trends";
+import { MoneyFlow } from "./money-flow";
 import { chosenMonth, MonthSwitcher } from "./month-switcher";
 import Link from "next/link";
 import { bookingsHref } from "@/app/_lib/bookings-href";
@@ -70,13 +71,14 @@ async function Statistics({ searchParams }: Props) {
 /** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
 async function MonthSeries({ caller, accountId, month }: { caller: Caller; accountId: string | null; month: string }) {
   const target = accountId ?? ({ ownPrivate: true } as const);
-  const [statistics, trends, { names }] = await Promise.all([
+  const [statistics, trends, flow, { names }] = await Promise.all([
     insights.statistics(caller, target, MONTHS, month),
     insights.categoryTrends(caller, target, month),
+    insights.moneyFlow(caller, target, month),
     categories.catalog(caller),
   ]);
   if (!statistics.ok) return null;
-  const { rows, comparison, scaleCents: scale } = statistics;
+  const { rows, comparison, running, scaleCents: scale } = statistics;
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const shortName = (m: string) => format.dateTime(monthDate(m), { month: "short", year: "numeric", timeZone: "UTC" });
@@ -84,7 +86,8 @@ async function MonthSeries({ caller, accountId, month }: { caller: Caller; accou
 
   return (
     <>
-      <CurrentMonth row={rows[0]} account={accountParam} comparison={comparison} previousMonth={rows[1]?.month} />
+      <CurrentMonth row={rows[0]} account={accountParam} comparison={comparison} previousMonth={rows[1]?.month} running={running} />
+      {flow.ok && <MoneyFlow flow={flow} account={accountParam} categoryNames={names} />}
       {trends.ok && <CategoryTrends trends={trends} account={accountParam} categoryNames={names} />}
       <Section title={t("history", { from: shortName(rows.at(-1)!.month), to: shortName(rows[0].month) })}>
         <ol className="flex flex-col divide-y divide-base-300">
@@ -100,77 +103,113 @@ async function MonthSeries({ caller, accountId, month }: { caller: Caller; accou
 /** The first day of a YYYY-MM month as a date, for the month-name formatter. */
 const monthDate = (month: string) => new Date(`${month}-01T00:00:00Z`);
 
-type MonthComparison = { expenseChangeCents: number; savingsRateChangePoints: number | null };
-
+type Direction = "more" | "less" | "same";
 type Tone = "good" | "bad" | "same";
 const TONE: Record<Tone, string> = { good: "text-success", bad: "text-error", same: "text-base-content/60" };
-const ARROW: Record<Tone, string> = { good: "↓", bad: "↑", same: "=" };
+const ARROW: Record<Direction, string> = { more: "↑", less: "↓", same: "≈" };
 
-/** The current month as figure tiles; spending and savings rate compared with the month before. */
+/** Whether more of a figure is good (income, saved, left over, savings rate) or bad (spending). */
+const toneOf = (direction: Direction, moreIsGood: boolean): Tone =>
+  direction === "same" ? "same" : (direction === "more") === moreIsGood ? "good" : "bad";
+
+type Note = { text: string; tone: Tone; arrow: string };
+type Figure = "income" | "spent" | "saved" | "available";
+
+/**
+ * The chosen month as figure tiles: income, spending, saved, left over and the savings rate, each
+ * compared with the month before and with the usual month (the months before with bookings).
+ */
 async function CurrentMonth({
   row,
   account,
   comparison,
   previousMonth,
+  running,
 }: {
   row: StatisticsRow;
   /** An account id or "all". */
   account: string;
-  comparison: MonthComparison | null;
+  comparison: StatisticsComparison;
   previousMonth: string | undefined;
+  running: boolean;
 }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const rate = (value: number | null) => (value === null ? t("noRate") : format.number(value, { style: "percent", maximumFractionDigits: 1 }));
+  const month = previousMonth ? format.dateTime(monthDate(previousMonth), { month: "long", timeZone: "UTC" }) : "";
+  const { previous } = comparison;
+  // A usual month made of the month before alone would only repeat the previous line.
+  const usual = previous && comparison.usual?.month.months === 1 ? null : comparison.usual;
 
-  let expenseNote: { text: string; tone: Tone; arrow: string } | null = null;
-  let rateNote: { text: string; tone: Tone; arrow: string } | null = null;
-  if (comparison && previousMonth) {
-    const month = format.dateTime(monthDate(previousMonth), { month: "long", timeZone: "UTC" });
-    const { expenseChangeCents: change, savingsRateChangePoints: points } = comparison;
-    const expenseTone: Tone = change === 0 ? "same" : change > 0 ? "bad" : "good";
-    expenseNote = {
-      tone: expenseTone,
-      arrow: ARROW[expenseTone],
-      text:
-        change === 0
-          ? t("expensesSame", { month })
-          : t(change > 0 ? "expensesMore" : "expensesLess", { amount: formatEuro(Math.abs(change)), month }),
-    };
-    if (points !== null) {
-      const rateTone: Tone = points === 0 ? "same" : points > 0 ? "good" : "bad";
-      rateNote = {
-        tone: rateTone,
-        arrow: points === 0 ? "=" : points > 0 ? "↑" : "↓",
-        text:
-          points === 0
-            ? t("rateSame", { month })
-            : t(points > 0 ? "rateUp" : "rateDown", { points: format.number(Math.abs(points), { maximumFractionDigits: 1 }), month }),
-      };
+  /** The two comparison lines of a tile in euros. */
+  const moneyNotes = (figure: Figure): Note[] => {
+    const moreIsGood = figure !== "spent";
+    const notes: Note[] = [];
+    if (previous) {
+      const { direction, cents } = previous[figure];
+      notes.push({
+        tone: toneOf(direction, moreIsGood),
+        arrow: ARROW[direction],
+        text: direction === "same" ? t("previousSame", { month }) : t(direction === "more" ? "previousMore" : "previousLess", { amount: formatEuro(Math.abs(cents)), month }),
+      });
     }
+    if (usual) {
+      const { direction, cents } = usual.changes[figure];
+      notes.push({
+        tone: toneOf(direction, moreIsGood),
+        arrow: ARROW[direction],
+        text: direction === "same" ? t("usualSame") : t(direction === "more" ? "usualMore" : "usualLess", { amount: formatEuro(Math.abs(cents)) }),
+      });
+    }
+    return notes;
+  };
+
+  const points = (value: number) => format.number(Math.abs(value), { maximumFractionDigits: 1 });
+  const rateNotes: Note[] = [];
+  if (previous?.savingsRate) {
+    const { direction, points: p } = previous.savingsRate;
+    rateNotes.push({
+      tone: toneOf(direction, true),
+      arrow: ARROW[direction],
+      text: direction === "same" ? t("previousSame", { month }) : t(direction === "more" ? "pointsMore" : "pointsLess", { points: points(p), month }),
+    });
+  }
+  if (usual?.changes.savingsRate) {
+    const { direction, points: p } = usual.changes.savingsRate;
+    rateNotes.push({
+      tone: toneOf(direction, true),
+      arrow: ARROW[direction],
+      text: direction === "same" ? t("usualSame") : t(direction === "more" ? "pointsUsualMore" : "pointsUsualLess", { points: points(p) }),
+    });
   }
 
   const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, month: row.month, kind });
-  const tiles: { label: string; value: string; note?: typeof expenseNote; href?: string }[] = [
-    { label: t("expenses"), value: formatEuro(-row.expenseCents), note: expenseNote, href: bookings("expense") },
-    { label: t("income"), value: formatEuro(row.incomeCents), href: bookings("income") },
-    { label: t("saved"), value: formatEuro(-row.savingCents), href: bookings("saving") },
-    { label: t("savingsRate"), value: rate(row.savingsRate), note: rateNote },
-    ...(row.contributionCents === null ? [] : [{ label: t("contribution"), value: formatEuro(row.contributionCents) }]),
+  const tiles: { label: string; value: string; notes: Note[]; href?: string; negative?: boolean }[] = [
+    { label: t("income"), value: formatEuro(row.incomeCents), notes: moneyNotes("income"), href: bookings("income") },
+    { label: t("expenses"), value: formatEuro(-row.expenseCents), notes: moneyNotes("spent"), href: bookings("expense") },
+    { label: t("saved"), value: formatEuro(-row.savingCents), notes: moneyNotes("saved"), href: bookings("saving") },
+    { label: t("left"), value: formatEuro(row.availableCents), notes: moneyNotes("available"), negative: row.availableCents < 0 },
+    { label: t("savingsRate"), value: rate(row.savingsRate), notes: rateNotes },
+    ...(row.contributionCents === null ? [] : [{ label: t("contribution"), value: formatEuro(row.contributionCents), notes: [] }]),
+  ];
+
+  const hints = [
+    ...(running ? [t("running")] : []),
+    ...(usual ? [t("usualHint", { count: usual.month.months })] : []),
   ];
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex flex-col gap-2">
       <h2 className="sr-only">{t("overview")}</h2>
       <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
-        {tiles.map(({ label, value, note, href }) => (
+        {tiles.map(({ label, value, notes, href, negative }) => (
           // A linked tile's link sits in the value and stretches over the whole tile.
           <div
             key={label}
-            className={`flex-[1_1_9rem] relative flex min-w-0 flex-col bg-base-100 px-4 py-3 ${href ? "transition-colors has-[a:hover]:bg-base-200" : ""}`}
+            className={`flex-[1_1_10rem] relative flex min-w-0 flex-col bg-base-100 px-4 py-3 ${href ? "transition-colors has-[a:hover]:bg-base-200" : ""}`}
           >
             <dt className="text-xs leading-snug text-base-content/60">{label}</dt>
-            <dd className="mt-0.5 text-xl font-semibold tracking-tight">
+            <dd className={`mt-0.5 text-xl font-semibold tracking-tight ${negative ? "text-error" : ""}`}>
               {href ? (
                 <Link href={href} className="before:absolute before:inset-0">
                   {value}
@@ -179,15 +218,16 @@ async function CurrentMonth({
                 value
               )}
             </dd>
-            {note && (
-              <dd className={`mt-1 flex gap-1 text-xs leading-snug ${TONE[note.tone]}`}>
+            {notes.map((note, i) => (
+              <dd key={i} className={`${i === 0 ? "mt-1" : ""} flex gap-1 text-xs leading-snug ${TONE[note.tone]}`}>
                 <span aria-hidden>{note.arrow}</span>
                 <span>{note.text}</span>
               </dd>
-            )}
+            ))}
           </div>
         ))}
       </dl>
+      {hints.length > 0 && <p className="text-xs text-base-content/60">{hints.join(" ")}</p>}
     </section>
   );
 }
@@ -199,6 +239,7 @@ async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: numbe
   const spent = -row.expenseCents;
   const extras: [string, string][] = [
     [t("saved"), formatEuro(-row.savingCents)],
+    [t("left"), formatEuro(row.availableCents)],
     [t("savingsRate"), row.savingsRate === null ? t("noRate") : format.number(row.savingsRate, { style: "percent", maximumFractionDigits: 1 })],
     ...(row.contributionCents === null ? [] : ([[t("contribution"), formatEuro(row.contributionCents)]] as [string, string][])),
   ];
