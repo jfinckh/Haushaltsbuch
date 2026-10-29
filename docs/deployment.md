@@ -36,15 +36,31 @@ GitHub  ──SSH────▶ Cloudflare Access (service token) ─Tunnel─�
   made by hand. The state still holds the tunnel token, the service token and the server's SSH host key,
   so OpenTofu encrypts it (`TF_ENCRYPTION`) before storing it in R2.
 - **Database.** Postgres 17 in Docker, data on a Hetzner volume (`prevent_destroy`, Hetzner delete
-  protection), so a rebuilt server keeps the data. The app's database user owns the database but is not
-  a superuser; it may create roles because the migrations create `app_user` for row-level security.
-  Its password is made on the server and stored on the volume.
+  protection), so a rebuilt server keeps the data. Two logins, both made on the server, their
+  passwords stored on the volume (`/mnt/data/secrets`):
+  - `haushaltsbuch` owns the database (not a superuser). Only the migrate container and the backups
+    use it. It may create roles because the migrations create them.
+  - `haushaltsbuch_app` is the app's connection. The migrate container creates it from
+    `DATABASE_URL` (password: `app-db-password`). It is a member of `app_runtime`: rights on Better
+    Auth's tables only. For everything else it switches per transaction to `app_user` (row-level
+    security for the signed-in person) or, for creating and joining households, to
+    `households_admin` (the three household tables only). These two are granted `WITH INHERIT
+    FALSE`, so the login never has their rights without switching. A query that forgets this fails
+    with "permission denied" instead of reading every household (`drizzle/0026_runtime_roles.sql`).
 - **Migrations** run in their own container (`scripts/migrate.mjs`, drizzle-orm's migrator) before the
   new app starts. A failed migration leaves the old app running.
 - **Server changes are deliberate.** OpenTofu ignores later edits of cloud-init; replacing the server is
   a checkbox in the manual workflow run.
 - **Backups** (nightly, 30 days): `pg_dump` → rclone `crypt` (passphrase from GitHub) → R2. The server's
   R2 key can only reach the backup bucket. Hetzner's own backups would not include the volume.
+
+- **Second lock in the app.** The Access policy and the app both use the GitHub variable
+  `ALLOWED_EMAILS`; the app turns away any token whose email is not on it (`AUTH_MODE=identity`).
+- **Browser hardening.** Every page sends a Content-Security-Policy (scripts and connections only
+  from the app itself, no framing), HSTS in production and the usual `nosniff` / referrer headers
+  (`src/app/_lib/security-headers.ts`). API writes (POST, PATCH, DELETE …) need an `Origin` header
+  equal to `BETTER_AUTH_URL`, else 403 (`src/proxy.ts`), so another site cannot send writes with the
+  Access cookie. The CSP allows inline scripts because Next.js needs them without per-request nonces.
 
 ## Privacy
 

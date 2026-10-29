@@ -342,3 +342,37 @@ describe("isolation between households", () => {
 function eqUser(userId: string) {
   return eq(householdMember.userId, userId);
 }
+
+describe("as the app's database login (production rights)", () => {
+  beforeEach(async () => {
+    setup = await createTestHouseholds({ runtimeRole: true, householdHoldsData: async () => false });
+  });
+
+  it("cannot read the household tables outside withSession", async () => {
+    // drizzle's own message names the query; Postgres' reason is the cause.
+    await expect(setup.db.select().from(household)).rejects.toMatchObject({
+      cause: expect.objectContaining({ message: expect.stringMatching(/permission denied/) }),
+    });
+  });
+
+  it("creates a household, joins through an invite and gives up the empty own household", async () => {
+    const maxs = await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    const own = await setup.households.createHousehold(await setup.as("erika"), { name: "Erikas" });
+    if (!maxs.ok || !own.ok) throw new Error("setup failed");
+
+    expect(await setup.households.pendingInvite(await setup.as("erika"), invite("max"))).toEqual({ canJoin: true });
+    expect(await setup.households.joinInvitersHousehold(await setup.as("erika"), invite("max"))).toEqual({
+      membership: { householdId: maxs.household.id },
+      keptOwnHousehold: false,
+      keptReason: null,
+    });
+    expect((await setup.households.getHousehold(await setup.as("max")))?.memberCount).toBe(2);
+    expect(await setup.households.pendingInvite(await setup.as("erika"), invite("max"))).toBeNull();
+  });
+
+  it("leaves a household", async () => {
+    await setup.households.createHousehold(await setup.as("max"), { name: "Mustermann" });
+    expect(await setup.households.leaveHousehold(await setup.as("max"))).toEqual({ left: true, householdDeleted: true });
+    expect(await setup.households.getMembership(await setup.as("max"))).toBeNull();
+  });
+});

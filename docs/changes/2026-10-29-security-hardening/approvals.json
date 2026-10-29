@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "permission-change:database: app connection without rights on domain tables",
+      "itemHash": "sha256:72529c3872fdc8cd0147be44919499f8353cf58751f26f0956fb8558b8a0a982",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database: households_admin role",
+      "itemHash": "sha256:e246598bea1efa6105ad76435778faedc1587299379686c9d58b50ab0bd04d71",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:http: same-origin writes on the API",
+      "itemHash": "sha256:b47ca4fcad3a857b34b6fe2ea61a3a9373b39ff22ae9e49ba83d97405dd6dc6c",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:auth: email allowlist in the app",
+      "itemHash": "sha256:ae7c52bdd5a8f39255bffd65764343f1d6dec53a7b1ab36b1ce2ec25ca73ecbb",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:MIGRATION_DATABASE_URL",
+      "itemHash": "sha256:011160348a9cbbe785e6ef2031543d2ebf89d509f309ca0b776f77a4055b3f16",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:ALLOWED_EMAILS",
+      "itemHash": "sha256:99bb42911fdbccc12829d72a4f5250162150eff57a825260a312cccb3313507b",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0026_runtime_roles.sql",
+      "itemHash": "sha256:66ef3a7a0a5f612769e41a114009337c88ea5629655d4c9dc3b3d79661fd4ebf",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "itemHash": "sha256:0db6dc98c5d3037bda3c88cc1d1c69b57c67a72b173d47612a86a9e9dada192d",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0026_snapshot.json",
+      "itemHash": "sha256:624254fbfafece5883bfe801e42ef949c5ce0224c775dffd5a3a7fc9eca96e69",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:package.json",
+      "itemHash": "sha256:b3b13cacbb5850f2b32c99f01030f652f06db69526574d2444f0e72860c9f2f3",
+      "decision": "approve",
+      "at": "2026-10-29T10:32:36Z",
+      "source": "hook"
+    }
+  ]
+}

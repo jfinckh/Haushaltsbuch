@@ -248,6 +248,9 @@ jobs:
       # Secrets travel inside the SSH connection and land in files only the deploy user can read.
       - name: Write settings
         run: |
+          # The app checks the same list as Cloudflare Access (JSON list → comma list).
+          ALLOWED_EMAILS=$(jq -r 'join(",")' <<<"$ALLOWED_EMAILS_JSON")
+          [ -n "$ALLOWED_EMAILS" ] || { echo "ALLOWED_EMAILS is empty"; exit 1; }
           ssh server 'umask 077 && cat > /opt/haushaltsbuch/app.env' <<EOF
           AUTH_MODE=identity
           BETTER_AUTH_URL=$APP_URL
@@ -257,6 +260,7 @@ jobs:
           IDENTITY_AUDIENCE=$ACCESS_AUDIENCE
           FIELD_ENCRYPTION_KEYS=$FIELD_ENCRYPTION_KEYS
           BLIND_INDEX_KEY=$BLIND_INDEX_KEY
+          ALLOWED_EMAILS=$ALLOWED_EMAILS
           EOF
           ssh server 'umask 077 && cat > /opt/haushaltsbuch/backup.env' <<EOF
           R2_ENDPOINT=https://$CLOUDFLARE_ACCOUNT_ID.r2.cloudflarestorage.com
@@ -267,6 +271,7 @@ jobs:
           EOF
         env:
           ACCESS_TEAM: ${{ vars.ACCESS_TEAM }}
+          ALLOWED_EMAILS_JSON: ${{ vars.ALLOWED_EMAILS }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}

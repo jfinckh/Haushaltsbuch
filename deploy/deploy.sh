@@ -15,11 +15,14 @@ SECRETS=/mnt/data/secrets # on the volume, so they survive a rebuilt server
 umask 077
 [ -s "$SECRETS/db-password" ] || openssl rand -hex 32 > "$SECRETS/db-password"
 [ -s "$SECRETS/postgres-password" ] || openssl rand -hex 32 > "$SECRETS/postgres-password"
+# The app's own login (haushaltsbuch_app); the migrate container creates the role with it.
+[ -s "$SECRETS/app-db-password" ] || openssl rand -hex 32 > "$SECRETS/app-db-password"
 
 cat > .env <<EOF
 IMAGE_TAG=$TAG
 DB_PASSWORD=$(cat "$SECRETS/db-password")
 POSTGRES_PASSWORD=$(cat "$SECRETS/postgres-password")
+APP_DB_PASSWORD=$(cat "$SECRETS/app-db-password")
 EOF
 
 echo "Pulling images for $TAG"

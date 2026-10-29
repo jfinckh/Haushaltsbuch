@@ -45,6 +45,8 @@ src/insights/       dashboard and statistics figures, balances, account choice i
 
 `auth` and `shared` must stay free of domain logic; they may be extracted into packages later.
 
+Database roles (`drizzle/0026_runtime_roles.sql`): the app connects as a login in `app_runtime`, which has rights on Better Auth's tables only. Domain data is read and written only inside `withSession` (role `app_user`, row-level security); households' bootstrap writes switch to `households_admin`. A new table gets its grants and policies for `app_user` in its migration; never grant domain tables to `app_runtime`. Migrations run as the owner (`MIGRATION_DATABASE_URL`).
+
 Parts never import accounts or households to learn what the caller may see. They ask the database through the SQL functions accounts and households define in their migrations, and call those only through `db-contract` (never as SQL text). A new function for other parts gets its typed call there.
 
 Parts may pass their open database transaction (`RlsTransaction` from `shared/rls`, a Drizzle transaction) into another part's methods, e.g. import into transactions' `BookingStore` or accounts' `setOpeningBalance`. Why: work that spans parts must be saved together or not at all (an import's bookings, fingerprints and opening balance), and row-level security only holds inside the transaction `withSession` opened for the caller. Decided 2026-10-26 against an own unit-of-work interface: it would hide nothing (every part already uses Drizzle and Postgres) and cost a wrapper around every query. Such a method takes the transaction as its first parameter, works only inside it (never opens its own) and never commits it. Pages and routes never see a transaction; they call methods that take a `Caller`.

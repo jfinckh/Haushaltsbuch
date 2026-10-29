@@ -46,6 +46,19 @@ describe("createIdentityVerifier", () => {
     expect(await verify(withToken("not.a.token"))).toBeNull();
   });
 
+  it("accepts only listed emails when an allowlist is set, in any case", async () => {
+    const listed = createIdentityVerifier({ ...provider.options, allowedEmails: [" Max@Example.test ", "erika@example.test"] });
+    const max = await provider.sign({ email: "MAX@example.test" });
+    const stranger = await provider.sign({ email: "stranger@example.test" });
+    expect(await listed(withToken(max))).toMatchObject({ email: "max@example.test" });
+    expect(await listed(withToken(stranger))).toBeNull();
+  });
+
+  it("lets nobody in with an empty allowlist", async () => {
+    const closed = createIdentityVerifier({ ...provider.options, allowedEmails: [] });
+    expect(await closed(withToken(await provider.sign({ email: "max@example.test" })))).toBeNull();
+  });
+
   it("reads another header when configured", async () => {
     const pomerium = createIdentityVerifier({ ...provider.options, header: "X-Pomerium-Jwt-Assertion" });
     const token = await provider.sign({ email: "max@example.test" });

@@ -17,6 +17,11 @@ export type IdentityOptions = {
   header?: string;
   /** Keys to check against instead of jwksUrl. For tests. */
   keys?: JWTVerifyGetKey;
+  /**
+   * Only these emails count (any case). A second lock behind the provider's own policy: a valid
+   * token for anyone else counts as no identity. Unset: every email the provider signs.
+   */
+  allowedEmails?: readonly string[];
 };
 
 export type Identity = {
@@ -34,6 +39,7 @@ const CLOCK_TOLERANCE_SECONDS = 30;
 export function createIdentityVerifier(options: IdentityOptions): IdentityVerifier {
   const header = options.header ?? DEFAULT_IDENTITY_HEADER;
   const keys = options.keys ?? createRemoteJWKSet(new URL(options.jwksUrl));
+  const allowed = options.allowedEmails && new Set(options.allowedEmails.map((email) => email.trim().toLowerCase()));
 
   return async (headers) => {
     const token = headers.get(header);
@@ -47,6 +53,7 @@ export function createIdentityVerifier(options: IdentityOptions): IdentityVerifi
       });
       const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
       if (!email.includes("@")) return null;
+      if (allowed && !allowed.has(email)) return null;
       const name = typeof payload.name === "string" && payload.name.trim() ? payload.name.trim() : null;
       return { email, name };
     } catch {

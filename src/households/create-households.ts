@@ -20,7 +20,8 @@ export type HouseholdsOptions = {
   db: RlsDatabase;
   /**
    * Whether a household holds data that must not be given up silently (other parts' data, e.g.
-   * shared accounts). Runs on the owner connection inside the switch transaction. Without it, a
+   * shared accounts). Runs as households_admin inside the switch transaction, so it can only use
+   * SQL functions granted to that role (e.g. accounts_household_has_accounts). Without it, a
    * household with no other members is always given up when its member joins another one.
    */
   householdHoldsData?: (tx: RlsTransaction, householdId: string) => Promise<boolean>;
@@ -45,13 +46,28 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
     return withSession(db, caller, async (_tx, userId) => userId);
   }
 
-  // Owner connection, bypasses row-level security. Only for the checked bootstrap writes.
+  /**
+   * Runs `fn` in a transaction as households_admin (drizzle/0026_runtime_roles.sql): sees every row
+   * of the three household tables and nothing else. Only for the checked bootstrap writes, which
+   * touch rows the caller cannot see yet (the inviter's household). The app's own database login
+   * has no rights on these tables without it.
+   */
+  async function asHouseholdsAdmin<T>(fn: (tx: RlsTransaction) => Promise<T>): Promise<T> {
+    return db.transaction(async (tx) => {
+      await tx.execute(sql`SET LOCAL ROLE households_admin`);
+      return fn(tx);
+    });
+  }
+
+  // As households_admin. Only for the checked bootstrap writes.
   async function findMembership(userId: string): Promise<Membership | null> {
-    const [row] = await db
-      .select({ householdId: householdMember.householdId })
-      .from(householdMember)
-      .where(eq(householdMember.userId, userId));
-    return row ?? null;
+    return asHouseholdsAdmin(async (tx) => {
+      const [row] = await tx
+        .select({ householdId: householdMember.householdId })
+        .from(householdMember)
+        .where(eq(householdMember.userId, userId));
+      return row ?? null;
+    });
   }
 
   async function getMembership(caller: Caller): Promise<Membership | null> {
@@ -84,9 +100,9 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
     });
   }
 
-  // Owner connection. Records that households acted on the user's invite; false if it already
+  // As households_admin. Records that households acted on the user's invite; false if it already
   // acted on this or a newer one.
-  async function claimInvite(tx: Pick<RlsDatabase, "insert">, userId: string, invite: AcceptedInvite) {
+  async function claimInvite(tx: RlsTransaction, userId: string, invite: AcceptedInvite) {
     const claimed = await tx
       .insert(householdInviteUse)
       .values({ userId, inviterUserId: invite.inviterId, invitedAt: invite.invitedAt })
@@ -99,13 +115,15 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
     return claimed.length === 1;
   }
 
-  // Owner connection. Whether households already acted on this invite or a newer one.
+  // As households_admin. Whether households already acted on this invite or a newer one.
   async function inviteUsed(userId: string, invite: AcceptedInvite) {
-    const [used] = await db
-      .select({ userId: householdInviteUse.userId })
-      .from(householdInviteUse)
-      .where(and(eq(householdInviteUse.userId, userId), gte(householdInviteUse.invitedAt, invite.invitedAt)));
-    return Boolean(used);
+    return asHouseholdsAdmin(async (tx) => {
+      const [used] = await tx
+        .select({ userId: householdInviteUse.userId })
+        .from(householdInviteUse)
+        .where(and(eq(householdInviteUse.userId, userId), gte(householdInviteUse.invitedAt, invite.invitedAt)));
+      return Boolean(used);
+    });
   }
 
   type InviteState =
@@ -125,7 +143,7 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
   }
 
   /**
-   * Owner connection. Why the own household must be kept when joining another: it has other
+   * As households_admin. Why the own household must be kept when joining another: it has other
    * members, or other parts keep data in it; null if it may be given up. `lock` locks it first.
    */
   async function keptReasonFor(tx: RlsTransaction, own: Membership | null, lock: boolean): Promise<KeptReason | null> {
@@ -206,7 +224,7 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
 
       const id = crypto.randomUUID();
       try {
-        await db.transaction(async (tx) => {
+        await asHouseholdsAdmin(async (tx) => {
           await tx.insert(household).values({ id, name: parsed.data.name, createdByUserId: userId });
           await tx.insert(householdMember).values({ householdId: id, userId });
         });
@@ -222,7 +240,7 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
     async pendingInvite(caller: Caller, invite: AcceptedInvite | null): Promise<PendingInvite | null> {
       const state = await inviteState(await sessionUserId(caller), invite);
       if (state.kind !== "open") return null;
-      const keptReason = await db.transaction((tx) => keptReasonFor(tx, state.own, false));
+      const keptReason = await asHouseholdsAdmin((tx) => keptReasonFor(tx, state.own, false));
       return keptReason ? { canJoin: false, keptReason } : { canJoin: true };
     },
 
@@ -232,13 +250,13 @@ export function createHouseholds({ db, householdHoldsData }: HouseholdsOptions):
       const unchanged: JoinResult = { membership: state.own, keptOwnHousehold: false, keptReason: null };
       if (state.kind === "none" || !invite) return unchanged;
       if (state.kind === "same-household") {
-        await claimInvite(db, userId, invite);
+        await asHouseholdsAdmin((tx) => claimInvite(tx, userId, invite));
         return unchanged;
       }
       const { own, inviters } = state;
 
-      // Owner connection: crosses households, checked above and again under the lock below.
-      const keptReason = await db.transaction(async (tx): Promise<KeptReason | null> => {
+      // As households_admin: crosses households, checked above and again under the lock below.
+      const keptReason = await asHouseholdsAdmin(async (tx): Promise<KeptReason | null> => {
         // Only an empty household is given up: no other members, and no data other parts keep in it.
         const kept = await keptReasonFor(tx, own, true);
         if (kept) return kept;

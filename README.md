@@ -5,10 +5,11 @@ Household budget app. Product concept: [docs/konzept.md](docs/konzept.md).
 ## Run locally
 
 ```bash
-cp .env.example .env              # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+cp .env.example .env              # then set BETTER_AUTH_SECRET (openssl rand -base64 32) and the
+                                  # password in DATABASE_URL (any value, e.g. openssl rand -hex 24)
 docker compose up -d              # Postgres on localhost:5433
 npm install
-npm run db:migrate
+npm run db:migrate                # also creates the app's own database login from DATABASE_URL
 npm run dev                       # http://localhost:3000
 ```
 
@@ -17,11 +18,18 @@ dev sign-in: one click signs you in as Max or Erika (see "Test data"), or as any
 passwords. On a server the app signs people in through Cloudflare Access instead; see
 [Deployment](#deployment).
 
+**Two database users.** `MIGRATION_DATABASE_URL` is the database owner; only `npm run db:migrate`
+and drizzle-kit use it. `DATABASE_URL` is the app's own login (`haushaltsbuch_app`). It has no rights
+on any table with household data; the app reads them only through row-level security for the
+signed-in person. `npm run db:migrate` creates this login with the password from `DATABASE_URL`, or
+sets the password again if you change it.
+
 ## Scripts
 
 - `npm test` runs the Vitest suite (in-memory Postgres via PGlite, no Docker needed)
 - `npm run db:generate -- --name <name>` creates a migration from the Drizzle tables
-- `npm run db:migrate` applies migrations to `DATABASE_URL`
+- `npm run db:migrate` applies migrations as `MIGRATION_DATABASE_URL` (the owner), then creates or
+  updates the app's login from `DATABASE_URL`
 - `npm run db:seed` fills the local database with test data (see below)
 - `npm run lint` runs ESLint, including the architecture boundaries
 
@@ -124,8 +132,12 @@ Outbound traffic stays open: `cloudflared` to Cloudflare, Docker pulls from `ghc
 (installed automatically), backups to R2.
 
 What else is shut off:
-- Postgres: the app connects as `haushaltsbuch`, the database's owner but **not** a superuser. Inside,
-  row-level security keeps private accounts private (see CLAUDE.md).
+- Postgres: the app connects as `haushaltsbuch_app`. It owns nothing and has no rights on any table
+  with household data; it reads them only as the signed-in person, and row-level security keeps
+  private accounts private (see CLAUDE.md). Only migrations and backups use the owner `haushaltsbuch`,
+  which is **not** a superuser either.
+- App: a second email allowlist (`ALLOWED_EMAILS`) behind Cloudflare Access, security headers
+  (Content-Security-Policy, HSTS, no framing) and a same-origin check on every API write.
 - SSH: no passwords, no root login, only the user `deploy`.
 - Secrets: never in the repository and never in the OpenTofu state. They live in GitHub secrets and
   your password manager, and on the server in files only `deploy` can read.
@@ -310,7 +322,8 @@ ssh haushaltsbuch 'cd /opt/haushaltsbuch && docker compose logs --tail 100 app'
 must work with the newer schema (keep migrations additive).
 
 **Add or remove a person.** Change the variable `ALLOWED_EMAILS`, then run the workflow (or push).
-Removing someone from the list locks them out at Cloudflare; their data stays in the app.
+The workflow updates both the Cloudflare Access policy and the app's own allowlist. Removing someone
+locks them out at Cloudflare and in the app; their data stays in the app.
 
 **Backups.** Every night at about 03:00 (German time) the server saves an encrypted dump to the
 backup bucket; R2 deletes copies older than 30 days.

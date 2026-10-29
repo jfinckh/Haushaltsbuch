@@ -25,13 +25,15 @@ services:
       timeout: 5s
       retries: 20
 
-  # One-shot: applies the SQL migrations, then exits. deploy.sh runs it before starting the app.
+  # One-shot: applies the SQL migrations as the owner, then creates the app's own login
+  # (haushaltsbuch_app, member of app_runtime) and exits. deploy.sh runs it before starting the app.
   migrate:
     image: ghcr.io/jfinckh/haushaltsbuch-migrate:${IMAGE_TAG}
     profiles: [tools]
     restart: "no"
     environment:
-      DATABASE_URL: postgres://haushaltsbuch:${DB_PASSWORD}@postgres:5432/haushaltsbuch
+      MIGRATION_DATABASE_URL: postgres://haushaltsbuch:${DB_PASSWORD}@postgres:5432/haushaltsbuch
+      DATABASE_URL: postgres://haushaltsbuch_app:${APP_DB_PASSWORD}@postgres:5432/haushaltsbuch
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,7 +43,8 @@ services:
     restart: unless-stopped
     env_file: app.env
     environment:
-      DATABASE_URL: postgres://haushaltsbuch:${DB_PASSWORD}@postgres:5432/haushaltsbuch
+      # Not the owner: this login has no rights on domain tables outside row-level security.
+      DATABASE_URL: postgres://haushaltsbuch_app:${APP_DB_PASSWORD}@postgres:5432/haushaltsbuch
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:

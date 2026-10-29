@@ -40,6 +40,7 @@ RUN AUTH_MODE=identity \
     DATABASE_URL=postgres://build:build@127.0.0.1:1/build \
     FIELD_ENCRYPTION_KEYS=1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     BLIND_INDEX_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+    ALLOWED_EMAILS=build@build.invalid \
     npm run build
 
 # The app: Next.js standalone output, runs as the unprivileged "node" user.

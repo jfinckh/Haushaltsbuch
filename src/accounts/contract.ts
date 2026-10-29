@@ -55,7 +55,8 @@ export interface Accounts {
 
   /**
    * For households: whether a household holds shared accounts, so it must not be given up when
-   * its only member switches households. Runs on the owner connection households passes in.
+   * its only member switches households. Runs in the transaction households passes in, as
+   * households_admin, through the SQL function accounts_household_has_accounts.
    */
   householdHasSharedAccounts(tx: RlsTransaction, householdId: string): Promise<boolean>;
 }

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-29",
+  "slug": "security-hardening",
+  "description": "Security hardening",
+  "plan": {
+    "path": "docs/plans/2026-10-29-security-hardening.md",
+    "sha256": "db0676fda7af77dc2ba063e8ae7c32dedc3ec763c8680003c00e97b5d210e924"
+  },
+  "status": "final",
+  "base": "5acf3c22802f45944a52493cabfa27e77bfc78df",
+  "report": "Finalized security-hardening (5acf3c2..working-tree)\nFiles: 29 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 10 approved.\nRecord updated: record.json, map.html\nMap: docs/changes/2026-10-29-security-hardening/map.html\n",
+  "shownAt": "2026-10-29T16:08:46Z"
+}

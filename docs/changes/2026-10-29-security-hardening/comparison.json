@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "base": "5acf3c22802f45944a52493cabfa27e77bfc78df",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "drizzle/0026_runtime_roles.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0026_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "scripts/migrate.mjs",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "package.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".env.example",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/deploy.sh",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "deploy/docker-compose.prod.yml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/households/create-households.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/create-accounts.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/db/runtime-role.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/security-headers.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/security-headers.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "next.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/same-origin.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/same-origin.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/proxy.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/identity/verify.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/auth/identity/verify.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/auth.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": ".github/workflows/deploy.yml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "README.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/deployment.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "Dockerfile",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "configKey",
+      "id": "MIGRATION_DATABASE_URL",
+      "status": "convergence"
+    },
+    {
+      "kind": "configKey",
+      "id": "ALLOWED_EMAILS",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "permission-change:database: app connection without rights on domain tables",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:database: households_admin role",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:http: same-origin writes on the API",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "permission-change:auth: email allowlist in the app",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "config-key-new:MIGRATION_DATABASE_URL",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "config-key-new:ALLOWED_EMAILS",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0026_runtime_roles.sql",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0026_snapshot.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:package.json",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

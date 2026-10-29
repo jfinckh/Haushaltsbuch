@@ -1,7 +1,7 @@
-import { and, asc, eq, or, type SQL } from "drizzle-orm";
+import { and, asc, eq, or, sql, type SQL } from "drizzle-orm";
 import { currentHouseholdId, inCurrentHousehold } from "@/db-contract/server";
 import type { FieldCrypto } from "@/shared/field-crypto";
-import { withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
+import { rows, withSession, type Caller, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import { formatIban } from "@/shared/iban";
 import type { Accounts, AccountView, CreateAccountResult, UpdateAccountResult } from "./contract";
 import { account } from "./schema";
@@ -208,12 +208,10 @@ export function createAccounts({ db, crypto: fieldCrypto }: AccountsOptions): Ac
     },
 
     async householdHasSharedAccounts(tx: RlsTransaction, householdId: string): Promise<boolean> {
-      const [row] = await tx
-        .select({ id: account.id })
-        .from(account)
-        .where(eq(account.householdId, householdId))
-        .limit(1);
-      return Boolean(row);
+      // Through the SQL function: households' transaction runs as households_admin, which has no
+      // rights on the account table (drizzle/0026_runtime_roles.sql).
+      const [row] = await rows<{ has: boolean }>(tx, sql`SELECT accounts_household_has_accounts(${householdId}) AS has`);
+      return row?.has === true;
     },
   };
 }
