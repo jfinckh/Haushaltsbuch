@@ -71,7 +71,8 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const text = (name: string) => String(form.get(name) ?? "");
     const iban = bank === "cash" ? null : text("iban");
 
@@ -106,6 +107,16 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
             ? "accounts.form.noHousehold"
             : "accounts.form.saveFailed";
       return setErrors({ form });
+    }
+    // Next keeps visited pages alive (cacheComponents), so a later visit would show these inputs again.
+    if (!editing) {
+      formElement.reset();
+      setBank("ing");
+      setType("checking");
+      setRole("everyday");
+      setRoleTouched(false);
+      setVisibility("private");
+      setTradeRepublicPair(true);
     }
     router.push(redirectTo);
     router.refresh();
