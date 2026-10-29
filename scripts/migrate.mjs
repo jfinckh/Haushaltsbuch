@@ -48,11 +48,24 @@ try {
     const role = client.escapeIdentifier(appUser);
     const password = client.escapeLiteral(appPassword);
     const { rowCount } = await client.query("SELECT 1 FROM pg_roles WHERE rolname = $1", [appUser]);
+    // Since PostgreSQL 16 a non-superuser owner may not name SUPERUSER or CREATEDB in ALTER ROLE,
+    // not even to switch them off. So ALTER only sets what the owner may change, and the check
+    // below makes sure the login has no extra rights.
     await client.query(
       rowCount
-        ? `ALTER ROLE ${role} LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD ${password}`
+        ? `ALTER ROLE ${role} LOGIN NOCREATEROLE PASSWORD ${password}`
         : `CREATE ROLE ${role} LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD ${password}`,
     );
+    const { rows } = await client.query(
+      `SELECT rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls AS privileged
+         FROM pg_roles WHERE rolname = $1`,
+      [appUser],
+    );
+    if (rows[0]?.privileged) {
+      throw new Error(
+        `App login role ${appUser} has SUPERUSER, CREATEDB, CREATEROLE, REPLICATION or BYPASSRLS; remove it as a superuser`,
+      );
+    }
     await client.query(`GRANT app_runtime TO ${role}`);
     console.log(`App login role ${appUser} is ready`);
   } finally {
@@ -61,9 +74,17 @@ try {
 } catch (error) {
   // Only messages: never print query parameters, row data or the password. drizzle's own message
   // names the failed statement, the cause says why (e.g. a missing permission). The role
-  // statements are not quoted in pg's messages.
+  // statements are not quoted in pg's messages. pg's detail names roles and attributes only.
   const cause = error instanceof Error && error.cause instanceof Error ? error.cause.message : "";
-  console.error("Migration failed:", error instanceof Error ? error.message : "unknown error", cause);
+  const detail = [error, error instanceof Error ? error.cause : undefined]
+    .map((e) => (e && typeof e === "object" && typeof e.detail === "string" ? e.detail : ""))
+    .find(Boolean);
+  console.error(
+    "Migration failed:",
+    error instanceof Error ? error.message : "unknown error",
+    cause,
+    detail ?? "",
+  );
   process.exitCode = 1;
 } finally {
   await pool.end();
