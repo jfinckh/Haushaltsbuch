@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "base": "4d4fd9d122a4d6b9717d10459ddcfda1ec05264c",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": ".github/workflows/deploy.yml",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "Dockerfile",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "next.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/app-version.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/app-version.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/app-shell.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/deployment.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/components/account-form.tsx",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/messages/de.json",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/messages/en.json",
+      "status": "convergence",
+      "viaAmendment": "A3"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/validation.test.ts",
+      "status": "convergence",
+      "viaAmendment": "A4"
+    },
+    {
+      "kind": "file",
+      "id": "src/accounts/validation.ts",
+      "status": "convergence",
+      "viaAmendment": "A5"
+    },
+    {
+      "kind": "configKey",
+      "id": "APP_VERSION",
+      "status": "absence",
+      "found": "No config key APP_VERSION is declared."
+    },
+    {
+      "kind": "configKey",
+      "id": "APP_BUILT_AT",
+      "status": "absence",
+      "found": "No config key APP_BUILT_AT is declared."
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "config-key-new:APP_VERSION",
+      "approval": "approved",
+      "implemented": "no"
+    },
+    {
+      "itemKey": "config-key-new:APP_BUILT_AT",
+      "approval": "approved",
+      "implemented": "no"
+    }
+  ]
+}

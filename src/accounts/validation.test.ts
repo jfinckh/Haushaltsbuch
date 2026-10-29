@@ -28,6 +28,14 @@ describe("account input", () => {
     expect(parsed).toMatchObject({ iban: null, role: "savings" });
   });
 
+  it("starts a new account at 0 € without an opening balance", () => {
+    expect(createAccountSchema.parse({ name: "A", bank: "ing", type: "checking", visibility: "private" })).toMatchObject({ openingBalanceCents: 0 });
+    expect(createTradeRepublicSchema.parse({ setup: "trade-republic", visibility: "shared" })).toMatchObject({
+      clearingOpeningBalance: 0,
+      depotOpeningBalance: 0,
+    });
+  });
+
   it("names the field of each error", () => {
     const result = createAccountSchema.safeParse({ name: "", bank: "cash", type: "depot", visibility: "x", openingBalance: "1.2" });
     expect(result.success).toBe(false);

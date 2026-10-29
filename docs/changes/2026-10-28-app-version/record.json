@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "date": "2026-10-28",
+  "slug": "app-version",
+  "description": "App version in the sidebar",
+  "plan": {
+    "path": "docs/plans/2026-10-28-app-version.md",
+    "sha256": "4857e09cecd7c01c654a85e0e356c1abd668495f771fd3be5f266df961ae17a0"
+  },
+  "status": "final",
+  "base": "4d4fd9d122a4d6b9717d10459ddcfda1ec05264c",
+  "explanations": [
+    {
+      "ref": "configKey:APP_VERSION",
+      "text": "The key is a Docker build argument and a Next.js build value, not a runtime setting. So it is not in an env example file, which is where change-map looks."
+    },
+    {
+      "ref": "configKey:APP_BUILT_AT",
+      "text": "The key is a Docker build argument and a Next.js build value, not a runtime setting. So it is not in an env example file, which is where change-map looks."
+    }
+  ],
+  "report": "Finalized app-version (4d4fd9d..working-tree)\nFiles: 14 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 2 absent.\nAbsences:\n  - configKey APP_VERSION (found: No config key APP_VERSION is declared.)\n  - configKey APP_BUILT_AT (found: No config key APP_BUILT_AT is declared.)\nSign-off: 2 approved.\nRecord updated: record.json, map.html\nMap: docs/changes/2026-10-28-app-version/map.html\n",
+  "shownAt": "2026-10-28T22:44:17Z"
+}

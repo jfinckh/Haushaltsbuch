@@ -22,6 +22,7 @@ GitHub  ──SSH────▶ Cloudflare Access (service token) ─Tunnel─�
 | Start of a version, migrations | `deploy/deploy.sh` (on the server), migrate image from `Dockerfile` |
 | Backups | `deploy/backup.sh`, systemd user timer of `deploy` |
 | The pipeline | `.github/workflows/deploy.yml` |
+| Deployed version (short commit, build time) | in the app under "Abmelden"; set by the workflow as build arguments, see `Dockerfile` |
 
 ## Choices
 

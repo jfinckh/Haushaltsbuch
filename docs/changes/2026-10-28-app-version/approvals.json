@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "config-key-new:APP_VERSION",
+      "itemHash": "sha256:80b5f8643c5e587a995ab5339ef107678ee9049ac8ec7f5e6e9098a87b47a878",
+      "decision": "approve",
+      "at": "2026-10-28T22:36:16Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "config-key-new:APP_BUILT_AT",
+      "itemHash": "sha256:685fdafe46d1979aa4d2a4b33788c53c5d5a61070788c5ee16d387e6e6d277a8",
+      "decision": "approve",
+      "at": "2026-10-28T22:36:16Z",
+      "source": "hook"
+    }
+  ]
+}

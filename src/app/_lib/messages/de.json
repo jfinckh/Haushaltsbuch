@@ -143,6 +143,7 @@
     "rules": "Regeln",
     "categories": "Kategorien",
     "household": "Haushalt",
-    "householdLong": "Haushalt & Konten"
+    "householdLong": "Haushalt & Konten",
+    "version": "Version {version}"
   }
 }

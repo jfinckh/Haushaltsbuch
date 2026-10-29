@@ -78,11 +78,18 @@ jobs:
             "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > "$RUNNER_TEMP/npmrc"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build time
+        id: built
+        run: echo "at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
       - name: App image
         uses: docker/build-push-action@v6
         with:
           context: .
           target: app
+          # Shown in the app under "Abmelden".
+          build-args: |
+            APP_VERSION=${{ github.sha }}
+            APP_BUILT_AT=${{ steps.built.outputs.at }}
           platforms: linux/amd64
           push: true
           tags: ${{ env.APP_IMAGE }}:${{ github.sha }},${{ env.APP_IMAGE }}:latest

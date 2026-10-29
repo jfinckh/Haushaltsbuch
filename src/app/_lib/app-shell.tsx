@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { SignOutButton } from "@/auth";
 import { LocaleSwitcher } from "@/shared/locale-switcher";
+import { AppVersion } from "./app-version";
 
 type NavKey = "overview" | "transactions" | "statistics" | "imports" | "rules" | "categories" | "household";
 
@@ -151,6 +152,7 @@ export function AppShell({ children, narrow = false }: { children: ReactNode; na
           <LocaleSwitcher />
           <SignOutButton redirectTo="/sign-in?signedOut=1" className="btn btn-ghost btn-sm font-normal" />
         </div>
+        <AppVersion className="px-1 pt-2" />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -165,6 +167,7 @@ export function AppShell({ children, narrow = false }: { children: ReactNode; na
         </header>
         <main className="flex-1 px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
           <div className={`mx-auto w-full ${narrow ? "max-w-xl" : "max-w-5xl"}`}>{children}</div>
+          <AppVersion className="mx-auto mt-10 w-full max-w-5xl text-center lg:hidden" />
         </main>
       </div>
 

@@ -25,7 +25,13 @@ COPY . .
 # The route modules read their settings when Next.js loads them during the build, so the build
 # gets harmless placeholders. They exist only in this RUN step, not in the final image; the real
 # values come from .env.production on the server at runtime.
+# APP_VERSION (commit) and APP_BUILT_AT (UTC, ISO) come from the deploy workflow; next.config.ts
+# writes them into the app, which shows them under "Abmelden".
+ARG APP_VERSION=dev
+ARG APP_BUILT_AT=
 RUN AUTH_MODE=identity \
+    APP_VERSION=$APP_VERSION \
+    APP_BUILT_AT=$APP_BUILT_AT \
     IDENTITY_ISSUER=https://build.invalid \
     IDENTITY_JWKS_URL=https://build.invalid/certs \
     IDENTITY_AUDIENCE=build \

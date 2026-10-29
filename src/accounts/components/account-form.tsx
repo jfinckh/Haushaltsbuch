@@ -81,13 +81,12 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
         setup: "trade-republic",
         visibility,
         iban,
-        clearingOpeningBalance: text("clearingOpeningBalance"),
-        depotOpeningBalance: text("depotOpeningBalance"),
       };
       const checked = createTradeRepublicSchema.safeParse(body);
       if (!checked.success) return setErrors(firstErrors(checked.error.issues));
     } else {
-      body = { name: text("name"), bank, type, role, openingBalance: text("openingBalance"), iban };
+      // A new account starts at 0 €; the first bank statement import sets its balance.
+      body = { name: text("name"), bank, type, role, iban, ...(editing && { openingBalance: text("openingBalance") }) };
       if (canChangeVisibility) (body as { visibility?: Visibility }).visibility = visibility;
       const checked = editing
         ? updateAccountSchema.safeParse(body)
@@ -184,37 +183,26 @@ export function AccountForm({ account, action = "/api/accounts", redirectTo = "/
               </select>
             </fieldset>
           </div>
-          <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-balance">{t("form.openingBalance")}</label>
-            <input
-              id="account-balance"
-              name="openingBalance"
-              type="text"
-              inputMode="decimal"
-              placeholder="1.234,56"
-              defaultValue={account ? formatCents(account.openingBalanceCents) : ""}
-              className="input w-full"
-              required
-            />
-            {errors.openingBalance && <p className="label text-error">{tk(errors.openingBalance)}</p>}
-          </fieldset>
+          {editing && (
+            <fieldset className="fieldset">
+              <label className="fieldset-legend" htmlFor="account-balance">{t("form.openingBalance")}</label>
+              <input
+                id="account-balance"
+                name="openingBalance"
+                type="text"
+                inputMode="decimal"
+                placeholder="1.234,56"
+                defaultValue={account ? formatCents(account.openingBalanceCents) : ""}
+                className="input w-full"
+                required
+              />
+              {errors.openingBalance && <p className="label text-error">{tk(errors.openingBalance)}</p>}
+            </fieldset>
+          )}
         </>
       )}
 
-      {pair && (
-        <div className="grid gap-2 sm:grid-cols-2">
-          <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-clearing-balance">{t("form.clearingBalance")}</label>
-            <input id="account-clearing-balance" name="clearingOpeningBalance" type="text" inputMode="decimal" placeholder="0,00" className="input w-full" />
-            {errors.clearingOpeningBalance && <p className="label text-error">{tk(errors.clearingOpeningBalance)}</p>}
-          </fieldset>
-          <fieldset className="fieldset">
-            <label className="fieldset-legend" htmlFor="account-depot-balance">{t("form.depotBalance")}</label>
-            <input id="account-depot-balance" name="depotOpeningBalance" type="text" inputMode="decimal" placeholder="0,00" className="input w-full" />
-            {errors.depotOpeningBalance && <p className="label text-error">{tk(errors.depotOpeningBalance)}</p>}
-          </fieldset>
-        </div>
-      )}
+      {!editing && <p className="text-sm text-base-content/70">{t("form.balanceFromImport")}</p>}
 
       {bank !== "cash" && (
         <fieldset className="fieldset">

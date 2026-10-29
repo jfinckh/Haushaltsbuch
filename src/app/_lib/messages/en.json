@@ -143,6 +143,7 @@
     "rules": "Rules",
     "categories": "Categories",
     "household": "Household",
-    "householdLong": "Household & accounts"
+    "householdLong": "Household & accounts",
+    "version": "Version {version}"
   }
 }

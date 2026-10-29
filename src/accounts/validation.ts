@@ -38,6 +38,9 @@ const ibanSchema = z
   .transform((iban) => iban || null)
   .nullable();
 
+/** A starting balance: optional, an account starts at 0 € (the first bank statement import sets it). */
+const startingBalanceSchema = germanAmountSchema.optional().transform((cents) => cents ?? 0);
+
 /** A complete account, after parsing. Also used to check an account after an update. */
 export const accountValuesSchema = z
   .object({
@@ -60,7 +63,7 @@ export const accountValuesSchema = z
 
 export type AccountValues = z.infer<typeof accountValuesSchema>;
 
-/** One new account, as the form sends it (amount as German text). */
+/** One new account, as the form sends it (amount as German text, optional). */
 export const createAccountSchema = z
   .object({
     name: nameSchema,
@@ -68,7 +71,7 @@ export const createAccountSchema = z
     type: z.enum(ACCOUNT_TYPES),
     role: z.enum(ACCOUNT_ROLES).optional(),
     visibility: z.enum(VISIBILITIES),
-    openingBalance: germanAmountSchema,
+    openingBalance: startingBalanceSchema,
     iban: ibanSchema.optional(),
   })
   .transform(({ openingBalance, role, iban, ...account }) => ({
@@ -84,8 +87,8 @@ export const createTradeRepublicSchema = z.object({
   setup: z.literal("trade-republic"),
   visibility: z.enum(VISIBILITIES),
   iban: ibanSchema.optional(),
-  clearingOpeningBalance: germanAmountSchema,
-  depotOpeningBalance: germanAmountSchema,
+  clearingOpeningBalance: startingBalanceSchema,
+  depotOpeningBalance: startingBalanceSchema,
 });
 
 export type CreateTradeRepublicInput = z.infer<typeof createTradeRepublicSchema>;
