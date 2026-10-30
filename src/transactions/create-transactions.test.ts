@@ -614,6 +614,52 @@ describe("spending by category over a series of months (statistics)", () => {
   });
 });
 
+describe("income per category group over a series of months (statistics)", () => {
+  const OWN = { ownPrivate: true } as const;
+  const empty = (month: string) => ({ month, totalCents: 0, groups: [] });
+
+  it("sums only income per group, newest first, leaving out groups at zero or below", async () => {
+    await create(max, { date: "2026-10-01", amount: "3.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-02", amount: "6,66", kind: "income", category: "investmentIncome" });
+    await create(max, { date: "2026-10-03", amount: "56,00", kind: "income", category: null });
+    await create(max, { date: "2026-10-04", amount: "-20,00", kind: "expense", category: "groceries" });
+    await create(max, { date: "2026-10-05", amount: "500,00", kind: "transfer", category: null });
+    await create(max, { date: "2026-08-01", amount: "100,00", kind: "income", category: "otherIncome" });
+    await create(max, { date: "2026-08-02", amount: "-100,00", kind: "income", category: "otherIncome" });
+
+    expect(await transactions.categoryIncomes(max, "max-private", 3, "2026-10")).toEqual({
+      ok: true,
+      months: [
+        {
+          month: "2026-10",
+          totalCents: 306266,
+          groups: [
+            { group: "salary", cents: 300000 },
+            { group: null, cents: 5600 },
+            { group: "investmentIncome", cents: 666 },
+          ],
+        },
+        empty("2026-09"),
+        empty("2026-08"),
+      ],
+    });
+  });
+
+  it("sums all own private accounts, never shared ones or another member's", async () => {
+    await setup.addAccount("erika-private", "erika");
+    await create(max, { date: "2026-10-01", amount: "10,00", kind: "income", category: "salary" });
+    await create(max, { accountId: "home-shared", date: "2026-10-02", amount: "70,00", kind: "income", category: "otherIncome" });
+    await create(erika, { accountId: "erika-private", date: "2026-10-03", amount: "40,00", kind: "income", category: "salary" });
+
+    expect(await transactions.categoryIncomes(max, OWN, 1, "2026-10")).toEqual({
+      ok: true,
+      months: [{ month: "2026-10", totalCents: 1000, groups: [{ group: "salary", cents: 1000 }] }],
+    });
+    expect(await transactions.categoryIncomes(erika, "max-private", 1)).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.categoryIncomes(max, "max-private", 25)).toEqual({ ok: false, reason: "invalid-input" });
+  });
+});
+
 describe("latest bookings of one account (dashboard)", () => {
   beforeEach(async () => {
     await create(max, { date: "2026-08-01", amount: "-1,00" });

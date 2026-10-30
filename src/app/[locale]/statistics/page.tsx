@@ -68,7 +68,7 @@ async function Statistics({ searchParams }: Props) {
   );
 }
 
-/** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
+/** accountId null: all of the caller's own private accounts together. */
 async function MonthSeries({ caller, accountId, month }: { caller: Caller; accountId: string | null; month: string }) {
   const target = accountId ?? ({ ownPrivate: true } as const);
   const [statistics, trends, flow, { names }] = await Promise.all([
@@ -190,7 +190,6 @@ async function CurrentMonth({
     { label: t("saved"), value: formatEuro(-row.savingCents), notes: moneyNotes("saved"), href: bookings("saving") },
     { label: t("left"), value: formatEuro(row.availableCents), notes: moneyNotes("available"), negative: row.availableCents < 0 },
     { label: t("savingsRate"), value: rate(row.savingsRate), notes: rateNotes },
-    ...(row.contributionCents === null ? [] : [{ label: t("contribution"), value: formatEuro(row.contributionCents), notes: [] }]),
   ];
 
   const hints = [
@@ -241,7 +240,6 @@ async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: numbe
     [t("saved"), formatEuro(-row.savingCents)],
     [t("left"), formatEuro(row.availableCents)],
     [t("savingsRate"), row.savingsRate === null ? t("noRate") : format.number(row.savingsRate, { style: "percent", maximumFractionDigits: 1 })],
-    ...(row.contributionCents === null ? [] : ([[t("contribution"), formatEuro(row.contributionCents)]] as [string, string][])),
   ];
 
   return (

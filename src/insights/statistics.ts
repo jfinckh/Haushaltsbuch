@@ -5,40 +5,23 @@ import { usualDifference, type UsualDifference } from "./category-trends";
 /** One month as transactions' monthSummaries returns it (cents, signed as booked: money out is negative). */
 type MonthSummary = { month: string; incomeCents: number; expenseCents: number; savingCents: number; availableCents: number };
 
-/** A month's net contribution to shared accounts (cents, negative = paid in), from transfers. */
-type MonthContribution = { month: string; cents: number };
-
 export type StatisticsRow = MonthSummary & {
-  /** Null for a single account; for "Alle privaten Konten" the net contribution, already in availableCents. */
-  contributionCents: number | null;
   /** Saved / income as a fraction (0.125 = 12.5 %), or null without income. */
   savingsRate: number | null;
 };
 
 /**
  * Saved / net income as a fraction, or null when there is no income. Saving is booked as money out,
- * so −savingCents is what was saved. The contribution to shared accounts is not saving.
+ * so −savingCents is what was saved.
  */
 export function savingsRate(incomeCents: number, savingCents: number): number | null {
   // "0 - x" rather than "-x", so nothing saved gives 0, never -0.
   return incomeCents > 0 ? (0 - savingCents) / incomeCents : null;
 }
 
-/**
- * The page's rows in the order of the summaries. With contributions (Alle privaten Konten), each month's
- * contribution lowers its available amount, as on the dashboard.
- */
-export function statisticsRows(summaries: MonthSummary[], contributions?: MonthContribution[]): StatisticsRow[] {
-  const byMonth = new Map(contributions?.map((c) => [c.month, c.cents]));
-  return summaries.map((s) => {
-    const contributionCents = contributions ? (byMonth.get(s.month) ?? 0) : null;
-    return {
-      ...s,
-      availableCents: s.availableCents + (contributionCents ?? 0),
-      contributionCents,
-      savingsRate: savingsRate(s.incomeCents, s.savingCents),
-    };
-  });
+/** The page's rows in the order of the summaries, each with its savings rate. */
+export function statisticsRows(summaries: MonthSummary[]): StatisticsRow[] {
+  return summaries.map((s) => ({ ...s, savingsRate: savingsRate(s.incomeCents, s.savingCents) }));
 }
 
 /** How one figure differs from another month's: cents = this month − the other (see usualDifference). */

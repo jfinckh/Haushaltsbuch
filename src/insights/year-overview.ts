@@ -7,8 +7,6 @@ export type YearTotals = {
   incomeCents: number;
   expenseCents: number;
   savingCents: number;
-  /** Null for a single account; for "Alle privaten Konten" the year's net contribution to shared accounts. */
-  contributionCents: number | null;
   availableCents: number;
   /** Saved / income of the whole year, or null without income. */
   savingsRate: number | null;
@@ -21,12 +19,10 @@ export function yearTotals(rows: StatisticsRow[]): YearTotals {
   const sum = (pick: (row: StatisticsRow) => number) => rows.reduce((total, row) => total + pick(row), 0);
   const incomeCents = sum((r) => r.incomeCents);
   const savingCents = sum((r) => r.savingCents);
-  const withContribution = rows.some((r) => r.contributionCents !== null);
   return {
     incomeCents,
     expenseCents: sum((r) => r.expenseCents),
     savingCents,
-    contributionCents: withContribution ? sum((r) => r.contributionCents ?? 0) : null,
     availableCents: sum((r) => r.availableCents),
     savingsRate: savingsRate(incomeCents, savingCents),
   };

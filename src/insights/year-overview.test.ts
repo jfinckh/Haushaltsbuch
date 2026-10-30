@@ -17,26 +17,14 @@ describe("year totals", () => {
       incomeCents: 400000,
       expenseCents: -120000,
       savingCents: -50000,
-      contributionCents: null,
       availableCents: 230000,
       savingsRate: 0.125,
     });
   });
 
-  it("sums the contribution, which lowers what is available but never changes the savings rate", () => {
-    const rows = statisticsRows(
-      [summary("2026-02", 200000, 0, -20000), summary("2026-01", 200000, 0, -30000)],
-      [
-        { month: "2026-02", cents: -120000 },
-        { month: "2026-01", cents: -100000 },
-      ],
-    );
-    expect(yearTotals(rows)).toMatchObject({ contributionCents: -220000, availableCents: 130000, savingsRate: 0.125 });
-  });
-
   it("has no savings rate without income, and zeros without months", () => {
     expect(yearTotals(statisticsRows([summary("2026-01", 0, -500, -100)])).savingsRate).toBeNull();
-    expect(yearTotals([])).toEqual({ incomeCents: 0, expenseCents: 0, savingCents: 0, contributionCents: null, availableCents: 0, savingsRate: null });
+    expect(yearTotals([])).toEqual({ incomeCents: 0, expenseCents: 0, savingCents: 0, availableCents: 0, savingsRate: null });
   });
 });
 

@@ -1,14 +1,9 @@
-import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { Member } from "./signals";
 import type { AccountTransfers, NoPartnerTarget, TransferKind, TransferStatus } from "./types";
 
 // The contract of the transfers part. createTransfers implements it. Views shared with the client
 // components live in types.ts.
-
-export type SharedContributionResult = Result<{ month: string; cents: number }, "invalid-input">;
-
-export type SharedContributionsResult = Result<{ months: { month: string; cents: number }[] }, "invalid-input">;
 
 /** A booking a rule typed as transfer or saving; target external: from or to an external own account. */
 export type RuleTransfer = { id: string; target: "external" | null };
@@ -59,18 +54,6 @@ export interface Transfers {
 
   /** Marks a booking as a transfer without partner: from or to an external own account, or a visible account. */
   markWithoutPartner(caller: Caller, id: string, target: NoPartnerTarget): Promise<"ok" | "not-found" | "invalid">;
-
-  /**
-   * Net transfers between the caller's own private accounts and shared accounts in a calendar month
-   * (cents, signed as booked on the private side: negative = paid into shared accounts). Counts
-   * bookings of type transfer whose linked partner, or whose target without partner, is on a shared
-   * account. Transfers between own accounts, to an external own account, to a hidden account or
-   * still open do not count. Only the caller's own private bookings are read.
-   */
-  sharedContribution(caller: Caller, month: string): Promise<SharedContributionResult>;
-
-  /** The shared contribution (as sharedContribution) of each month from `from` to `to` (YYYY-MM, at most 24), newest first. */
-  sharedContributions(caller: Caller, from: string, to: string): Promise<SharedContributionsResult>;
 
   /** A manual action on a booking, from the API (input checked here). */
   applyAction(caller: Caller, id: string, input: unknown): Promise<"ok" | "not-found" | "invalid" | "invalid-input">;

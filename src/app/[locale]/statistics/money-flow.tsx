@@ -12,19 +12,18 @@ type Kind = Source["kind"] | Target["kind"];
 
 /**
  * Colour per node kind (daisyUI theme tokens, so light and dark mode both work). Categories share
- * one colour: their names tell them apart. A shortfall is a warning and wears the error colour.
+ * one colour, and so do income groups: their names tell them apart. A shortfall is a warning and
+ * wears the error colour.
  */
 const COLOR: Record<Kind, string> = {
   income: "var(--color-primary)",
   refunds: "var(--color-info)",
   fromSavings: "var(--color-accent)",
-  fromShared: "var(--color-info)",
   shortfall: "var(--color-error)",
   category: "var(--color-secondary)",
   otherCategories: "var(--color-secondary)",
   uncategorized: "color-mix(in oklab, var(--color-base-content) 45%, transparent)",
   saving: "var(--color-accent)",
-  toShared: "var(--color-info)",
   left: "var(--color-primary)",
 };
 
@@ -32,8 +31,9 @@ const COLOR: Record<Kind, string> = {
 const BAR = 8;
 
 /**
- * The month's money flow as a Sankey chart: sources on the left flow into one bar in the middle,
- * which flows out to the categories, saving and what is left over. Band width is the amount.
+ * The month's money flow as a Sankey chart: income per category and the other sources on the left
+ * flow into one bar in the middle, which flows out to the categories, saving and what is left over.
+ * Band width is the amount.
  * Each node with bookings behind it links to them.
  */
 export function MoneyFlow({
@@ -53,12 +53,14 @@ export function MoneyFlow({
   const format = useFormatter();
   const monthName = format.dateTime(new Date(`${flow.month}-01T00:00:00Z`), { month: "long", timeZone: "UTC" });
 
-  const name = (node: Source | Target) =>
-    node.kind === "category" ? categoryName(node.group) : node.kind === "uncategorized" ? uncategorized : t(`flow.${node.kind}`);
+  const name = (node: Source | Target) => {
+    if (node.kind === "category" || (node.kind === "income" && node.group !== null)) return categoryName(node.group!);
+    return node.kind === "uncategorized" ? uncategorized : t(`flow.${node.kind}`);
+  };
   const filter = (node: Source | Target): Omit<BookingsFilter, "account" | "month"> | null => {
     switch (node.kind) {
       case "income":
-        return { kind: "income" };
+        return { kind: "income", category: node.group };
       case "saving":
         return { kind: "saving" };
       case "category":
@@ -97,11 +99,11 @@ export function MoneyFlow({
     const text = name(node);
     return (
       <div
-        key={`${node.kind}-${"group" in node ? node.group : ""}`}
+        key={`${node.kind}-${"group" in node ? (node.group ?? "none") : ""}`}
         className={`absolute flex w-full -translate-y-1/2 flex-col leading-tight ${side === "left" ? "items-end pr-2 text-right" : "items-start pl-2"}`}
         style={{ top: labelY }}
       >
-        <span className="max-w-full truncate text-xs text-base-content/70">
+        <span className="max-w-full truncate text-xs text-base-content/70" title={text}>
           {link ? (
             <Link href={link} className="link link-hover">
               {text}

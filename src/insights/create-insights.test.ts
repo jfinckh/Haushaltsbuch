@@ -8,11 +8,10 @@ import { createFieldCrypto } from "@/shared/field-crypto";
 import type { Caller, RlsDatabase } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
 import { createTransactions, type Transactions } from "@/transactions/server";
-import { createTransfers, type Transfers } from "@/transfers/server";
 import type { Insights } from "./contract";
 import { createInsights } from "./create-insights";
 
-// The figures with the real bookings and transfers services on an in-memory database, and privacy:
+// The figures with the real bookings service on an in-memory database, and privacy:
 // nobody gets figures of an account they may not see, and "Alle privaten Konten" never mixes members.
 // Households and accounts are written straight into their tables (tests only; the table names are
 // part of their database contract).
@@ -21,7 +20,6 @@ const TODAY = "2026-10-21";
 
 let db: RlsDatabase;
 let transactions: Transactions;
-let transfers: Transfers;
 let insights: Insights;
 let max: Caller;
 let erika: Caller;
@@ -52,8 +50,7 @@ beforeEach(async () => {
   db = pglite;
   const crypto = createFieldCrypto({ keys: `1:${randomBytes(32).toString("base64")}`, indexKey: randomBytes(32).toString("base64") });
   transactions = createTransactions({ db, crypto, today: () => TODAY });
-  transfers = createTransfers({ db, crypto, transactions, today: () => TODAY });
-  insights = createInsights({ transactions, transfers, today: () => TODAY });
+  insights = createInsights({ transactions, today: () => TODAY });
   await householdOf("home", "max", "erika");
   await householdOf("other", "dora");
   await addAccount("max-giro", "max");
@@ -63,15 +60,16 @@ beforeEach(async () => {
   await addAccount("dora-giro", "dora");
   [max, erika, dora] = await Promise.all(["max", "erika", "dora"].map((id) => createTestSession(db, id)));
 
-  // Max: salary, groceries, a refund, saving into his depot, and rent paid into the shared account.
+  // Max: salary, groceries, a refund, saving into his depot, interest on it, and money moved into the
+  // shared account (a transfer, which counts nowhere).
   await book(max, "max-giro", "2026-10-01", "2.000,00", "income", "salary");
   await book(max, "max-giro", "2026-10-05", "-300,00", "expense", "groceries");
   await book(max, "max-giro", "2026-10-06", "50,00", "expense", "groceries");
   await book(max, "max-giro", "2026-10-07", "-250,00", "saving");
   await book(max, "max-tr", "2026-10-07", "250,00", "saving");
-  const rent = await book(max, "max-giro", "2026-10-02", "-800,00", "transfer");
-  const received = await book(erika, "shared", "2026-10-02", "800,00", "transfer");
-  expect(await transfers.link(max, rent, received)).toBe("ok");
+  await book(max, "max-tr", "2026-10-08", "6,66", "income", "investmentIncome");
+  await book(max, "max-giro", "2026-10-02", "-800,00", "transfer");
+  await book(erika, "shared", "2026-10-02", "800,00", "transfer");
   await book(max, "max-giro", "2026-09-01", "1.000,00", "income", "salary");
   await book(max, "max-giro", "2026-09-10", "-400,00", "expense", "leisure");
   // Erika's private account and the shared account's own spending.
@@ -82,28 +80,26 @@ beforeEach(async () => {
 });
 
 describe("month figures", () => {
-  it("gives one account's current month, without contribution", async () => {
+  it("gives one account's current month", async () => {
     expect(await insights.monthFigures(max, "max-giro")).toEqual({
       ok: true,
       month: "2026-10",
       incomeCents: 200000,
       expenseCents: -25000,
       savingCents: -25000,
-      contributionCents: null,
       availableCents: 150000,
     });
   });
 
-  it("adds the contribution to shared accounts for Alle privaten Konten, lowering what is available", async () => {
+  it("sums all own private accounts for Alle privaten Konten, never counting transfers", async () => {
     // The depot's incoming saving is the other side of the giro's; only the giro's leg counts.
     expect(await insights.monthFigures(max, { ownPrivate: true })).toEqual({
       ok: true,
       month: "2026-10",
-      incomeCents: 200000,
+      incomeCents: 200666,
       expenseCents: -25000,
       savingCents: -25000,
-      contributionCents: -80000,
-      availableCents: 70000,
+      availableCents: 150666,
     });
   });
 
@@ -121,9 +117,8 @@ describe("month figures", () => {
     expect(await insights.monthFigures(erika, { ownPrivate: true })).toMatchObject({
       incomeCents: 300000,
       expenseCents: -99900,
-      contributionCents: 0,
     });
-    expect(await insights.monthFigures(dora, { ownPrivate: true })).toMatchObject({ incomeCents: 50000, contributionCents: 0 });
+    expect(await insights.monthFigures(dora, { ownPrivate: true })).toMatchObject({ incomeCents: 50000 });
   });
 });
 
@@ -141,9 +136,9 @@ describe("statistics", () => {
     expect(result).toEqual({
       ok: true,
       rows: [
-        { month: "2026-10", incomeCents: 200000, expenseCents: -25000, savingCents: -25000, availableCents: 150000, contributionCents: null, savingsRate: 0.125 },
-        { month: "2026-09", incomeCents: 100000, expenseCents: -40000, savingCents: 0, availableCents: 60000, contributionCents: null, savingsRate: 0 },
-        { month: "2026-08", incomeCents: 0, expenseCents: 0, savingCents: 0, availableCents: 0, contributionCents: null, savingsRate: null },
+        { month: "2026-10", incomeCents: 200000, expenseCents: -25000, savingCents: -25000, availableCents: 150000, savingsRate: 0.125 },
+        { month: "2026-09", incomeCents: 100000, expenseCents: -40000, savingCents: 0, availableCents: 60000, savingsRate: 0 },
+        { month: "2026-08", incomeCents: 0, expenseCents: 0, savingCents: 0, availableCents: 0, savingsRate: null },
       ],
       comparison: {
         previous: september,
@@ -155,11 +150,11 @@ describe("statistics", () => {
     });
   });
 
-  it("adds each month's contribution for Alle privaten Konten", async () => {
+  it("sums all own private accounts for Alle privaten Konten", async () => {
     const result = await insights.statistics(max, { ownPrivate: true }, 2);
-    expect(result.ok && result.rows.map((r) => [r.month, r.contributionCents, r.availableCents])).toEqual([
-      ["2026-10", -80000, 70000],
-      ["2026-09", 0, 60000],
+    expect(result.ok && result.rows.map((r) => [r.month, r.incomeCents, r.availableCents])).toEqual([
+      ["2026-10", 200666, 150666],
+      ["2026-09", 100000, 60000],
     ]);
   });
 
@@ -171,9 +166,9 @@ describe("statistics", () => {
     expect(await insights.statistics(erika, "max-giro", 12)).toEqual({ ok: false, reason: "not-found" });
     expect(await insights.statistics(dora, "shared", 12)).toEqual({ ok: false, reason: "not-found" });
     const erikas = await insights.statistics(erika, { ownPrivate: true }, 2);
-    expect(erikas.ok && erikas.rows.map((r) => [r.incomeCents, r.expenseCents, r.contributionCents])).toEqual([
-      [300000, -99900, 0],
-      [0, 0, 0],
+    expect(erikas.ok && erikas.rows.map((r) => [r.incomeCents, r.expenseCents])).toEqual([
+      [300000, -99900],
+      [0, 0],
     ]);
   });
 
@@ -206,7 +201,7 @@ describe("money flow", () => {
       ok: true,
       month: "2026-10",
       totalCents: 200000,
-      sources: [{ kind: "income", cents: 200000 }],
+      sources: [{ kind: "income", group: "salary", cents: 200000 }],
       targets: [
         { kind: "category", group: "groceries", cents: 25000 },
         { kind: "saving", cents: 25000 },
@@ -215,13 +210,16 @@ describe("money flow", () => {
     });
   });
 
-  it("shows the contribution to shared accounts for Alle privaten Konten", async () => {
+  it("splits income by category group over all own private accounts for Alle privaten Konten", async () => {
     const flow = await insights.moneyFlow(max, { ownPrivate: true });
+    expect(flow.ok && flow.sources).toEqual([
+      { kind: "income", group: "salary", cents: 200000 },
+      { kind: "income", group: "investmentIncome", cents: 666 },
+    ]);
     expect(flow.ok && flow.targets).toEqual([
       { kind: "category", group: "groceries", cents: 25000 },
       { kind: "saving", cents: 25000 },
-      { kind: "toShared", cents: 80000 },
-      { kind: "left", cents: 70000 },
+      { kind: "left", cents: 150666 },
     ]);
   });
 
@@ -239,6 +237,7 @@ describe("money flow", () => {
     expect(await insights.moneyFlow(erika, "max-giro")).toEqual({ ok: false, reason: "not-found" });
     expect(await insights.moneyFlow(dora, "shared")).toEqual({ ok: false, reason: "not-found" });
     const erikas = await insights.moneyFlow(erika, { ownPrivate: true });
+    expect(erikas.ok && erikas.sources).toEqual([{ kind: "income", group: "salary", cents: 300000 }]);
     expect(erikas.ok && erikas.targets).toEqual([
       { kind: "category", group: "shopping", cents: 99900 },
       { kind: "left", cents: 200100 },
@@ -301,11 +300,11 @@ describe("year overview", () => {
     expect(result.ok && result.months.map((m) => m.month)).toEqual([
       "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10",
     ]);
-    expect(result.ok && result.months.at(-1)).toMatchObject({ incomeCents: 200000, expenseCents: -25000, contributionCents: null });
+    expect(result.ok && result.months.at(-1)).toMatchObject({ incomeCents: 200000, expenseCents: -25000 });
     expect(result).toMatchObject({
       ok: true,
       year: 2026,
-      totals: { incomeCents: 300000, expenseCents: -65000, savingCents: -25000, contributionCents: null, availableCents: 210000 },
+      totals: { incomeCents: 300000, expenseCents: -65000, savingCents: -25000, availableCents: 210000 },
       // Groceries: 300 € minus a 50 € refund.
       categories: { totalCents: 65000, groups: [{ group: "leisure", cents: 40000 }, { group: "groceries", cents: 25000 }] },
     });
@@ -318,13 +317,13 @@ describe("year overview", () => {
     expect(result).toMatchObject({ ok: true, totals: { incomeCents: 0, savingsRate: null }, categories: { totalCents: 0, groups: [] } });
   });
 
-  it("adds the contribution to shared accounts for Alle privaten Konten", async () => {
-    expect(await insights.yearOverview(max, { ownPrivate: true }, 2026)).toMatchObject({
-      ok: true,
-      totals: { incomeCents: 300000, expenseCents: -65000, savingCents: -25000, contributionCents: -80000, availableCents: 130000 },
-    });
+  it("sums all own private accounts for Alle privaten Konten", async () => {
     const overview = await insights.yearOverview(max, { ownPrivate: true }, 2026);
-    expect(overview.ok && overview.totals.savingsRate).toBeCloseTo(25000 / 300000);
+    expect(overview).toMatchObject({
+      ok: true,
+      totals: { incomeCents: 300666, expenseCents: -65000, savingCents: -25000, availableCents: 210666 },
+    });
+    expect(overview.ok && overview.totals.savingsRate).toBeCloseTo(25000 / 300666);
   });
 
   it("rejects a future year or an invalid one", async () => {
@@ -337,7 +336,7 @@ describe("year overview", () => {
     expect(await insights.yearOverview(erika, "max-giro", 2026)).toEqual({ ok: false, reason: "not-found" });
     expect(await insights.yearOverview(dora, "shared", 2026)).toEqual({ ok: false, reason: "not-found" });
     expect(await insights.yearOverview(erika, { ownPrivate: true }, 2026)).toMatchObject({
-      totals: { incomeCents: 300000, expenseCents: -99900, contributionCents: 0 },
+      totals: { incomeCents: 300000, expenseCents: -99900 },
       categories: { groups: [{ group: "shopping", cents: 99900 }] },
     });
     expect(await insights.yearOverview(dora, { ownPrivate: true }, 2026)).toMatchObject({ totals: { incomeCents: 50000, expenseCents: 0 } });

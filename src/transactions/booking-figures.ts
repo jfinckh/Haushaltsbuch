@@ -61,7 +61,17 @@ export function createBookingFigures({ db, today }: BookingFiguresDeps): Booking
     });
   };
 
-  const categorySpendings: BookingFigures["categorySpendings"] = async (caller, target, count, until = monthOf(today())) => {
+  /**
+   * Per month and category group: what was spent (expense) or earned (income), positive cents, as
+   * categorySpendings and categoryIncomes describe.
+   */
+  const groupTotals = async (
+    kind: "expense" | "income",
+    caller: Parameters<BookingFigures["categorySpendings"]>[0],
+    target: Parameters<BookingFigures["categorySpendings"]>[1],
+    count: number,
+    until: string,
+  ): Promise<CategorySpendingsResult> => {
     const series = monthSeries(count, until);
     if (!series) return { ok: false, reason: "invalid-input" };
     return withSession(db, caller, async (tx): Promise<CategorySpendingsResult> => {
@@ -74,25 +84,34 @@ export function createBookingFigures({ db, today }: BookingFiguresDeps): Booking
           and(
             visible,
             accounts,
-            eq(transaction.kind, "expense"),
+            eq(transaction.kind, kind),
             gte(transaction.bookingDate, series.from),
             lte(transaction.bookingDate, series.to),
           ),
         )
         .groupBy(bookingMonth, transaction.category);
+      // spendingByGroup counts money out as positive; income is money in, so its sign flips.
+      const sign = kind === "expense" ? 1 : -1;
       return {
         ok: true,
         months: series.months.map((m) => ({
           month: m,
-          ...spendingByGroup(rows.filter((row) => row.month === m).map((row) => ({ category: row.category, sumCents: Number(row.sum) }))),
+          ...spendingByGroup(rows.filter((row) => row.month === m).map((row) => ({ category: row.category, sumCents: sign * Number(row.sum) }))),
         })),
       };
     });
   };
 
+  const categorySpendings: BookingFigures["categorySpendings"] = (caller, target, count, until = monthOf(today())) =>
+    groupTotals("expense", caller, target, count, until);
+
   return {
     monthSummaries,
     categorySpendings,
+
+    categoryIncomes(caller, target, count, until = monthOf(today())) {
+      return groupTotals("income", caller, target, count, until);
+    },
 
     async monthSummary(caller, target, month = monthOf(today())) {
       const result = await monthSummaries(caller, target, 1, month);

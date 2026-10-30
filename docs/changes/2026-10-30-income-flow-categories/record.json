@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "slug": "income-flow-categories",
+  "description": "Income by category in the money flow",
+  "plan": {
+    "path": "docs/plans/2026-10-30-income-flow-categories.md",
+    "sha256": "a977ca56ce5959d94b690fd90afaeeea35b9333e568209f9a3a1e88cdcc9c779"
+  },
+  "status": "final",
+  "base": "c9a9ccbf3ba657b0185c464268967df3d5ec7997",
+  "report": "Finalized income-flow-categories (c9a9ccb..working-tree)\nFiles: 26 converge, 0 diverge, 0 absent. Elements: 1 converges, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 1 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-30-income-flow-categories/map.html\n",
+  "shownAt": "2026-10-30T12:34:52Z"
+}

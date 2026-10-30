@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "edge-remove:insights->transfers",
+      "itemHash": "sha256:eb5fe932890ce290417512ce6a49116e70647d9c99405b5177bd283fc1dbe028",
+      "decision": "approve",
+      "at": "2026-10-30T12:18:08Z",
+      "source": "hook"
+    }
+  ]
+}

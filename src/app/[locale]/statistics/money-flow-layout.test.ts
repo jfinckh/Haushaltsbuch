@@ -5,7 +5,7 @@ import { LABEL_HEIGHT, layoutFlow, NODE_GAP } from "./money-flow-layout";
 const flow = (sources: number[], targets: number[]): MoneyFlow => ({
   month: "2026-10",
   totalCents: sources.reduce((a, b) => a + b, 0),
-  sources: sources.map((cents) => ({ kind: "income", cents })),
+  sources: sources.map((cents) => ({ kind: "income", group: null, cents })),
   targets: targets.map((cents, i) => ({ kind: "category", group: `g${i}`, cents })),
 });
 

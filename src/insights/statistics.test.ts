@@ -21,24 +21,13 @@ describe("savings rate", () => {
 });
 
 describe("statistics rows", () => {
-  it("adds the savings rate, and without contributions none", () => {
+  it("adds the savings rate", () => {
     expect(statisticsRows([summary("2026-10", 200000, -50000, -25000), summary("2026-09", 0, -1000, 0)])).toEqual([
-      { month: "2026-10", incomeCents: 200000, expenseCents: -50000, savingCents: -25000, availableCents: 125000, contributionCents: null, savingsRate: 0.125 },
-      { month: "2026-09", incomeCents: 0, expenseCents: -1000, savingCents: 0, availableCents: -1000, contributionCents: null, savingsRate: null },
+      { month: "2026-10", incomeCents: 200000, expenseCents: -50000, savingCents: -25000, availableCents: 125000, savingsRate: 0.125 },
+      { month: "2026-09", incomeCents: 0, expenseCents: -1000, savingCents: 0, availableCents: -1000, savingsRate: null },
     ]);
   });
 
-  it("adds the contribution of the same month to the available amount, but never to the savings rate", () => {
-    const rows = statisticsRows(
-      [summary("2026-10", 200000, -50000, -25000), summary("2026-09", 100000, 0, 0)],
-      [
-        { month: "2026-10", cents: -120000 },
-        { month: "2026-09", cents: 0 },
-      ],
-    );
-    expect(rows[0]).toMatchObject({ contributionCents: -120000, availableCents: 5000, savingsRate: 0.125 });
-    expect(rows[1]).toMatchObject({ contributionCents: 0, availableCents: 100000, savingsRate: 0 });
-  });
 });
 
 describe("comparing figures", () => {

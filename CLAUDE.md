@@ -40,7 +40,7 @@ src/import/         ING and Trade Republic parsers, dedup    → shared, transac
 src/rules/          rules, auto-categorization, learning     → shared, transactions, db-contract (account scopes and the household; the app applies rules after each import, before transfer matching)
 src/budgets/        budgets per account and category         → shared, transactions, db-contract (monthly spending via transactions' expenseTotals; account access)
 src/insights/       dashboard and statistics figures, balances, account choice incl. "Alle meine Konten"
-                                                             → shared, transactions, transfers (services injected via createInsights; no SQL of its own)
+                                                             → shared, transactions (bookings service injected via createInsights; no SQL of its own)
 ```
 
 `auth` and `shared` must stay free of domain logic; they may be extracted into packages later.

@@ -49,7 +49,8 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
   const texts = useRuleTexts(accounts, categories?.names);
   const router = useRouter();
   const start = rule ?? initial;
-  const [scope, setScope] = useState(start?.scope ? scopeValue(start.scope) : accounts[0] ? `account:${accounts[0].id}` : "shared");
+  const initialScope = start?.scope ? scopeValue(start.scope) : accounts[0] ? `account:${accounts[0].id}` : "shared";
+  const [scope, setScope] = useState(initialScope);
   const [kind, setKind] = useState<TransactionKind>(start?.kind ?? "expense");
   const [category, setCategory] = useState(rule?.category ?? "");
   const [external, setExternal] = useState(rule?.transferTarget === "external");
@@ -101,7 +102,8 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const body = {
       scope: scopeFrom(scope),
       counterparty: String(form.get("counterparty") ?? ""),
@@ -125,6 +127,14 @@ export function RuleForm({ accounts, categories, rule, action = "/api/rules", ru
       const message =
         result.status === 404 ? "rules.form.notFound" : result.error === "no-household" ? "rules.form.noHousehold" : "rules.form.saveFailed";
       return setErrors({ form: message });
+    }
+    // Next keeps visited pages alive (cacheComponents), so a later visit would show these inputs again.
+    if (!rule) {
+      formElement.reset();
+      setScope(initialScope);
+      setKind(initial?.kind ?? "expense");
+      setCategory("");
+      setExternal(false);
     }
     if (onSaved) onSaved();
     else router.push(rulesHref);

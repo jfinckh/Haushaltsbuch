@@ -23,9 +23,7 @@ export type MonthFigures = {
   incomeCents: number;
   expenseCents: number;
   savingCents: number;
-  /** Null for a single account; for "Alle privaten Konten" the net contribution to shared accounts. */
-  contributionCents: number | null;
-  /** Income − expenses − saving, and for "Alle privaten Konten" also minus the contribution. */
+  /** Income − expenses − saving. */
   availableCents: number;
 };
 
@@ -62,8 +60,8 @@ export type YearOverview = {
 export type YearOverviewResult = Result<YearOverview, Reason>;
 
 /**
- * Figures of the dashboard and the statistics page. Combines what the bookings and transfers
- * services return in the caller's session, so it sees what the caller may see.
+ * Figures of the dashboard and the statistics page. Combines what the bookings service returns
+ * in the caller's session, so it sees what the caller may see.
  */
 export interface Insights {
   /** The current month of one account or of "Alle privaten Konten", as the dashboard shows it. */
@@ -77,7 +75,7 @@ export interface Insights {
 
   /**
    * Where the money of `month` (YYYY-MM, default: the current month) came from and where it went:
-   * the month's figures as the statistics rows have them and its spending per category group.
+   * the month's figures as the statistics rows have them, its income and its spending per category group.
    * A month after the current one gives invalid-input.
    */
   moneyFlow(caller: Caller, target: InsightsTarget, month?: string): Promise<MoneyFlowResult>;

@@ -14,7 +14,7 @@
     "transfers": ["db-contract", "shared", "transactions"],
     "rules": ["db-contract", "shared", "transactions"],
     "budgets": ["db-contract", "shared", "transactions"],
-    "insights": ["shared", "transactions", "transfers"],
+    "insights": ["shared", "transactions"],
     "db-contract": ["shared"]
   },
   "features": {}

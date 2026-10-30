@@ -158,7 +158,7 @@ function DashboardColumns({ main, side }: { main: ReactNode; side: ReactNode }) 
   );
 }
 
-type FigureKey = "income" | "expenses" | "saving" | "contribution";
+type FigureKey = "income" | "expenses" | "saving";
 
 /** The big available amount and the figures below it (cents, signed as booked). */
 async function MonthFigures({
@@ -206,7 +206,7 @@ async function MonthFigures({
   );
 }
 
-/** The caller's own private accounts together. The contribution to shared accounts lowers what is available. */
+/** The caller's own private accounts together. */
 async function CombinedDashboard({ caller, accountNames }: { caller: Caller; accountNames: Record<string, string> }) {
   const mine = { ownPrivate: true } as const;
   const [summary, spending, latest, { names }] = await Promise.all([
@@ -230,7 +230,6 @@ async function CombinedDashboard({ caller, accountNames }: { caller: Caller; acc
                 ["income", summary.incomeCents],
                 ["expenses", summary.expenseCents],
                 ["saving", summary.savingCents],
-                ["contribution", summary.contributionCents ?? 0],
               ]}
             />
           )}

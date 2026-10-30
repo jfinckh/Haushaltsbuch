@@ -76,6 +76,11 @@ export type CategorySpendingResult = Result<MonthCategorySpending, Reason>;
 
 export type CategorySpendingsResult = Result<{ months: MonthCategorySpending[] }, Reason>;
 
+/** What came in during one calendar month per category group (positive cents), largest first. */
+export type MonthCategoryIncome = MonthCategorySpending;
+
+export type CategoryIncomesResult = Result<{ months: MonthCategoryIncome[] }, Reason>;
+
 /** Bookings for pages and routes. Every call is about the caller's own view. */
 export interface BookingService {
   /**
@@ -211,6 +216,14 @@ export interface BookingFigures {
    * `until` (default: the current month), newest first; a month without expenses has no rows.
    */
   categorySpendings(caller: Caller, target: AccountTarget, count: number, until?: string): Promise<CategorySpendingsResult>;
+
+  /**
+   * What came in per category group in each of `count` (1–24) calendar months ending with `until`
+   * (default: the current month), newest first (positive cents, largest first); `group: null` is
+   * income without category. Only income counts; a group at zero or below (e.g. a reversed salary)
+   * is left out. With `{ ownPrivate: true }`, over all of the caller's own private accounts together.
+   */
+  categoryIncomes(caller: Caller, target: AccountTarget, count: number, until?: string): Promise<CategoryIncomesResult>;
 
   /** Sum of the bookings per visible account that has any (cents). The app adds the opening balance. */
   balances(caller: Caller): Promise<Record<string, number>>;

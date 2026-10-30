@@ -83,7 +83,7 @@ async function Year({ searchParams }: Props) {
   );
 }
 
-/** accountId null: all of the caller's own private accounts, with the contribution to shared accounts. */
+/** accountId null: all of the caller's own private accounts together. */
 async function YearFigures({ caller, accountId, year }: { caller: Caller; accountId: string | null; year: number }) {
   const [overview, { names }] = await Promise.all([
     insights.yearOverview(caller, accountId ?? { ownPrivate: true }, year),
@@ -109,7 +109,6 @@ async function Totals({ overview: { totals }, account, year }: { overview: Overv
     [t("expenses"), formatEuro(-totals.expenseCents), bookings("expense")],
     [t("saved"), formatEuro(-totals.savingCents), bookings("saving")],
     [t("savingsRate"), totals.savingsRate === null ? t("noRate") : format.number(totals.savingsRate, { style: "percent", maximumFractionDigits: 1 })],
-    ...(totals.contributionCents === null ? [] : ([[t("contribution"), formatEuro(totals.contributionCents)]] as [string, string][])),
   ];
   return (
     <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
@@ -139,7 +138,6 @@ async function Totals({ overview: { totals }, account, year }: { overview: Overv
 async function MonthTable({ overview: { months, totals }, account, year }: { overview: Overview; account: string; year: number }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
-  const withContribution = totals.contributionCents !== null;
   const rate = (value: number | null) => (value === null ? t("noRate") : format.number(value, { style: "percent", maximumFractionDigits: 1 }));
   // The amounts link to the bookings of the month, or of the year for the totals row.
   const amount = (cents: number, kind: "expense" | "income" | "saving", period: { month: string } | { year: number }) => (
@@ -148,7 +146,7 @@ async function MonthTable({ overview: { months, totals }, account, year }: { ove
     </Link>
   );
   const cells = (
-    row: { incomeCents: number; expenseCents: number; savingCents: number; savingsRate: number | null; contributionCents: number | null },
+    row: { incomeCents: number; expenseCents: number; savingCents: number; savingsRate: number | null },
     period: { month: string } | { year: number },
   ) => (
     <>
@@ -156,7 +154,6 @@ async function MonthTable({ overview: { months, totals }, account, year }: { ove
       <td className="text-right">{amount(-row.expenseCents, "expense", period)}</td>
       <td className="text-right">{amount(-row.savingCents, "saving", period)}</td>
       <td className="text-right">{rate(row.savingsRate)}</td>
-      {withContribution && <td className="text-right">{formatCents(row.contributionCents ?? 0)}</td>}
     </>
   );
   return (
@@ -183,11 +180,6 @@ async function MonthTable({ overview: { months, totals }, account, year }: { ove
               <th className="text-right">
                 <abbr title={t("savingsRate")} className="no-underline">{t("rateShort")}</abbr>
               </th>
-              {withContribution && (
-                <th className="text-right">
-                  <abbr title={t("contribution")} className="no-underline">{t("contributionShort")}</abbr>
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
