@@ -53,6 +53,11 @@ export function parseTradeRepublic(text: string): ParseResult {
     const fields = splitFields(lines[index], DELIMITER);
     if (fields.length < header.length) return { ok: false, reason: "invalid-row", line };
     const raw = toRecord(header, fields);
+    // Corporate actions (e.g. a warrant exercise) only move shares: no amount, no currency.
+    if (!raw.amount.trim() && !raw.currency.trim()) {
+      skipped++;
+      continue;
+    }
     const amountCents = parseDecimalAmount(raw.amount);
     if (!isIsoDate(raw.date) || amountCents === null || !raw.transaction_id.trim()) {
       return { ok: false, reason: "invalid-row", line };

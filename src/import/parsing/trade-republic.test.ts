@@ -103,6 +103,16 @@ describe("parseTradeRepublic", () => {
     expect(parsed(`${HEADER}\n${row({ amount: "0.000000" })}`)).toMatchObject({ rows: [], skipped: 1 });
   });
 
+  it("skips rows without a cash movement, like a warrant exercise", () => {
+    const exercise =
+      '"2026-05-07T08:00:03.638Z","2026-05-07","DEFAULT","CORPORATE_ACTION","WARRANT_EXERCISE","DERIVATIVE","Long Faktor Optionsschein 15","DE000FD2H9Y9","-12.0000000000","","","","","","","","","WARRANT_EXERCISE DE000FD2H9Y9","134f29cd-e38b-3fe5-aad5-3e46cc9c61e0","","","",""';
+    expect(parsed(`${HEADER}\n${exercise}\n${row({})}`)).toMatchObject({ rows: [{ amountCents: -100 }], skipped: 1 });
+  });
+
+  it("still rejects a missing amount with a currency", () => {
+    expect(parseTradeRepublic(`${HEADER}\n${row({ amount: "" })}`)).toEqual({ ok: false, reason: "invalid-row", line: 2 });
+  });
+
   it("rejects other currencies", () => {
     expect(parseTradeRepublic(`${HEADER}\n${row({ currency: "USD" })}`)).toEqual({ ok: false, reason: "unsupported-currency", line: 2 });
   });
