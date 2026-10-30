@@ -5,7 +5,7 @@
 const BASE = "http://app.invalid";
 const MAX_LENGTH = 1000;
 const LIST_PATH = /^\/(?:transactions|accounts\/[^/]+)?$/;
-const ORIGIN_PATH = /^\/(?:statistics(?:\/year)?)?$/;
+const ORIGIN_PATH = /^\/(?:statistics(?:\/year|\/merchants)?)?$/;
 
 function safeAddress(value: string | string[] | undefined, path: RegExp): string | null {
   const raw = Array.isArray(value) ? value[0] : value;

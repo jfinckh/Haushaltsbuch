@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "export-add:insights:server:MerchantRanking",
+      "itemHash": "sha256:641e5df5e3d27e14891f066ec1ec65da4e937c4fca2bc212e7f1f179db369c7c",
+      "decision": "approve",
+      "at": "2026-10-30T14:18:32Z",
+      "source": "hook"
+    }
+  ]
+}

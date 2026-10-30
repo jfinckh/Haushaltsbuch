@@ -50,7 +50,7 @@ describe("safeBack", () => {
 });
 
 describe("safeOrigin", () => {
-  it.each(["/", "/?account=all", "/statistics", "/statistics?account=a1&month=2026-10&compare=2026-09,2026-08", "/statistics/year?account=all&year=2026"])(
+  it.each(["/", "/?account=all", "/statistics", "/statistics?account=a1&month=2026-10&compare=2026-09,2026-08", "/statistics/year?account=all&year=2026", "/statistics/merchants?account=a1&period=month&month=2026-10"])(
     "accepts %s",
     (value) => {
       expect(safeOrigin(value)).toBe(value);

@@ -1,15 +1,25 @@
 import type { Caller } from "@/shared/rls";
-import type { BookingFigures } from "@/transactions/server";
+import type { BookingFigures, BookingService } from "@/transactions/server";
 import { currentBalances } from "./balances";
 import { categoryTrends, TREND_MONTHS } from "./category-trends";
-import type { CategoryTrendsResult, Insights, InsightsTarget, MoneyFlowResult, MonthFiguresResult, StatisticsResult, YearOverviewResult } from "./contract";
+import type {
+  CategoryTrendsResult,
+  Insights,
+  InsightsTarget,
+  MerchantPeriod,
+  MerchantRankingResult,
+  MoneyFlowResult, MonthFiguresResult, StatisticsResult,
+  YearOverviewResult,
+} from "./contract";
+import { rankMerchants, type MerchantBooking } from "./merchants";
 import { moneyFlow } from "./money-flow";
 import { barScale, statisticsComparison, statisticsRows } from "./statistics";
 import { yearCategories, yearTotals } from "./year-overview";
 
 export type InsightsOptions = {
-  /** Month totals and balances of the accounts the caller may see. */
-  transactions: Pick<BookingFigures, "monthSummary" | "monthSummaries" | "categorySpendings" | "categoryIncomes" | "balances">;
+  /** Month totals, balances and bookings (for the merchant ranking) of the accounts the caller may see. */
+  transactions: Pick<BookingFigures, "monthSummary" | "monthSummaries" | "categorySpendings" | "categoryIncomes" | "balances"> &
+    Pick<BookingService, "listTransactions">;
   /** Today's date (YYYY-MM-DD), for the current year. Default: the local date. */
   today?: () => string;
 };
@@ -29,6 +39,14 @@ function localToday(): string {
 function isPastMonth(month: string, today: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(month) && month >= `${FIRST_YEAR}-01` && month <= today.slice(0, 7);
 }
+
+/** The month before a YYYY-MM month. */
+function previousMonth(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  return m === 1 ? `${pad(year - 1, 4)}-12` : `${pad(year, 4)}-${pad(m - 1)}`;
+}
+
+type Range = { month: string } | { year: string };
 
 /**
  * The insights part: figures of the dashboard and the statistics page. It only combines what the
@@ -91,6 +109,28 @@ export function createInsights({ transactions, today = localToday }: InsightsOpt
       if (!spendings.ok) return spendings;
       const months = statisticsRows(summaries.months).reverse();
       return { ok: true, year, months, totals: yearTotals(months), categories: yearCategories(spendings.months) };
+    },
+
+    async merchantRanking(caller: Caller, target: InsightsTarget, period: MerchantPeriod): Promise<MerchantRankingResult> {
+      let current: Range;
+      let before: Range | null;
+      if ("month" in period) {
+        if (!isPastMonth(period.month, today())) return { ok: false, reason: "invalid-input" };
+        current = { month: period.month };
+        before = period.month > `${FIRST_YEAR}-01` ? { month: previousMonth(period.month) } : null;
+      } else {
+        const { year } = period;
+        if (!Number.isInteger(year) || year < FIRST_YEAR || year > Number(today().slice(0, 4))) return { ok: false, reason: "invalid-input" };
+        current = { year: String(year) };
+        before = year > FIRST_YEAR ? { year: String(year - 1) } : null;
+      }
+      // The bookings service decrypts the names, in the caller's session: only visible accounts.
+      const scope = typeof target === "string" ? { accountId: target } : { scope: "own-private" };
+      const expenses = (range: Range) => transactions.listTransactions(caller, { ...scope, ...range, kind: "expense" });
+      const [now, then] = await Promise.all([expenses(current), before && expenses(before)]);
+      if (!now.ok) return now;
+      const previous: MerchantBooking[] = then?.ok ? then.transactions : [];
+      return { ok: true, ...rankMerchants(now.transactions, previous) };
     },
 
     async balances(caller: Caller, accounts: { id: string; openingBalanceCents: number }[]): Promise<Record<string, number>> {

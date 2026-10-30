@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "slug": "merchant-ranking",
+  "description": "Merchant ranking",
+  "plan": {
+    "path": "docs/plans/2026-10-30-merchant-ranking.md",
+    "sha256": "70d8f6f3016ea7bb188403934748346a60c59d96f930ea58d7ce91fd60d99dd3"
+  },
+  "status": "final",
+  "base": "3cfe254087b854eed835d44c909aee85c96c3e24",
+  "report": "Finalized merchant-ranking (3cfe254..working-tree)\nFiles: 14 converge, 0 diverge, 0 absent. Elements: 3 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 1 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-30-merchant-ranking/map.html\n",
+  "shownAt": "2026-10-30T15:09:03Z"
+}

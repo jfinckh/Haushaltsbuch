@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-/** Tabs between the month view and the year view, keeping the selected account. */
-export function ViewTabs({ view, accountId }: { view: "months" | "year"; accountId: string }) {
+/** Tabs between the month view, the year view and the merchants, keeping the selected account. */
+export function ViewTabs({ view, accountId }: { view: "months" | "year" | "merchants"; accountId: string }) {
   const t = useTranslations("app.statistics");
   const tabs = [
     { key: "months", href: `/statistics?account=${accountId}`, label: t("tabMonth") },
     { key: "year", href: `/statistics/year?account=${accountId}`, label: t("tabYear") },
+    { key: "merchants", href: `/statistics/merchants?account=${accountId}`, label: t("tabMerchants") },
   ] as const;
   return (
     <nav aria-label={t("views")}>

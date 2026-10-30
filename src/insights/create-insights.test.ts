@@ -343,6 +343,63 @@ describe("year overview", () => {
   });
 });
 
+describe("merchant ranking", () => {
+  async function buy(caller: Caller, accountId: string, date: string, amount: string, counterparty: string, reference: string | null = null) {
+    const result = await transactions.createTransaction(caller, { accountId, date, amount, kind: "expense", category: null, counterparty, reference });
+    if (!result.ok) throw new Error(result.reason);
+  }
+
+  beforeEach(async () => {
+    await buy(max, "max-giro", "2026-10-13", "-35,06", "VISA EDEKA MUSTERMARKT", "NR XXXX 1234 STUTTGART DE KAUFUMSATZ");
+    await buy(max, "max-giro", "2026-10-09", "-6,93", "PayPal Europe S.a.r.l. et Cie S.C.A", "Ihr Einkauf bei EasyPark GmbH");
+    await buy(max, "max-giro", "2026-09-12", "-20,00", "Edeka Mustermarkt");
+    await buy(max, "max-tr", "2026-10-10", "-34,99", "Fressnapf Musterstadt");
+    await buy(erika, "erika-giro", "2026-10-11", "-50,00", "Geheimladen");
+    await buy(erika, "shared", "2026-10-12", "-15,00", "Bäckerei");
+  });
+
+  it("ranks one account's month by merchant, with the month before and the bookings without a name last", async () => {
+    expect(await insights.merchantRanking(max, "max-giro", { month: "2026-10" })).toEqual({
+      ok: true,
+      totalCents: 3506 + 693 + 25000,
+      hasPrevious: true,
+      merchants: [
+        { key: "edeka mustermarkt", name: "EDEKA MUSTERMARKT", spentCents: 3506, purchases: 1, averageCents: 3506, previousCents: 2000 },
+        { key: "easypark", name: "EasyPark GmbH", spentCents: 693, purchases: 1, averageCents: 693, previousCents: 0 },
+        // Groceries 300 € minus the 50 € refund, both without a name.
+        { key: null, name: null, spentCents: 25000, purchases: 1, averageCents: 25000, previousCents: 0 },
+      ],
+    });
+  });
+
+  it("ranks a whole year", async () => {
+    const ranking = await insights.merchantRanking(max, "max-giro", { year: 2026 });
+    expect(ranking).toMatchObject({ ok: true, hasPrevious: false });
+    expect(ranking.ok && ranking.merchants.at(-1)).toMatchObject({ key: null, spentCents: 25000 + 40000 });
+    expect(ranking.ok && ranking.merchants.find((m) => m.key === "edeka mustermarkt")).toMatchObject({ spentCents: 5506, purchases: 2 });
+  });
+
+  it("covers all own private accounts for Alle meine Konten", async () => {
+    const ranking = await insights.merchantRanking(max, { ownPrivate: true }, { month: "2026-10" });
+    expect(ranking.ok && ranking.merchants.map((m) => m.name)).toEqual(["EDEKA MUSTERMARKT", "Fressnapf Musterstadt", "EasyPark GmbH", null]);
+  });
+
+  it("never gives another member's private merchants, and never mixes members", async () => {
+    expect(await insights.merchantRanking(erika, "max-giro", { month: "2026-10" })).toEqual({ ok: false, reason: "not-found" });
+    expect(await insights.merchantRanking(dora, "shared", { month: "2026-10" })).toEqual({ ok: false, reason: "not-found" });
+    const erikas = await insights.merchantRanking(erika, { ownPrivate: true }, { month: "2026-10" });
+    expect(erikas.ok && erikas.merchants.map((m) => m.name)).toEqual(["Geheimladen", null]);
+    const shared = await insights.merchantRanking(max, "shared", { month: "2026-10" });
+    expect(shared.ok && shared.merchants.map((m) => m.name)).toEqual(["Bäckerei", null]);
+  });
+
+  it("refuses a future or malformed period", async () => {
+    for (const period of [{ month: "2026-11" }, { month: "2026-13" }, { year: 2027 }, { year: 1969 }, { year: 2026.5 }]) {
+      expect(await insights.merchantRanking(max, "max-giro", period)).toEqual({ ok: false, reason: "invalid-input" });
+    }
+  });
+});
+
 describe("balances", () => {
   const accounts = [
     { id: "max-giro", openingBalanceCents: 10000 },

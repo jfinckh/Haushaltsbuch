@@ -18,6 +18,12 @@ describe("bookingsHref", () => {
     );
   });
 
+  it("adds a search text", () => {
+    expect(bookingsHref({ account: "a1", month: "2026-10", kind: "expense", q: "edeka mustermarkt" })).toBe(
+      "/transactions?account=a1&month=2026-10&kind=expense&q=edeka+mustermarkt",
+    );
+  });
+
   it("adds the page it was opened from", () => {
     const href = bookingsHref({ account: "a1", month: "2026-10", kind: "expense", category: "housing", origin: "/statistics?account=a1&month=2026-10" });
     expect(new URL(href, "http://x").searchParams.get("origin")).toBe("/statistics?account=a1&month=2026-10");

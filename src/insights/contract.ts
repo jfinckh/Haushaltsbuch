@@ -1,11 +1,13 @@
 import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { CategoryTrends } from "./category-trends";
+import type { MerchantRanking } from "./merchants";
 import type { MoneyFlow } from "./money-flow";
 import type { StatisticsComparison, StatisticsRow } from "./statistics";
 import type { YearTotals } from "./year-overview";
 
 export type { CategoryTrends } from "./category-trends";
+export type { MerchantRanking } from "./merchants";
 export type { MoneyFlow } from "./money-flow";
 export type { StatisticsComparison, StatisticsRow } from "./statistics";
 
@@ -59,6 +61,11 @@ export type YearOverview = {
 
 export type YearOverviewResult = Result<YearOverview, Reason>;
 
+/** A calendar month (YYYY-MM) or a calendar year. */
+export type MerchantPeriod = { month: string } | { year: number };
+
+export type MerchantRankingResult = Result<MerchantRanking, Reason>;
+
 /**
  * Figures of the dashboard and the statistics page. Combines what the bookings service returns
  * in the caller's session, so it sees what the caller may see.
@@ -94,6 +101,13 @@ export interface Insights {
    * and the category trends. A future year or one before 1970 gives invalid-input.
    */
   yearOverview(caller: Caller, target: InsightsTarget, year: number): Promise<YearOverviewResult>;
+
+  /**
+   * Spending per merchant in a month or a year, largest first, each compared with the month or year
+   * before. Only expenses count; refunds lower their merchant. Merchants are grouped by a cleaned-up
+   * name (see merchantOf). A future period or one before 1970 gives invalid-input.
+   */
+  merchantRanking(caller: Caller, target: InsightsTarget, period: MerchantPeriod): Promise<MerchantRankingResult>;
 
   /**
    * The current balance of each given account: opening balance plus the bookings the caller may see.
