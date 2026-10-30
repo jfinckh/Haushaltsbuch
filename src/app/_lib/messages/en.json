@@ -98,7 +98,15 @@
       "otherCategories": "Other categories",
       "saving": "Saved",
       "left": "Left over"
-    }
+    },
+    "compareGroup": "Compare months",
+    "compareAdd": "Compare month",
+    "compareConfirm": "Add",
+    "compareCancel": "Cancel",
+    "compareRemove": "Remove {month} from the comparison",
+    "categoriesCompare": "Spending by category compared",
+    "categoriesCompareHint": "One bar per month, all on the same scale.",
+    "noCompareSpending": "No spending in the chosen months."
   },
   "members": {
     "you": "You",

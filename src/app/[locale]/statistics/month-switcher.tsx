@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { statisticsHref } from "./compare-months";
 import { MonthPicker } from "./month-picker";
 
 /** How many years before the current one the year list offers. */
@@ -21,6 +22,18 @@ export function currentMonth(): string {
   return `${String(now.getFullYear()).padStart(4, "0")}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+/**
+ * The years the lists offer, newest first: the last PAST_YEARS years, and the shown month's year
+ * when it lies further back (reached with the arrows or the address).
+ */
+export function yearChoices(current: string, shown: string): number[] {
+  const currentYear = Number(current.slice(0, 4));
+  const shownYear = Number(shown.slice(0, 4));
+  const years = Array.from({ length: PAST_YEARS + 1 }, (_, i) => currentYear - i);
+  if (!years.includes(shownYear)) years.push(shownYear);
+  return years;
+}
+
 /** The month named in the address, or the current one when it is missing, malformed or in the future. */
 export function chosenMonth(value: string | undefined): string {
   const current = currentMonth();
@@ -28,20 +41,16 @@ export function chosenMonth(value: string | undefined): string {
 }
 
 /** ‹ previous month · month and year lists · next month ›; no next month after the current one. */
-export async function MonthSwitcher({ month, accountId }: { month: string; accountId: string }) {
+export async function MonthSwitcher({ month, accountId, compare = [] }: { month: string; accountId: string; compare?: string[] }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const name = (m: string, style: "long" | "short") =>
     format.dateTime(new Date(`${m}-01T00:00:00Z`), { month: style, ...(style === "long" ? { year: "numeric" } : {}), timeZone: "UTC" });
-  const href = (m: string) => `/statistics?${new URLSearchParams({ account: accountId, month: m })}`;
+  const href = (m: string) => statisticsHref({ account: accountId, month: m, compare });
   const previous = shiftMonth(month, -1);
   const next = shiftMonth(month, 1);
   const current = currentMonth();
-  const currentYear = Number(current.slice(0, 4));
-  const shownYear = Number(month.slice(0, 4));
-  // The last 10 years, and the shown year when it lies further back (reached with the arrows or the address).
-  const years = Array.from({ length: PAST_YEARS + 1 }, (_, i) => currentYear - i);
-  if (!years.includes(shownYear)) years.push(shownYear);
+  const years = yearChoices(current, month);
   const monthNames = Array.from({ length: 12 }, (_, i) =>
     format.dateTime(new Date(Date.UTC(2000, i, 1)), { month: "long", timeZone: "UTC" }),
   );
@@ -60,6 +69,7 @@ export async function MonthSwitcher({ month, accountId }: { month: string; accou
         month={month}
         current={current}
         accountId={accountId}
+        compare={compare}
         monthNames={monthNames}
         years={years}
         labels={{ month: t("month"), year: t("year") }}

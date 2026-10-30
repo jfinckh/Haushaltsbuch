@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "base": "f4b6ebc5d14f6447d0f2f0e61dfd2498f29ce356",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/compare-months.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/compare-months.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/compare-picker.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/category-compare.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-switcher.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/month-picker.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/statistics/money-flow.tsx",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

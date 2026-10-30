@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { statisticsHref } from "./compare-months";
 
 /**
  * Two lists, month and year, that load the chosen month of the statistics page at once.
@@ -10,6 +11,7 @@ export function MonthPicker({
   month,
   current,
   accountId,
+  compare,
   monthNames,
   years,
   labels,
@@ -19,6 +21,8 @@ export function MonthPicker({
   /** The current month (YYYY-MM), the latest one to choose. */
   current: string;
   accountId: string;
+  /** The compared months, kept when the main month changes. */
+  compare: string[];
   /** Month names, January first. */
   monthNames: string[];
   /** Years to choose, newest first. */
@@ -31,7 +35,7 @@ export function MonthPicker({
 
   const go = (y: string, m: string) => {
     const chosen = `${y}-${m}`;
-    router.push(`/statistics?${new URLSearchParams({ account: accountId, month: chosen > current ? current : chosen })}`);
+    router.push(statisticsHref({ account: accountId, month: chosen > current ? current : chosen, compare }));
   };
 
   return (

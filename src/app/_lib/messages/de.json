@@ -98,7 +98,15 @@
       "otherCategories": "Weitere Kategorien",
       "saving": "Gespart",
       "left": "Übrig"
-    }
+    },
+    "compareGroup": "Monate vergleichen",
+    "compareAdd": "Monat vergleichen",
+    "compareConfirm": "Hinzufügen",
+    "compareCancel": "Abbrechen",
+    "compareRemove": "{month} aus dem Vergleich entfernen",
+    "categoriesCompare": "Ausgaben nach Kategorie im Vergleich",
+    "categoriesCompareHint": "Ein Balken pro Monat, alle im gleichen Maßstab.",
+    "noCompareSpending": "Keine Ausgaben in den gewählten Monaten."
   },
   "members": {
     "you": "Du",

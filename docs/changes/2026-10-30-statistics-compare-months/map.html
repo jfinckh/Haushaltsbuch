@@ -1,0 +1,1944 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'">
+<meta name="generator" content="change-map">
+<title>Compare statistics months · change map</title>
+<style>
+:root{
+  color-scheme:light;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --bg:#f6f5f1;--panel:#ffffff;--ink:#1d1d1b;--muted:#6b6a64;--line:#d9d7cf;
+  --box:#ffffff;--box-border:#c9c6bc;--container:#efede6;
+  --uses:#2f6fd6;--usedby:#8a4fd0;--bad:#c2362f;--bad-bg:#fbe9e7;--warn:#a86a00;--warn-bg:#fdf3dc;
+  --edge:#b9b6ac;--new:#1f8a4c;--new-bg:#e7f4ec;--chg:#b7791f;--chg-bg:#fbf1de;--absent:#8d8a82;--absent-bg:#efede6;
+}
+:root[data-theme=dark]{
+  color-scheme:dark;
+  --bg:#171716;--panel:#22221f;--ink:#ecebe6;--muted:#a09e96;--line:#3a3934;
+  --box:#2a2a26;--box-border:#4a4943;--container:#1e1e1b;
+  --uses:#6ea0ff;--usedby:#c09bff;--bad:#ff7a6e;--bad-bg:#3a201d;--warn:#f0b44c;--warn-bg:#352a14;--edge:#55534c;
+  --new:#5fd08f;--new-bg:#17301f;--chg:#e8b25a;--chg-bg:#33280f;--absent:#8a887f;--absent-bg:#2b2b28;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]){
+  color-scheme:dark;
+  --bg:#171716;--panel:#22221f;--ink:#ecebe6;--muted:#a09e96;--line:#3a3934;
+  --box:#2a2a26;--box-border:#4a4943;--container:#1e1e1b;
+  --uses:#6ea0ff;--usedby:#c09bff;--bad:#ff7a6e;--bad-bg:#3a201d;--warn:#f0b44c;--warn-bg:#352a14;--edge:#55534c;
+  --new:#5fd08f;--new-bg:#17301f;--chg:#e8b25a;--chg-bg:#33280f;--absent:#8a887f;--absent-bg:#2b2b28;
+}
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--font)}
+code,.mono{font-family:var(--mono);font-size:12px}
+header{padding:16px 20px 6px}
+h1{font-size:20px;margin:0 0 4px;overflow-wrap:anywhere}
+.sub{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.refs{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--muted);font-size:12px;margin-top:4px}
+.refs code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.stamp{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:1px 9px;border:1px solid var(--line)}
+.stamp.clean{color:var(--new);border-color:var(--new)}.stamp.warnings{color:var(--warn);border-color:var(--warn)}
+.stamp.errors{color:var(--bad);border-color:var(--bad)}.stamp.unchecked{color:var(--muted)}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+.pill{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:var(--panel)}
+.pill.ok{border-color:var(--new);color:var(--new)}.pill.warn{border-color:var(--chg);color:var(--chg)}
+.pill.danger{border-color:var(--bad);color:var(--bad)}.pill.info{border-color:var(--uses);color:var(--uses)}
+button.pill{font:inherit;font-size:12px;cursor:pointer;color:inherit}
+button.pill.ok{color:var(--new)}button.pill.warn{color:var(--chg)}button.pill.danger{color:var(--bad)}
+button.pill:hover{background:var(--bg)}
+button.pill:focus-visible{outline:2px solid var(--uses);outline-offset:2px}
+button.pill[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.zero{opacity:.7}
+.fbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 10px;padding:6px 10px;border:1px solid var(--uses);border-radius:8px;font-size:12.5px;background:color-mix(in srgb,var(--uses) 8%,transparent)}
+.fbar button,.backs button{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);padding:2px 8px;cursor:pointer}
+.backs{display:flex;gap:6px;margin-bottom:10px}
+.reasons{margin:6px 0;font-size:12.5px}
+ul.parts{list-style:none;margin:6px 0;padding:0 0 0 10px;border-left:2px solid var(--line);font-size:12.5px}
+ul.parts li{padding:3px 0}
+ul.parts li+li{border-top:1px dashed var(--line)}
+ul.parts .hint{margin:0}
+.reasons p.found{margin:4px 0;color:var(--ink)}
+.reasons blockquote.claude{margin:4px 0;padding:4px 10px;border-left:3px solid var(--line);color:var(--muted);font-style:italic}
+.reasons b{font-style:normal}
+.banner{margin:8px 20px 0;padding:8px 12px;border-radius:8px;font-size:13px;border-left:4px solid}
+.banner.danger{background:var(--bad-bg);border-color:var(--bad)}
+.banner.rev{background:color-mix(in srgb,var(--usedby) 12%,var(--panel));border-color:var(--usedby)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 20px}
+button{font:inherit;font-size:13px;min-height:32px;padding:5px 10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:7px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--uses);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-left:auto}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 16px var(--side-w,380px);padding:8px 20px 24px}
+.split{cursor:col-resize;position:relative;touch-action:none;align-self:stretch}
+.split::after{content:"";position:absolute;top:0;bottom:0;left:6px;width:4px;border-radius:2px;background:transparent;transition:background .15s}
+.split:hover::after,.split:focus-visible::after,body.resizing .split::after{background:var(--line)}
+body.resizing{cursor:col-resize;user-select:none;-webkit-user-select:none}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;position:relative;min-height:520px;max-height:calc(100vh - 150px)}
+.stage svg{display:block;user-select:none;-webkit-user-select:none}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start;max-height:calc(100vh - 150px);overflow:auto;min-width:0}
+aside h2{font-size:15px;margin:0 0 4px;overflow-wrap:anywhere}
+aside h3{font-size:13px;margin:16px 0 6px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.hint{color:var(--muted);font-size:13px}
+.path{font-family:var(--mono);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+noscript p{margin:20px}
+/* map */
+.node rect.b{fill:var(--box);stroke:var(--box-border)}
+.node text{fill:var(--ink);font-size:13px}
+.node .meta{fill:var(--muted);font-size:11px}
+.node{cursor:grab;touch-action:none}
+.node.dragging{cursor:grabbing}
+.node.sel rect.b{stroke:var(--ink);stroke-width:2.4}
+.node.uses rect.b{stroke:var(--uses);stroke-width:2}
+.node.usedby rect.b{stroke:var(--usedby);stroke-width:2}
+.node.faded{opacity:.28}
+.node.new rect.b{fill:var(--new-bg);stroke:var(--new);stroke-width:2;stroke-dasharray:5 3}
+.node.renamed rect.b{fill:var(--new-bg);stroke:var(--new);stroke-width:2}
+.node.changed rect.b{stroke:var(--chg);stroke-width:1.8}
+.node.absent rect.b{fill:var(--absent-bg);stroke:var(--absent);stroke-width:2;stroke-dasharray:4 4}
+.node.absent text{fill:var(--muted)}
+.node.divergent rect.b{stroke:var(--bad);stroke-width:2}
+.node.new.faded,.node.changed.faded,.node.absent.faded,.node.divergent.faded{opacity:.45}
+.node.sel.new rect.b,.node.sel.changed rect.b{stroke-width:3}
+.container{touch-action:none}
+.container>rect.c{fill:var(--container);stroke:var(--box-border);stroke-dasharray:4 3}
+.container>text{fill:var(--muted);font-size:12px;font-weight:600}
+.container.haschg>rect.c{stroke:var(--chg)}
+.container.sel>rect.c{stroke:var(--ink);stroke-width:2}
+.container.faded>rect.c{opacity:.5}
+.container.faded>text{opacity:.5}
+.toggle{fill:var(--muted);font-size:12px;cursor:pointer}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.2}
+.edge.hidden{display:none}
+.edge.uses{stroke:var(--uses);stroke-width:2}
+.edge.usedby{stroke:var(--usedby);stroke-width:2}
+.edge.bad{stroke:var(--bad);stroke-width:2.2;stroke-dasharray:6 4}
+.edge.drift{stroke:var(--chg);stroke-width:1.8;stroke-dasharray:3 3}
+.edge.dim{opacity:.12}
+.edge.new{stroke:var(--new);stroke-width:2.4;stroke-dasharray:none}
+.edge.new.allowed{stroke-width:1.4;stroke-dasharray:2 3;opacity:.85}
+.edge.new.warn{stroke:var(--warn);stroke-dasharray:7 4}
+.edge.absent{stroke:var(--absent);stroke-width:2;stroke-dasharray:5 5}
+.edge.div{stroke:var(--bad);stroke-width:2.4;stroke-dasharray:none}
+.edge.new.dim,.edge.absent.dim,.edge.div.dim{opacity:.2}
+.edge.focus{stroke-width:3;opacity:1}
+.tag rect{fill:var(--new)}.tag text{fill:#fff;font-size:10px;font-weight:700}
+.tag.chg rect{fill:var(--chg)}.tag.absent rect{fill:var(--absent)}.tag.div rect{fill:var(--bad)}
+.badge{font-size:10.5px}
+.badge rect{fill:var(--bad-bg);stroke:var(--bad)}
+.badge text{fill:var(--bad);font-weight:600}
+.badge.warn rect{fill:var(--warn-bg);stroke:var(--warn)}
+.badge.warn text{fill:var(--warn)}
+.zoom{position:sticky;top:8px;left:8px;z-index:2;display:inline-flex;gap:4px;margin:8px;float:left}
+.zoom button{min-width:32px;padding:4px 8px;background:color-mix(in srgb,var(--panel) 85%,transparent)}
+/* side panel */
+ul.deps{list-style:none;margin:0;padding:0}
+ul.deps>li{padding:4px 6px;border-radius:6px}
+ul.deps>li:hover{background:var(--bg)}
+ul.deps .row{display:flex;justify-content:space-between;gap:8px;cursor:pointer;overflow-wrap:anywhere}
+ul.deps .n{color:var(--muted);font-size:12px;white-space:nowrap}
+ul.deps details{margin:2px 0 0 14px;font-size:12px;color:var(--muted)}
+ul.deps details summary{cursor:pointer}
+ul.imports{margin:4px 0 0;padding-left:16px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;cursor:pointer;overflow-wrap:anywhere}
+.card:hover{border-color:var(--muted)}
+.card.focus{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.card .kind{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.kind.bad{color:var(--bad)}.kind.warn{color:var(--warn)}.kind.new{color:var(--new)}.kind.info{color:var(--muted)}.kind.absent{color:var(--absent)}
+.card p{margin:6px 0}
+.card .fix{color:var(--muted);font-size:13px}
+.card ul.fixes{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+.card code,aside code{background:var(--bg);padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+.need{display:inline-block;font-size:10.5px;font-weight:700;color:var(--chg);border:1px solid var(--chg);border-radius:999px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.status{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-top:4px}
+.status.approved{color:var(--new);border-color:var(--new)}.status.rejected,.status.changes-requested{color:var(--bad);border-color:var(--bad)}
+.status.stale{color:var(--warn);border-color:var(--warn)}
+.rev{display:inline-block;font-size:10.5px;font-weight:700;color:var(--usedby);border:1px solid var(--usedby);border-radius:999px;padding:0 6px;margin-left:4px}
+.card.removed{opacity:.7}.card.removed b{text-decoration:line-through}
+.warnbox{background:var(--warn-bg);color:var(--ink);border-left:3px solid var(--warn);padding:6px 8px;border-radius:6px;font-size:13px;margin:6px 0 0}
+.errbox{background:var(--bad-bg);border-left:3px solid var(--bad);padding:6px 8px;border-radius:6px;font-size:13px;margin:6px 0 0}
+details.why{margin-top:4px;font-size:13px;color:var(--muted)}
+details.why>summary{cursor:pointer}
+details.fold>summary{cursor:pointer;color:var(--muted);font-size:13px;margin:14px 0 4px}
+ul.planned{list-style:none;margin:0;padding:0}
+ul.planned li{padding:4px 0;border-bottom:1px solid var(--line);font-size:13px;overflow-wrap:anywhere}
+ul.planned li:last-child{border-bottom:0}
+ul.planned .pf{font-family:var(--mono);font-size:12px}
+ul.planned .pp{color:var(--muted);font-size:12px;margin-left:24px}
+ul.planned li.opens{cursor:pointer}
+ul.planned li.opens:hover,ul.planned li.opens:focus-visible{background:var(--bg)}
+.fmarks{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13px;margin:8px 0}
+.fmarks .fb{margin-right:0}
+.dstat{font-family:var(--mono);font-size:12px;font-weight:600}.dstat.add{color:var(--new)}.dstat.del{color:var(--bad)}
+.diff{font-family:var(--mono);font-size:12px;line-height:1.5;border:1px solid var(--line);border-radius:8px;overflow:auto;margin-top:10px}
+.diff .dl{display:grid;grid-template-columns:3.2em 3.2em max-content;min-width:100%;width:max-content}
+.diff .ln{color:var(--muted);text-align:right;padding:0 6px;user-select:none;border-right:1px solid var(--line)}
+.diff .tx{white-space:pre;padding:0 8px}
+.diff .add{background:var(--new-bg)}.diff .add .tx{color:var(--new)}
+.diff .del{background:var(--bad-bg)}.diff .del .tx{color:var(--bad)}
+.diff .hunk{background:var(--bg);color:var(--muted)}.diff .meta{color:var(--muted)}
+.fb{display:inline-block;min-width:18px;text-align:center;font-weight:700;border-radius:4px;margin-right:6px;font-size:12px}
+.fb.new{background:var(--new-bg);color:var(--new)}.fb.changed{background:var(--chg-bg);color:var(--chg)}
+.fb.deleted,.fb.absence{background:var(--absent-bg);color:var(--absent)}.fb.unplanned,.fb.divergence{background:var(--bad-bg);color:var(--bad)}
+.fb.convergence{background:var(--new-bg);color:var(--new)}
+ul.results{list-style:none;margin:0;padding:0}
+ul.results li{padding:5px 6px;border-radius:6px;cursor:pointer;font-size:13px;overflow-wrap:anywhere}
+ul.results li:hover{background:var(--bg)}
+ul.results li.focus{outline:1px solid var(--ink)}
+ul.results .note{display:block;color:var(--muted);font-size:12px;margin-left:24px}
+/* files */
+.files-view{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-content:start}
+.fcard{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel);min-width:0}
+.fcard.isnew{border:2px solid var(--new)}
+.fcard.isabsent{border:2px dashed var(--absent)}
+.fcard h4{margin:0 0 2px;font-size:14px;cursor:pointer;overflow-wrap:anywhere}
+.fcard .fmeta{color:var(--muted);font-size:12px;margin-bottom:6px}
+.fcard li.hidden{display:none}
+.fcard .empty{color:var(--muted);font-size:12px}
+/* story: overview, steps, change list, badges, changes table */
+.refs details.tech{display:inline}
+.refs details.tech>summary{cursor:pointer;display:inline}
+.refs details.tech[open]{display:flex;flex-wrap:wrap;gap:4px 14px}
+.edge.gone{stroke:var(--muted);stroke-width:2;stroke-dasharray:3 4}
+.edge.gone.dim{opacity:.15}
+.ptabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.ptabs button{flex:1;border:0;border-radius:0;background:var(--panel)}
+.ptabs button.on{background:var(--ink);color:var(--bg)}
+.lead{font-size:14.5px;margin:6px 0 4px}
+.prose{margin:0;font-size:13.5px}
+.step{border:1px solid var(--line);border-radius:10px;padding:10px 12px 10px 44px;margin:8px 0;position:relative;cursor:pointer;overflow-wrap:anywhere}
+.step:hover{border-color:var(--muted)}
+.step.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.num{position:absolute;left:12px;top:10px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:12px;font-weight:700;display:grid;place-items:center}
+.step h4,.chrow h4{margin:0 0 4px;font-size:14px}
+.step p{margin:0;font-size:13px}
+.step .sres{display:inline-block;margin-top:6px}
+.ba{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-top:8px;font-size:12px}
+.ba .l{color:var(--muted)}.ba .b{color:var(--bad)}.ba .a{color:var(--new)}
+ul.nod{list-style:none;padding:0;margin:0}
+ul.nod li{padding:6px 4px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer;overflow-wrap:anywhere}
+ul.nod li:hover{background:var(--bg)}
+ul.nod li.on{outline:1px solid var(--ink)}
+ul.nod li .r{display:block;color:var(--muted);font-size:12px}
+ul.nod .nb{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:var(--muted);color:var(--bg);font-size:11px;font-weight:700;margin-right:6px}
+dl.gloss{font-size:13px;margin:6px 0 0}dl.gloss dt{font-weight:600;margin-top:6px}dl.gloss dd{margin:0;color:var(--muted)}
+.chrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px 10px 42px;margin:8px 0;position:relative;cursor:pointer;overflow-wrap:anywhere}
+.chrow:hover{border-color:var(--muted)}
+.chrow.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.chrow .num{left:10px}
+.chrow.on .num{background:var(--uses)}
+.chrow .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k.new{color:var(--new)}.k.gone{color:var(--muted)}.k.move{color:var(--chg)}.k.bad{color:var(--bad)}
+.chrow p{margin:0 0 3px;font-size:13px}
+.chrow .why,.ctable .why{color:var(--muted);font-size:12.5px}
+.chrow .row2{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chrow details summary{font-size:12px;color:var(--muted);cursor:pointer}
+.chrow details ul{margin:4px 0 0;padding-left:16px;font-size:12px}
+.dec{display:inline-block;font-size:11px;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.dec.approved,.dec.done{border-color:var(--new);color:var(--new)}
+.dec.waiting{border-color:var(--warn);color:var(--warn)}
+.dec.rejected,.dec.changes-requested,.dec.unplanned{border-color:var(--bad);color:var(--bad)}
+.dec.missing{border-style:dashed;border-color:var(--absent);color:var(--absent)}
+.badge-n{cursor:pointer}
+.badge-n circle{fill:var(--ink);stroke:var(--panel);stroke-width:2}
+.badge-n text{fill:var(--bg);font-size:11px;font-weight:700;pointer-events:none}
+.badge-n.on circle{fill:var(--uses)}
+.badge-n.done circle{fill:var(--new)}.badge-n.missing circle{fill:var(--absent)}.badge-n.unplanned circle{fill:var(--bad)}
+.badge-n.faded{opacity:.35}
+.ctable{padding:14px;overflow:auto}
+.ctable table{border-collapse:collapse;width:100%;font-size:13px}
+.ctable th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.ctable td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:break-word}
+.ctable table{table-layout:fixed}
+.ctable col.c-n{width:40px}.ctable col.c-step{width:8.5rem}.ctable col.c-res{width:8.5rem}.ctable col.c-files{width:12.5rem}
+.ctable .dec{white-space:normal}
+.ctable tr[data-n]{cursor:pointer}.ctable tr[data-n]:hover td{background:var(--bg)}
+.ctable tr.on td{background:color-mix(in srgb,var(--uses) 10%,transparent)}
+.ctable .no{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:700;font-size:12px}
+.ctable .sub{color:var(--muted);font-size:12px}
+.ctable .files{font-family:var(--mono);font-size:11.5px;color:var(--muted);overflow-wrap:break-word}
+@media (max-width:900px){
+  main{grid-template-columns:1fr;gap:16px;padding:8px 12px 24px}
+  .split,.backs .wide{display:none}
+  header,.toolbar{padding-left:12px;padding-right:12px}
+  .banner{margin-left:12px;margin-right:12px}
+  .legend{margin-left:0}
+  .stage{min-height:420px;max-height:70vh}
+  aside{max-height:none}
+}
+@media print{
+  .toolbar,.zoom{display:none}
+  main{grid-template-columns:1fr;gap:16px}
+  .split{display:none}
+  .stage,aside{max-height:none;overflow:visible}
+  body[data-view=changes] aside,body[data-view=changes] .banner{display:none}
+  body[data-view=changes] .stage{border:0;min-height:0}
+  body[data-view=changes] .ctable{padding:0}
+  .ctable tr{break-inside:avoid}
+  .ctable thead{display:table-header-group}
+}
+@media (max-width:900px){
+  .ctable table,.ctable tbody,.ctable tr,.ctable td{display:block;width:100%}
+  .ctable thead{display:none}
+  .ctable tr{border-bottom:1px solid var(--line);padding:6px 0}
+  .ctable td{border:0;padding:2px 4px}
+}
+</style>
+</head>
+<body data-mode="final" data-view="map">
+<header>
+  <h1>Change map, after the work · <span>Compare statistics months</span></h1>
+  <div class="sub">1 change done · 0 missing · 0 added without a plan</div>
+  <div class="refs"><span class="stamp clean">checked: no problems</span><details class="tech"><summary>Details</summary><span>slug <code>statistics-compare-months</code></span><span>before <code>f4b6ebc5d14f6447d0f2f0e61dfd2498f29ce356</code></span><span>after <code>working tree</code></span></details></div>
+  <div class="pills"><button type="button" class="pill ok counter" data-pill="0" aria-pressed="false" title="Show only these changes">1 change done</button><span class="pill neutral counter zero">0 missing</span><span class="pill neutral counter zero">0 added without a plan</span></div>
+</header>
+
+<div class="toolbar">
+  <div class="seg" id="viewSeg"><button type="button" data-v="map" class="on">Map</button><button type="button" data-v="changes">Changes</button><button type="button" data-v="files">Files</button></div>
+  <div class="seg" id="fileSeg" hidden><button type="button" data-f="all" class="on">All</button><button type="button" data-f="new">New</button><button type="button" data-f="changed">Changed</button></div>
+  <div class="seg" id="edgeSeg"><button type="button" data-e="focus" class="on">Uses: important</button><button type="button" data-e="all">Uses: all</button></div>
+  <button type="button" id="expandAll">Expand all</button>
+  <button type="button" id="collapseAll">Collapse all</button>
+  <button type="button" id="resetLayout">Reset layout</button>
+  <button type="button" id="exportLayout">Export layout</button>
+  <button type="button" id="theme" aria-label="Colour theme">Theme: auto</button>
+  <div class="legend"><span><i style="background:var(--uses)"></i>uses</span><span><i style="background:var(--usedby)"></i>used by</span><span><i style="background:var(--new)"></i>planned and done</span><span><i style="background:repeating-linear-gradient(90deg,var(--absent) 0 5px,transparent 5px 9px)"></i>planned, missing</span><span><i style="background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 7px)"></i>gone, as planned</span><span><i style="background:var(--bad)"></i>without a plan / not allowed</span></div>
+</div>
+<noscript><p>This map needs JavaScript to draw the units and dependencies.</p></noscript>
+<main>
+  <div class="stage" id="stage" aria-label="Unit map"></div>
+  <div class="split" id="split" role="separator" aria-orientation="vertical" aria-label="Side panel width (drag, or use the arrow keys)" tabindex="0" title="Drag to resize the side panel. Double-click to reset."></div>
+  <aside id="side" aria-live="polite"></aside>
+</main>
+<script type="application/json" id="cm-data">{"blocked":false,"changes":[{"decision":"none","edges":[],"files":["src/app/[locale]/statistics/category-compare.tsx","src/app/[locale]/statistics/compare-months.test.ts","src/app/[locale]/statistics/compare-months.ts","src/app/[locale]/statistics/compare-picker.tsx","src/app/[locale]/statistics/money-flow.tsx","src/app/[locale]/statistics/month-picker.tsx","src/app/[locale]/statistics/month-switcher.tsx","src/app/[locale]/statistics/page.tsx","src/app/_lib/messages/de.json","src/app/_lib/messages/en.json"],"key":"inside:app","kind":"inside","label":"Inside one part","n":1,"noDecisionWhy":"Stays inside one part.","result":"done","step":0,"title":"Changes inside app","units":["app"]}],"check":{"errors":0,"label":"checked: no problems","state":"clean","warnings":0},"counts":{"decisions":0,"done":1,"files":10,"goneUses":0,"missing":0,"newParts":0,"newUses":0,"steps":2,"unplanned":0,"waiting":0},"diffs":{"src/app/[locale]/statistics/category-compare.tsx":{"added":95,"removed":0,"text":"@@ -0,0 +1,95 @@\n+import Link from \"next/link\";\n+import { useFormatter, useTranslations } from \"next-intl\";\n+import { bookingsHref } from \"@/app/_lib/bookings-href\";\n+import { formatEuro } from \"@/shared/money\";\n+import { useCategoryName } from \"@/transactions\";\n+\n+/** One compared month's spending per category group (positive cents). */\n+export type MonthGroups = { month: string; groups: { group: string | null; cents: number }[] };\n+\n+/** One colour per month position, so a month keeps its colour in every group. */\n+const BAR = [\"progress-primary\", \"progress-secondary\", \"progress-accent\"];\n+\n+/**\n+ * Spending per category group in several months: one bar per month under each group, all on one\n+ * scale (the largest amount fills a bar), so the months compare directly. Groups are sorted by the\n+ * main month's amount. Each month's amount links to its bookings of that group.\n+ */\n+export function CategoryCompare({\n+  months,\n+  main,\n+  account,\n+  categoryNames,\n+}: {\n+  /** The compared months, newest first. */\n+  months: MonthGroups[];\n+  /** The main month (YYYY-MM), which sets the order. */\n+  main: string;\n+  /** An account id or \"all\". */\n+  account: string;\n+  /** Names of own categories (the page's catalog). */\n+  categoryNames: Record\u003cstring, string>;\n+}) {\n+  const t = useTranslations(\"app.statistics\");\n+  const uncategorized = useTranslations(\"transactions.spending\")(\"uncategorized\");\n+  const categoryName = useCategoryName(categoryNames);\n+  const format = useFormatter();\n+  const monthName = (m: string) => format.dateTime(new Date(`${m}-01T00:00:00Z`), { month: \"short\", year: \"numeric\", timeZone: \"UTC\" });\n+\n+  // Refunds can make a group negative; such a month shows no bar.\n+  const centsOf = (m: MonthGroups, group: string | null) => Math.max(0, m.groups.find((g) => g.group === group)?.cents ?? 0);\n+  const totals = months.map((m) => m.groups.reduce((sum, g) => sum + Math.max(0, g.cents), 0));\n+  const mainMonth = months.find((m) => m.month === main) ?? months[0];\n+  const keys = [...new Set(months.flatMap((m) => m.groups.map((g) => g.group)))]\n+    .filter((group) => months.some((m) => centsOf(m, group) > 0))\n+    .sort(\n+      (a, b) =>\n+        centsOf(mainMonth, b) - centsOf(mainMonth, a) ||\n+        months.reduce((sum, m) => sum + centsOf(m, b) - centsOf(m, a), 0),\n+    );\n+  const scale = Math.max(1, ...months.flatMap((m) => m.groups.map((g) => g.cents)));\n+\n+  return (\n+    \u003csection className=\"flex min-w-0 flex-col gap-3 border-t border-base-300 pt-5\">\n+      \u003cdiv className=\"flex flex-col gap-0.5\">\n+        \u003ch2 className=\"text-lg font-semibold\">{t(\"categoriesCompare\")}\u003c/h2>\n+        \u003cp className=\"text-sm text-base-content/60\">{t(\"categoriesCompareHint\")}\u003c/p>\n+      \u003c/div>\n+      {keys.length === 0 ? (\n+        \u003cp className=\"text-sm text-base-content/60\">{t(\"noCompareSpending\")}\u003c/p>\n+      ) : (\n+        \u003cul className=\"flex flex-col divide-y divide-base-300\">\n+          {keys.map((group) => {\n+            const label = group ? categoryName(group) : uncategorized;\n+            return (\n+              \u003cli key={group ?? \"\"} className=\"flex flex-col gap-1.5 py-3\">\n+                \u003ch3 className=\"min-w-0 truncate text-sm font-medium\">{label}\u003c/h3>\n+                {months.map((m, i) => {\n+                  const cents = centsOf(m, group);\n+                  const share = totals[i] > 0 ? Math.round((cents * 100) / totals[i]) : 0;\n+                  return (\n+                    \u003cdiv key={m.month} className=\"grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 text-xs sm:grid-cols-[5.5rem_1fr_9rem]\">\n+                      \u003cspan className=\"text-base-content/60\">{monthName(m.month)}\u003c/span>\n+                      \u003cprogress\n+                        className={`progress ${BAR[i % BAR.length]} h-2 w-full`}\n+                        value={cents}\n+                        max={scale}\n+                        aria-label={`${label}, ${monthName(m.month)}: ${formatEuro(cents)}`}\n+                      />\n+                      \u003cspan className=\"text-right tabular-nums\">\n+                        \u003cLink href={bookingsHref({ account, month: m.month, kind: \"expense\", category: group })} className=\"link link-hover font-medium\">\n+                          {formatEuro(cents)}\n+                        \u003c/Link>{\" \"}\n+                        \u003cspan className=\"text-base-content/50\">· {t(\"share\", { percent: share })}\u003c/span>\n+                      \u003c/span>\n+                    \u003c/div>\n+                  );\n+                })}\n+              \u003c/li>\n+            );\n+          })}\n+        \u003c/ul>\n+      )}\n+    \u003c/section>\n+  );\n+}"},"src/app/[locale]/statistics/compare-months.test.ts":{"added":52,"removed":0,"text":"@@ -0,0 +1,52 @@\n+import { describe, expect, it } from \"vitest\";\n+import { chosenCompare, compareParams, shownMonths, statisticsHref } from \"./compare-months\";\n+\n+describe(\"chosenCompare\", () => {\n+  const current = \"2026-10\";\n+\n+  it(\"is empty without a value\", () => {\n+    expect(chosenCompare(undefined, \"2026-10\", current)).toEqual([]);\n+    expect(chosenCompare(\"\", \"2026-10\", current)).toEqual([]);\n+  });\n+\n+  it(\"keeps valid months, newest first\", () => {\n+    expect(chosenCompare(\"2025-10,2026-09\", \"2026-10\", current)).toEqual([\"2026-09\", \"2025-10\"]);\n+  });\n+\n+  it(\"drops malformed, future, too early, duplicate and main months\", () => {\n+    expect(chosenCompare(\"2026-13,2026-11,1969-12,abc,2026-10,2026-09,2026-09\", \"2026-10\", current)).toEqual([\"2026-09\"]);\n+  });\n+\n+  it(\"keeps at most two months\", () => {\n+    expect(chosenCompare(\"2026-09,2026-08,2026-07\", \"2026-10\", current)).toEqual([\"2026-09\", \"2026-08\"]);\n+  });\n+});\n+\n+describe(\"shownMonths\", () => {\n+  it(\"puts the main and compared months newest first\", () => {\n+    expect(shownMonths(\"2026-08\", [\"2026-09\", \"2025-08\"])).toEqual([\"2026-09\", \"2026-08\", \"2025-08\"]);\n+    expect(shownMonths(\"2026-08\", [])).toEqual([\"2026-08\"]);\n+  });\n+});\n+\n+describe(\"statisticsHref\", () => {\n+  it(\"links account and month, and the compared months when there are any\", () => {\n+    expect(statisticsHref({ account: \"all\", month: \"2026-10\", compare: [] })).toBe(\"/statistics?account=all&month=2026-10\");\n+    expect(statisticsHref({ account: \"a1\", month: \"2026-10\", compare: [\"2026-09\", \"2025-10\"] })).toBe(\n+      \"/statistics?account=a1&month=2026-10&compare=2026-09,2025-10\",\n+    );\n+  });\n+\n+  it(\"leaves out a compared month that becomes the main month\", () => {\n+    expect(statisticsHref({ account: \"a1\", month: \"2026-09\", compare: [\"2026-09\", \"2025-10\"] })).toBe(\n+      \"/statistics?account=a1&month=2026-09&compare=2025-10\",\n+    );\n+  });\n+});\n+\n+describe(\"compareParams\", () => {\n+  it(\"is empty without compared months\", () => {\n+    expect(compareParams([])).toEqual({});\n+    expect(compareParams([\"2026-09\"])).toEqual({ compare: \"2026-09\" });\n+  });\n+});"},"src/app/[locale]/statistics/compare-months.ts":{"added":40,"removed":0,"text":"@@ -0,0 +1,40 @@\n+// The months the statistics page compares: the main month (?month) and up to MAX_COMPARE more\n+// (?compare=YYYY-MM,YYYY-MM). Pure, so server pages and client components can both use it.\n+\n+/** How many months can be added to the main month. */\n+export const MAX_COMPARE = 2;\n+\n+/** The earliest month insights accepts. */\n+const FIRST_MONTH = \"1970-01\";\n+\n+const MONTH = /^\\d{4}-(0[1-9]|1[0-2])$/;\n+\n+/**\n+ * The compared months from the address, newest first: valid, not in the future, not the main month,\n+ * no duplicates, at most MAX_COMPARE. Anything else is dropped without a message.\n+ */\n+export function chosenCompare(value: string | undefined, main: string, current: string): string[] {\n+  if (!value) return [];\n+  const months = value\n+    .split(\",\")\n+    .map((m) => m.trim())\n+    .filter((m) => MONTH.test(m) && m >= FIRST_MONTH && m \u003c= current && m !== main);\n+  return [...new Set(months)].slice(0, MAX_COMPARE).sort().reverse();\n+}\n+\n+/** The main month and the compared months together, newest first. */\n+export function shownMonths(main: string, compare: string[]): string[] {\n+  return [main, ...compare].sort().reverse();\n+}\n+\n+/** The address parameters for the compared months, e.g. for the account switcher. */\n+export function compareParams(compare: string[]): Record\u003cstring, string> {\n+  return compare.length > 0 ? { compare: compare.join(\",\") } : {};\n+}\n+\n+/** A link to the statistics page; a compared month equal to the main month is left out. */\n+export function statisticsHref({ account, month, compare }: { account: string; month: string; compare: string[] }): string {\n+  const params = new URLSearchParams({ account, month, ...compareParams(compare.filter((m) => m !== month)) });\n+  // Commas stay readable in the address.\n+  return `/statistics?${params.toString().replaceAll(\"%2C\", \",\")}`;\n+}"},"src/app/[locale]/statistics/compare-picker.tsx":{"added":101,"removed":0,"text":"@@ -0,0 +1,101 @@\n+\"use client\";\n+\n+import Link from \"next/link\";\n+import { useRouter } from \"next/navigation\";\n+import { useState } from \"react\";\n+import { MAX_COMPARE, statisticsHref } from \"./compare-months\";\n+\n+/**\n+ * The compared months as chips (each with × to remove it) and, while fewer than MAX_COMPARE are\n+ * chosen, \"+ compare month\": a month and a year list and a button that adds the month.\n+ */\n+export function ComparePicker({\n+  account,\n+  month,\n+  compare,\n+  current,\n+  suggestion,\n+  chips,\n+  monthNames,\n+  years,\n+  labels,\n+}: {\n+  /** An account id or \"all\". */\n+  account: string;\n+  /** The main month (YYYY-MM). */\n+  month: string;\n+  /** The compared months (YYYY-MM). */\n+  compare: string[];\n+  /** The current month (YYYY-MM), the latest one to choose. */\n+  current: string;\n+  /** The month the lists start on (YYYY-MM). */\n+  suggestion: string;\n+  /** Each compared month with its name. */\n+  chips: { month: string; name: string; removeLabel: string }[];\n+  /** Month names, January first. */\n+  monthNames: string[];\n+  /** Years to choose, newest first. */\n+  years: number[];\n+  labels: { group: string; add: string; confirm: string; cancel: string; month: string; year: string };\n+}) {\n+  const router = useRouter();\n+  const [open, setOpen] = useState(false);\n+  const [year, setYear] = useState(suggestion.slice(0, 4));\n+  const [number, setNumber] = useState(suggestion.slice(5, 7));\n+  const [currentYear, currentNumber] = current.split(\"-\").map(Number);\n+\n+  const add = () => {\n+    const chosen = `${year}-${number}`;\n+    setOpen(false);\n+    router.push(statisticsHref({ account, month, compare: [...compare, chosen > current ? current : chosen] }));\n+  };\n+\n+  return (\n+    \u003cdiv role=\"group\" aria-label={labels.group} className=\"flex flex-wrap items-center gap-2\">\n+      {chips.map((chip) => (\n+        \u003cspan key={chip.month} className=\"badge badge-lg gap-1 border-base-300 bg-base-200 pr-1\">\n+          {chip.name}\n+          \u003cLink\n+            href={statisticsHref({ account, month, compare: compare.filter((m) => m !== chip.month) })}\n+            className=\"btn btn-ghost btn-xs btn-circle\"\n+            aria-label={chip.removeLabel}\n+          >\n+            ×\n+          \u003c/Link>\n+        \u003c/span>\n+      ))}\n+      {compare.length \u003c MAX_COMPARE &&\n+        (open ? (\n+          \u003cdiv className=\"flex flex-wrap items-center gap-1.5\">\n+            \u003cselect aria-label={labels.month} className=\"select select-sm w-auto\" value={number} onChange={(e) => setNumber(e.target.value)}>\n+              {monthNames.map((name, i) => {\n+                const value = String(i + 1).padStart(2, \"0\");\n+                return (\n+                  \u003coption key={value} value={value} disabled={Number(year) === currentYear && i + 1 > currentNumber}>\n+                    {name}\n+                  \u003c/option>\n+                );\n+              })}\n+            \u003c/select>\n+            \u003cselect aria-label={labels.year} className=\"select select-sm w-auto tabular-nums\" value={year} onChange={(e) => setYear(e.target.value)}>\n+              {years.map((y) => (\n+                \u003coption key={y} value={String(y)}>\n+                  {y}\n+                \u003c/option>\n+              ))}\n+            \u003c/select>\n+            \u003cbutton type=\"button\" className=\"btn btn-primary btn-sm\" onClick={add}>\n+              {labels.confirm}\n+            \u003c/button>\n+            \u003cbutton type=\"button\" className=\"btn btn-ghost btn-sm\" onClick={() => setOpen(false)}>\n+              {labels.cancel}\n+            \u003c/button>\n+          \u003c/div>\n+        ) : (\n+          \u003cbutton type=\"button\" className=\"btn btn-ghost btn-sm\" onClick={() => setOpen(true)}>\n+            + {labels.add}\n+          \u003c/button>\n+        ))}\n+    \u003c/div>\n+  );\n+}"},"src/app/[locale]/statistics/money-flow.tsx":{"added":4,"removed":1,"text":"@@ -40,18 +40,21 @@ export function MoneyFlow({\n   flow,\n   account,\n   categoryNames,\n+  withYear = false,\n }: {\n   flow: Flow;\n   /** An account id or \"all\". */\n   account: string;\n   /** Names of own categories (the page's catalog). */\n   categoryNames: Record\u003cstring, string>;\n+  /** Name the year in the title too, e.g. when several months are compared. */\n+  withYear?: boolean;\n }) {\n   const t = useTranslations(\"app.statistics\");\n   const uncategorized = useTranslations(\"transactions.spending\")(\"uncategorized\");\n   const categoryName = useCategoryName(categoryNames);\n   const format = useFormatter();\n-  const monthName = format.dateTime(new Date(`${flow.month}-01T00:00:00Z`), { month: \"long\", timeZone: \"UTC\" });\n+  const monthName = format.dateTime(new Date(`${flow.month}-01T00:00:00Z`), { month: \"long\", ...(withYear ? { year: \"numeric\" } : {}), timeZone: \"UTC\" });\n \n   const name = (node: Source | Target) => {\n     if (node.kind === \"category\" || (node.kind === \"income\" && node.group !== null)) return categoryName(node.group!);"},"src/app/[locale]/statistics/month-picker.tsx":{"added":5,"removed":1,"text":"@@ -1,6 +1,7 @@\n \"use client\";\n \n import { useRouter } from \"next/navigation\";\n+import { statisticsHref } from \"./compare-months\";\n \n /**\n  * Two lists, month and year, that load the chosen month of the statistics page at once.\n@@ -10,6 +11,7 @@ export function MonthPicker({\n   month,\n   current,\n   accountId,\n+  compare,\n   monthNames,\n   years,\n   labels,\n@@ -19,6 +21,8 @@ export function MonthPicker({\n   /** The current month (YYYY-MM), the latest one to choose. */\n   current: string;\n   accountId: string;\n+  /** The compared months, kept when the main month changes. */\n+  compare: string[];\n   /** Month names, January first. */\n   monthNames: string[];\n   /** Years to choose, newest first. */\n@@ -31,7 +35,7 @@ export function MonthPicker({\n \n   const go = (y: string, m: string) => {\n     const chosen = `${y}-${m}`;\n-    router.push(`/statistics?${new URLSearchParams({ account: accountId, month: chosen > current ? current : chosen })}`);\n+    router.push(statisticsHref({ account: accountId, month: chosen > current ? current : chosen, compare }));\n   };\n \n   return ("},"src/app/[locale]/statistics/month-switcher.tsx":{"added":17,"removed":7,"text":"@@ -1,5 +1,6 @@\n import Link from \"next/link\";\n import { getFormatter, getTranslations } from \"next-intl/server\";\n+import { statisticsHref } from \"./compare-months\";\n import { MonthPicker } from \"./month-picker\";\n \n /** How many years before the current one the year list offers. */\n@@ -21,6 +22,18 @@ export function currentMonth(): string {\n   return `${String(now.getFullYear()).padStart(4, \"0\")}-${String(now.getMonth() + 1).padStart(2, \"0\")}`;\n }\n \n+/**\n+ * The years the lists offer, newest first: the last PAST_YEARS years, and the shown month's year\n+ * when it lies further back (reached with the arrows or the address).\n+ */\n+export function yearChoices(current: string, shown: string): number[] {\n+  const currentYear = Number(current.slice(0, 4));\n+  const shownYear = Number(shown.slice(0, 4));\n+  const years = Array.from({ length: PAST_YEARS + 1 }, (_, i) => currentYear - i);\n+  if (!years.includes(shownYear)) years.push(shownYear);\n+  return years;\n+}\n+\n /** The month named in the address, or the current one when it is missing, malformed or in the future. */\n export function chosenMonth(value: string | undefined): string {\n   const current = currentMonth();\n@@ -28,20 +41,16 @@ export function chosenMonth(value: string | undefined): string {\n }\n \n /** ‹ previous month · month and year lists · next month ›; no next month after the current one. */\n-export async function MonthSwitcher({ month, accountId }: { month: string; accountId: string }) {\n+export async function MonthSwitcher({ month, accountId, compare = [] }: { month: string; accountId: string; compare?: string[] }) {\n   const t = await getTranslations(\"app.statistics\");\n   const format = await getFormatter();\n   const name = (m: string, style: \"long\" | \"short\") =>\n     format.dateTime(new Date(`${m}-01T00:00:00Z`), { month: style, ...(style === \"long\" ? { year: \"numeric\" } : {}), timeZone: \"UTC\" });\n-  const href = (m: string) => `/statistics?${new URLSearchParams({ account: accountId, month: m })}`;\n+  const href = (m: string) => statisticsHref({ account: accountId, month: m, compare });\n   const previous = shiftMonth(month, -1);\n   const next = shiftMonth(month, 1);\n   const current = currentMonth();\n-  const currentYear = Number(current.slice(0, 4));\n-  const shownYear = Number(month.slice(0, 4));\n-  // The last 10 years, and the shown year when it lies further back (reached with the arrows or the address).\n-  const years = Array.from({ length: PAST_YEARS + 1 }, (_, i) => currentYear - i);\n-  if (!years.includes(shownYear)) years.push(shownYear);\n+  const years = yearChoices(current, month);\n   const monthNames = Array.from({ length: 12 }, (_, i) =>\n     format.dateTime(new Date(Date.UTC(2000, i, 1)), { month: \"long\", timeZone: \"UTC\" }),\n   );\n@@ -60,6 +69,7 @@ export async function MonthSwitcher({ month, accountId }: { month: string; accou\n         month={month}\n         current={current}\n         accountId={accountId}\n+        compare={compare}\n         monthNames={monthNames}\n         years={years}\n         labels={{ month: t(\"month\"), year: t(\"year\") }}"},"src/app/[locale]/statistics/page.tsx":{"added":100,"removed":20,"text":"@@ -10,9 +10,12 @@ import { insights } from \"@/app/_lib/insights\";\n import { ALL_MINE, selectAccount } from \"@/insights\";\n import type { StatisticsComparison, StatisticsRow } from \"@/insights/server\";\n import { formatEuro } from \"@/shared/money\";\n+import { CategoryCompare } from \"./category-compare\";\n import { CategoryTrends } from \"./category-trends\";\n+import { chosenCompare, compareParams, shownMonths, statisticsHref } from \"./compare-months\";\n+import { ComparePicker } from \"./compare-picker\";\n import { MoneyFlow } from \"./money-flow\";\n-import { chosenMonth, MonthSwitcher } from \"./month-switcher\";\n+import { chosenMonth, currentMonth, MonthSwitcher, shiftMonth, yearChoices } from \"./month-switcher\";\n import Link from \"next/link\";\n import { bookingsHref } from \"@/app/_lib/bookings-href\";\n import { ViewTabs } from \"./view-tabs\";\n@@ -38,7 +41,8 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ?\n \n /**\n  * One month (?month=YYYY-MM, default: the current one) of one visible account (?account=\u003cid>) or of\n- * all own private accounts (?account=all), with the 12 months up to it.\n+ * all own private accounts (?account=all), with the 12 months up to it. Up to two more months\n+ * (?compare=YYYY-MM,YYYY-MM) are shown next to it in every section.\n  */\n async function Statistics({ searchParams }: Props) {\n   const { caller } = await requireCaller(\"/sign-in\");\n@@ -49,6 +53,7 @@ async function Statistics({ searchParams }: Props) {\n   const selected = selectAccount(visibleAccounts, first(query.account));\n   const selectedId = selected === ALL_MINE ? ALL_MINE : (selected?.id ?? \"\");\n   const month = chosenMonth(first(query.month));\n+  const compare = chosenCompare(first(query.compare), month, currentMonth());\n   const t = await getTranslations(\"app.statistics\");\n \n   return (\n@@ -57,9 +62,10 @@ async function Statistics({ searchParams }: Props) {\n         {selected ? (\n           \u003c>\n             \u003cViewTabs view=\"months\" accountId={selectedId} />\n-            \u003cAccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path=\"/statistics\" params={{ month }} />\n-            \u003cMonthSwitcher month={month} accountId={selectedId} />\n-            \u003cMonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} month={month} />\n+            \u003cAccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path=\"/statistics\" params={{ month, ...compareParams(compare) }} />\n+            \u003cMonthSwitcher month={month} accountId={selectedId} compare={compare} />\n+            \u003cCompareBar month={month} compare={compare} accountId={selectedId} />\n+            \u003cMonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} month={month} compare={compare} />\n           \u003c/>\n         ) : (\n           \u003cp className=\"opacity-70\">{t(\"noAccounts\")}\u003c/p>\n@@ -68,31 +74,98 @@ async function Statistics({ searchParams }: Props) {\n   );\n }\n \n-/** accountId null: all of the caller's own private accounts together. */\n-async function MonthSeries({ caller, accountId, month }: { caller: Caller; accountId: string | null; month: string }) {\n+/** The compared months as chips and the lists to add one. */\n+async function CompareBar({ month, compare, accountId }: { month: string; compare: string[]; accountId: string }) {\n+  const t = await getTranslations(\"app.statistics\");\n+  const format = await getFormatter();\n+  const current = currentMonth();\n+  const shown = shownMonths(month, compare);\n+  // Start the lists on the month before the oldest shown one.\n+  const suggestion = shiftMonth(shown.at(-1)!, -1);\n+  const name = (m: string) => format.dateTime(monthDate(m), { month: \"long\", year: \"numeric\", timeZone: \"UTC\" });\n+  const monthNames = Array.from({ length: 12 }, (_, i) => format.dateTime(new Date(Date.UTC(2000, i, 1)), { month: \"long\", timeZone: \"UTC\" }));\n+\n+  return (\n+    // A new choice starts the picker afresh, so its lists start on the new suggestion.\n+    \u003cComparePicker\n+      key={`${month}|${compare.join(\",\")}`}\n+      account={accountId}\n+      month={month}\n+      compare={compare}\n+      current={current}\n+      suggestion={suggestion \u003c \"1970-01\" ? \"1970-01\" : suggestion}\n+      chips={compare.map((m) => ({ month: m, name: name(m), removeLabel: t(\"compareRemove\", { month: name(m) }) }))}\n+      monthNames={monthNames}\n+      years={yearChoices(current, suggestion)}\n+      labels={{ group: t(\"compareGroup\"), add: t(\"compareAdd\"), confirm: t(\"compareConfirm\"), cancel: t(\"compareCancel\"), month: t(\"month\"), year: t(\"year\") }}\n+    />\n+  );\n+}\n+\n+/**\n+ * The main month and the compared ones, newest first: the figure tiles and the money flow per month,\n+ * the categories (one bar per month when comparing) and the 12 months up to the main month.\n+ * accountId null: all of the caller's own private accounts together.\n+ */\n+async function MonthSeries({ caller, accountId, month, compare }: { caller: Caller; accountId: string | null; month: string; compare: string[] }) {\n   const target = accountId ?? ({ ownPrivate: true } as const);\n-  const [statistics, trends, flow, { names }] = await Promise.all([\n-    insights.statistics(caller, target, MONTHS, month),\n-    insights.categoryTrends(caller, target, month),\n-    insights.moneyFlow(caller, target, month),\n+  const months = shownMonths(month, compare);\n+  const comparing = months.length > 1;\n+  const [perMonth, { names }] = await Promise.all([\n+    Promise.all(\n+      months.map(async (m) => {\n+        const [statistics, trends, flow] = await Promise.all([\n+          insights.statistics(caller, target, MONTHS, m),\n+          insights.categoryTrends(caller, target, m),\n+          insights.moneyFlow(caller, target, m),\n+        ]);\n+        return { month: m, statistics, trends, flow };\n+      }),\n+    ),\n     categories.catalog(caller),\n   ]);\n-  if (!statistics.ok) return null;\n-  const { rows, comparison, running, scaleCents: scale } = statistics;\n+  const main = perMonth.find((p) => p.month === month)!;\n+  if (!main.statistics.ok) return null;\n+  const { rows, scaleCents: scale } = main.statistics;\n   const t = await getTranslations(\"app.statistics\");\n   const format = await getFormatter();\n   const shortName = (m: string) => format.dateTime(monthDate(m), { month: \"short\", year: \"numeric\", timeZone: \"UTC\" });\n+  const longName = (m: string) => format.dateTime(monthDate(m), { month: \"long\", year: \"numeric\", timeZone: \"UTC\" });\n   const accountParam = accountId ?? ALL_MINE;\n+  // A compared month clicked in the history becomes the main month, and the main month takes its place.\n+  const historyHref = (m: string) =>\n+    statisticsHref({ account: accountParam, month: m, compare: compare.map((c) => (c === m ? month : c)) });\n \n   return (\n     \u003c>\n-      \u003cCurrentMonth row={rows[0]} account={accountParam} comparison={comparison} previousMonth={rows[1]?.month} running={running} />\n-      {flow.ok && \u003cMoneyFlow flow={flow} account={accountParam} categoryNames={names} />}\n-      {trends.ok && \u003cCategoryTrends trends={trends} account={accountParam} categoryNames={names} />}\n+      {perMonth.map(({ month: m, statistics }) =>\n+        statistics.ok ? (\n+          \u003cCurrentMonth\n+            key={m}\n+            title={comparing ? longName(m) : undefined}\n+            row={statistics.rows[0]}\n+            account={accountParam}\n+            comparison={statistics.comparison}\n+            previousMonth={statistics.rows[1]?.month}\n+            running={statistics.running}\n+          />\n+        ) : null,\n+      )}\n+      {perMonth.map(({ month: m, flow }) => flow.ok && \u003cMoneyFlow key={m} flow={flow} account={accountParam} categoryNames={names} withYear={comparing} />)}\n+      {comparing ? (\n+        \u003cCategoryCompare\n+          months={perMonth.flatMap(({ month: m, trends }) => (trends.ok ? [{ month: m, groups: trends.groups.map((g) => ({ group: g.group, cents: g.trend.at(-1) ?? 0 })) }] : []))}\n+          main={month}\n+          account={accountParam}\n+          categoryNames={names}\n+        />\n+      ) : (\n+        main.trends.ok && \u003cCategoryTrends trends={main.trends} account={accountParam} categoryNames={names} />\n+      )}\n       \u003cSection title={t(\"history\", { from: shortName(rows.at(-1)!.month), to: shortName(rows[0].month) })}>\n         \u003col className=\"flex flex-col divide-y divide-base-300\">\n           {rows.map((row) => (\n-            \u003cMonthRow key={row.month} row={row} scale={scale} href={`/statistics?${new URLSearchParams({ account: accountParam, month: row.month })}`} />\n+            \u003cMonthRow key={row.month} row={row} scale={scale} href={historyHref(row.month)} highlighted={comparing && months.includes(row.month)} />\n           ))}\n         \u003c/ol>\n       \u003c/Section>\n@@ -120,12 +193,15 @@ type Figure = \"income\" | \"spent\" | \"saved\" | \"available\";\n  * compared with the month before and with the usual month (the months before with bookings).\n  */\n async function CurrentMonth({\n+  title,\n   row,\n   account,\n   comparison,\n   previousMonth,\n   running,\n }: {\n+  /** A visible heading (the month's name) when several months are compared. */\n+  title?: string;\n   row: StatisticsRow;\n   /** An account id or \"all\". */\n   account: string;\n@@ -199,7 +275,7 @@ async function CurrentMonth({\n \n   return (\n     \u003csection className=\"flex flex-col gap-2\">\n-      \u003ch2 className=\"sr-only\">{t(\"overview\")}\u003c/h2>\n+      {title ? \u003ch2 className=\"text-lg font-semibold\">{title}\u003c/h2> : \u003ch2 className=\"sr-only\">{t(\"overview\")}\u003c/h2>}\n       \u003cdl className=\"flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300\">\n         {tiles.map(({ label, value, notes, href, negative }) => (\n           // A linked tile's link sits in the value and stretches over the whole tile.\n@@ -231,7 +307,7 @@ async function CurrentMonth({\n   );\n }\n \n-async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: number; href: string }) {\n+async function MonthRow({ row, scale, href, highlighted = false }: { row: StatisticsRow; scale: number; href: string; highlighted?: boolean }) {\n   const t = await getTranslations(\"app.statistics\");\n   const format = await getFormatter();\n   const name = format.dateTime(monthDate(row.month), { month: \"long\", year: \"numeric\", timeZone: \"UTC\" });\n@@ -244,7 +320,11 @@ async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: numbe\n \n   return (\n     // Months without bookings stay in the list but recede.\n-    \u003cli className={`flex flex-col gap-2 py-4 first:pt-1 ${row.incomeCents === 0 && spent === 0 ? \"opacity-45\" : \"\"}`}>\n+    // A compared month is marked with a bar at its left edge.\n+    \u003cli\n+      aria-current={highlighted ? \"true\" : undefined}\n+      className={`flex flex-col gap-2 py-4 first:pt-1 ${highlighted ? \"-mx-3 rounded-box border-l-4 border-primary bg-base-200/60 px-3\" : \"\"} ${row.incomeCents === 0 && spent === 0 ? \"opacity-45\" : \"\"}`}\n+    >\n       \u003cdiv className=\"flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1\">\n         \u003ch3 className=\"text-sm font-semibold\">\n           \u003cLink href={href} className=\"link link-hover\">"},"src/app/_lib/messages/de.json":{"added":9,"removed":1,"text":"@@ -98,7 +98,15 @@\n       \"otherCategories\": \"Weitere Kategorien\",\n       \"saving\": \"Gespart\",\n       \"left\": \"Übrig\"\n-    }\n+    },\n+    \"compareGroup\": \"Monate vergleichen\",\n+    \"compareAdd\": \"Monat vergleichen\",\n+    \"compareConfirm\": \"Hinzufügen\",\n+    \"compareCancel\": \"Abbrechen\",\n+    \"compareRemove\": \"{month} aus dem Vergleich entfernen\",\n+    \"categoriesCompare\": \"Ausgaben nach Kategorie im Vergleich\",\n+    \"categoriesCompareHint\": \"Ein Balken pro Monat, alle im gleichen Maßstab.\",\n+    \"noCompareSpending\": \"Keine Ausgaben in den gewählten Monaten.\"\n   },\n   \"members\": {\n     \"you\": \"Du\","},"src/app/_lib/messages/en.json":{"added":9,"removed":1,"text":"@@ -98,7 +98,15 @@\n       \"otherCategories\": \"Other categories\",\n       \"saving\": \"Saved\",\n       \"left\": \"Left over\"\n-    }\n+    },\n+    \"compareGroup\": \"Compare months\",\n+    \"compareAdd\": \"Compare month\",\n+    \"compareConfirm\": \"Add\",\n+    \"compareCancel\": \"Cancel\",\n+    \"compareRemove\": \"Remove {month} from the comparison\",\n+    \"categoriesCompare\": \"Spending by category compared\",\n+    \"categoriesCompareHint\": \"One bar per month, all on the same scale.\",\n+    \"noCompareSpending\": \"No spending in the chosen months.\"\n   },\n   \"members\": {\n     \"you\": \"You\","}},"edges":[{"closesCycle":false,"drift":false,"findings":[],"from":".","imports":[{"fromFile":"next.config.ts","line":3,"toFile":"src/app/_lib/security-headers.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":4,"toFile":"src/app/_lib/accounts.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":5,"toFile":"src/app/_lib/auth.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":6,"toFile":"src/app/_lib/households.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":7,"toFile":"src/app/_lib/imports.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":8,"toFile":"src/app/_lib/rules.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":9,"toFile":"src/app/_lib/seed.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":10,"toFile":"src/app/_lib/transactions.ts","typeOnly":false},{"fromFile":"scripts/seed.ts","line":11,"toFile":"src/app/_lib/transfers.ts","typeOnly":false},{"fromFile":"src/proxy.ts","line":3,"toFile":"src/app/_lib/i18n/routing.ts","typeOnly":false},{"fromFile":"src/proxy.ts","line":4,"toFile":"src/app/_lib/same-origin.ts","typeOnly":false}],"key":".->app","onCycle":false,"planned":null,"prominent":false,"related":true,"removed":false,"state":"existing","to":"app"},{"closesCycle":false,"drift":false,"findings":[],"from":"accounts","imports":[{"fromFile":"src/accounts/create-accounts.ts","line":2,"toFile":"src/db-contract/server.ts","typeOnly":false}],"key":"accounts->db-contract","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db-contract"},{"closesCycle":false,"drift":false,"findings":[],"from":"accounts","imports":[{"fromFile":"src/accounts/components/account-actions.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/accounts/components/account-form.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/accounts/components/account-form.tsx","line":7,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/accounts/components/account-form.tsx","line":8,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/accounts/components/account-list.tsx","line":3,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/accounts/contract.ts","line":1,"toFile":"src/shared/result.ts","typeOnly":true},{"fromFile":"src/accounts/contract.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/accounts/create-accounts.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/accounts/create-accounts.ts","line":3,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/accounts/create-accounts.ts","line":5,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/accounts/create-accounts.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/accounts/rls.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/accounts/test-utils.ts","line":6,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/accounts/test-utils.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/accounts/test-utils.ts","line":8,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/accounts/validation.ts","line":3,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/accounts/validation.ts","line":2,"toFile":"src/shared/money.ts","typeOnly":false}],"key":"accounts->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/accounts/[id]/edit/page.tsx","line":4,"toFile":"src/accounts/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/accounts/new/page.tsx","line":4,"toFile":"src/accounts/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/household/page.tsx","line":5,"toFile":"src/accounts/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/accounts-route.ts","line":2,"toFile":"src/accounts/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/accounts.ts","line":2,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":1,"toFile":"src/accounts/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/imports-route.ts","line":3,"toFile":"src/accounts/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/seed.test.ts","line":7,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":2,"toFile":"src/accounts/server.ts","typeOnly":true},{"fromFile":"src/app/api/accounts/route.test.ts","line":7,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/api/budgets/route.test.ts","line":6,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/api/categories/route.test.ts","line":6,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/api/imports/route.test.ts","line":9,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":7,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/api/transactions/route.test.ts","line":7,"toFile":"src/accounts/server.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":7,"toFile":"src/accounts/server.ts","typeOnly":false}],"key":"app->accounts","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"accounts"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/household/page.tsx","line":6,"toFile":"src/auth/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/invite/[token]/page.tsx","line":3,"toFile":"src/auth/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/sign-in/page.tsx","line":3,"toFile":"src/auth/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/app-shell.tsx","line":7,"toFile":"src/auth/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/auth.ts","line":2,"toFile":"src/auth/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":2,"toFile":"src/auth/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":8,"toFile":"src/auth/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":3,"toFile":"src/auth/server.ts","typeOnly":true}],"key":"app->auth","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"auth"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/accounts/[id]/page.tsx","line":12,"toFile":"src/budgets/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/page.tsx","line":5,"toFile":"src/budgets/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/budgets-route.ts","line":2,"toFile":"src/budgets/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/budgets.ts","line":2,"toFile":"src/budgets/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":3,"toFile":"src/budgets/index.ts","typeOnly":false},{"fromFile":"src/app/api/budgets/route.test.ts","line":8,"toFile":"src/budgets/server.ts","typeOnly":false}],"key":"app->budgets","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"budgets"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/_lib/accounts.ts","line":3,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/auth.ts","line":3,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/budgets.ts","line":3,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/categories.ts","line":2,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/households.ts","line":2,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/imports.ts","line":2,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/rules.ts","line":2,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/transactions.ts","line":2,"toFile":"src/db/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/transfers.ts","line":2,"toFile":"src/db/server.ts","typeOnly":false}],"key":"app->db","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/household/new/page.tsx","line":3,"toFile":"src/households/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/household/page.tsx","line":7,"toFile":"src/households/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/households-route.ts","line":2,"toFile":"src/households/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/households.ts","line":3,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":4,"toFile":"src/households/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":9,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":4,"toFile":"src/households/server.ts","typeOnly":true},{"fromFile":"src/app/api/accounts/route.test.ts","line":8,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/budgets/route.test.ts","line":9,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/categories/route.test.ts","line":8,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/households/route.test.ts","line":6,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/imports/route.test.ts","line":10,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":13,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/transactions/route.test.ts","line":8,"toFile":"src/households/server.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":12,"toFile":"src/households/server.ts","typeOnly":false}],"key":"app->households","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"households"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/imports/page.tsx","line":3,"toFile":"src/import/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":5,"toFile":"src/import/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/import-workflow.ts","line":2,"toFile":"src/import/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/imports-route.ts","line":4,"toFile":"src/import/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/imports.ts","line":3,"toFile":"src/import/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":10,"toFile":"src/import/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":5,"toFile":"src/import/server.ts","typeOnly":true},{"fromFile":"src/app/api/imports/route.test.ts","line":11,"toFile":"src/import/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":14,"toFile":"src/import/server.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":13,"toFile":"src/import/server.ts","typeOnly":false}],"key":"app->import","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"import"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/page.tsx","line":17,"toFile":"src/insights/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/category-trends.tsx","line":3,"toFile":"src/insights/server.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/money-flow-layout.test.ts","line":2,"toFile":"src/insights/server.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/money-flow-layout.ts","line":5,"toFile":"src/insights/server.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/money-flow.tsx","line":3,"toFile":"src/insights/server.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/page.tsx","line":10,"toFile":"src/insights/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/page.tsx","line":11,"toFile":"src/insights/server.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/year/page.tsx","line":13,"toFile":"src/insights/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/year/page.tsx","line":14,"toFile":"src/insights/server.ts","typeOnly":true},{"fromFile":"src/app/[locale]/transactions/page.tsx","line":13,"toFile":"src/insights/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/account-switcher.tsx","line":3,"toFile":"src/insights/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/insights.ts","line":2,"toFile":"src/insights/server.ts","typeOnly":false}],"key":"app->insights","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"insights"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/rules/[id]/page.tsx","line":8,"toFile":"src/rules/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/rules/new/page.tsx","line":6,"toFile":"src/rules/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/rules/page.tsx","line":8,"toFile":"src/rules/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":7,"toFile":"src/rules/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/import-workflow.ts","line":3,"toFile":"src/rules/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/rules-route.ts","line":2,"toFile":"src/rules/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/rules.ts","line":3,"toFile":"src/rules/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":11,"toFile":"src/rules/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":6,"toFile":"src/rules/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transactions-route.ts","line":2,"toFile":"src/rules/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transfers-route.ts","line":2,"toFile":"src/rules/server.ts","typeOnly":true},{"fromFile":"src/app/api/imports/route.test.ts","line":12,"toFile":"src/rules/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":15,"toFile":"src/rules/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/suggestions/dismiss/route.test.ts","line":8,"toFile":"src/rules/server.ts","typeOnly":false}],"key":"app->rules","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"rules"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/accounts/[id]/page.tsx","line":13,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/layout.tsx","line":6,"toFile":"src/shared/i18n.ts","typeOnly":false},{"fromFile":"src/app/[locale]/page.tsx","line":18,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/page.tsx","line":19,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/category-compare.tsx","line":4,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/category-trends.tsx","line":5,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/money-flow.tsx","line":5,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/page.tsx","line":12,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/page.tsx","line":22,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/[locale]/statistics/year/page.tsx","line":15,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/year/page.tsx","line":16,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/[locale]/transactions/page.tsx","line":14,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/app/_lib/accounts.ts","line":4,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/_lib/api.test.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/app/_lib/api.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/app/_lib/app-shell.tsx","line":8,"toFile":"src/shared/locale-switcher.tsx","typeOnly":false},{"fromFile":"src/app/_lib/caller.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/i18n/messages.ts","line":6,"toFile":"src/shared/i18n.ts","typeOnly":true},{"fromFile":"src/app/_lib/i18n/messages.ts","line":8,"toFile":"src/shared/messages/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/next-intl.d.ts","line":1,"toFile":"src/shared/i18n.ts","typeOnly":true},{"fromFile":"src/app/_lib/i18n/routing.ts","line":2,"toFile":"src/shared/i18n.ts","typeOnly":false},{"fromFile":"src/app/_lib/import-workflow.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/imports-route.ts","line":5,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/imports.ts","line":4,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/_lib/members.ts","line":1,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/pending-invite.tsx","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/rules-route.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/rules.ts","line":4,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":12,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":13,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/seed.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/transactions.ts","line":3,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/_lib/transfers-route.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/_lib/transfers.ts","line":3,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/accounts/route.test.ts","line":9,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/accounts/route.test.ts","line":10,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/api/accounts/route.test.ts","line":11,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/budgets/route.test.ts","line":10,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/budgets/route.test.ts","line":11,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/api/budgets/route.test.ts","line":12,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/categories/route.test.ts","line":9,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/categories/route.test.ts","line":10,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/api/categories/route.test.ts","line":11,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/households/route.test.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/api/households/route.test.ts","line":8,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/imports/route.test.ts","line":13,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/imports/route.test.ts","line":14,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/api/imports/route.test.ts","line":15,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":16,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":17,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":18,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/rules/suggestions/dismiss/route.test.ts","line":9,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/rules/suggestions/dismiss/route.test.ts","line":10,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/app/api/rules/suggestions/dismiss/route.test.ts","line":11,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/transactions/route.test.ts","line":9,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/transactions/route.test.ts","line":10,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/app/api/transactions/route.test.ts","line":11,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":14,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":15,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":16,"toFile":"src/shared/test-sessions.ts","typeOnly":false}],"key":"app->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/accounts/[id]/page.tsx","line":14,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/categories/page.tsx","line":5,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/page.tsx","line":20,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/category-compare.tsx","line":5,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/category-trends.tsx","line":6,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/money-flow.tsx","line":6,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/statistics/year/page.tsx","line":17,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/transactions/[id]/page.tsx","line":10,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/transactions/new/page.tsx","line":6,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/transactions/page.tsx","line":15,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/bookings-query.ts","line":1,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/categories-route.ts","line":2,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/categories.ts","line":3,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":9,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.test.ts","line":14,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":8,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transactions-route.ts","line":3,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transactions.ts","line":4,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/budgets/route.test.ts","line":13,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/categories/route.test.ts","line":12,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/imports/route.test.ts","line":16,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":19,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/suggestions/dismiss/route.test.ts","line":12,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/transactions/route.test.ts","line":12,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":17,"toFile":"src/transactions/server.ts","typeOnly":false}],"key":"app->transactions","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transactions"},{"closesCycle":false,"drift":false,"findings":[],"from":"app","imports":[{"fromFile":"src/app/[locale]/accounts/[id]/page.tsx","line":15,"toFile":"src/transfers/index.ts","typeOnly":false},{"fromFile":"src/app/[locale]/transactions/[id]/page.tsx","line":11,"toFile":"src/transfers/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/i18n/messages.ts","line":10,"toFile":"src/transfers/index.ts","typeOnly":false},{"fromFile":"src/app/_lib/import-workflow.ts","line":5,"toFile":"src/transfers/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/seed.test.ts","line":15,"toFile":"src/transfers/server.ts","typeOnly":false},{"fromFile":"src/app/_lib/seed.ts","line":9,"toFile":"src/transfers/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transactions-route.ts","line":4,"toFile":"src/transfers/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transfers-route.ts","line":4,"toFile":"src/transfers/server.ts","typeOnly":true},{"fromFile":"src/app/_lib/transfers.ts","line":4,"toFile":"src/transfers/server.ts","typeOnly":false},{"fromFile":"src/app/api/rules/route.test.ts","line":20,"toFile":"src/transfers/server.ts","typeOnly":false},{"fromFile":"src/app/api/transfers/route.test.ts","line":18,"toFile":"src/transfers/server.ts","typeOnly":false}],"key":"app->transfers","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transfers"},{"closesCycle":false,"drift":false,"findings":[],"from":"budgets","imports":[{"fromFile":"src/budgets/create-budgets.ts","line":2,"toFile":"src/db-contract/server.ts","typeOnly":false}],"key":"budgets->db-contract","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db-contract"},{"closesCycle":false,"drift":false,"findings":[],"from":"budgets","imports":[{"fromFile":"src/budgets/components/budget-section.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/budgets/components/budget-section.tsx","line":7,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/budgets/components/budget-section.tsx","line":8,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/budgets/contract.ts","line":1,"toFile":"src/shared/result.ts","typeOnly":true},{"fromFile":"src/budgets/contract.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/budgets/create-budgets.test.ts","line":7,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/budgets/create-budgets.test.ts","line":8,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/budgets/create-budgets.test.ts","line":9,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/budgets/create-budgets.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/budgets/validation.ts","line":2,"toFile":"src/shared/money.ts","typeOnly":false}],"key":"budgets->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"budgets","imports":[{"fromFile":"src/budgets/components/budget-section.tsx","line":9,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/budgets/create-budgets.test.ts","line":10,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/budgets/create-budgets.ts","line":4,"toFile":"src/transactions/server.ts","typeOnly":true}],"key":"budgets->transactions","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transactions"},{"closesCycle":false,"drift":false,"findings":[],"from":"db-contract","imports":[{"fromFile":"src/db-contract/accounts.test.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/db-contract/accounts.test.ts","line":8,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/db-contract/accounts.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/db-contract/households.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":false}],"key":"db-contract->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"households","imports":[{"fromFile":"src/households/components/create-household-form.tsx","line":5,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/households/components/create-household-form.tsx","line":6,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/households/components/household-name-editor.tsx","line":5,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/households/components/household-name-editor.tsx","line":6,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/households/components/leave-household-button.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/households/contract.ts","line":1,"toFile":"src/shared/result.ts","typeOnly":true},{"fromFile":"src/households/contract.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/households/create-households.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/households/create-households.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/households/rls.test.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/households/test-utils.ts","line":5,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/households/test-utils.ts","line":6,"toFile":"src/shared/test-sessions.ts","typeOnly":false}],"key":"households->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"import","imports":[{"fromFile":"src/import/create-imports.ts","line":3,"toFile":"src/db-contract/server.ts","typeOnly":false}],"key":"import->db-contract","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db-contract"},{"closesCycle":false,"drift":false,"findings":[],"from":"import","imports":[{"fromFile":"src/import/components/import-list.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/import/components/import-upload.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/import/components/import-upload.tsx","line":7,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/import/contract.ts","line":1,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/import/create-imports.test.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/import/create-imports.ts","line":4,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/import/create-imports.ts","line":5,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/import/fingerprint.ts","line":2,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/import/parsing/ing.ts","line":1,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/import/parsing/trade-republic.ts","line":1,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/import/rls.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/import/test-utils.ts","line":6,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/import/test-utils.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/import/test-utils.ts","line":8,"toFile":"src/shared/test-sessions.ts","typeOnly":false}],"key":"import->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"import","imports":[{"fromFile":"src/import/contract.ts","line":2,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/import/create-imports.ts","line":6,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/import/parsing/types.ts","line":1,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/import/test-utils.ts","line":9,"toFile":"src/transactions/server.ts","typeOnly":false}],"key":"import->transactions","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transactions"},{"closesCycle":false,"drift":false,"findings":[],"from":"insights","imports":[{"fromFile":"src/insights/contract.ts","line":1,"toFile":"src/shared/result.ts","typeOnly":true},{"fromFile":"src/insights/contract.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/insights/create-insights.test.ts","line":7,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/insights/create-insights.test.ts","line":8,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/insights/create-insights.test.ts","line":9,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/insights/create-insights.ts","line":1,"toFile":"src/shared/rls.ts","typeOnly":true}],"key":"insights->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"insights","imports":[{"fromFile":"src/insights/create-insights.test.ts","line":10,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/insights/create-insights.ts","line":2,"toFile":"src/transactions/server.ts","typeOnly":true}],"key":"insights->transactions","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transactions"},{"closesCycle":false,"drift":false,"findings":[],"from":"rules","imports":[{"fromFile":"src/rules/create-rules.ts","line":2,"toFile":"src/db-contract/server.ts","typeOnly":false}],"key":"rules->db-contract","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db-contract"},{"closesCycle":false,"drift":false,"findings":[],"from":"rules","imports":[{"fromFile":"src/rules/components/apply-rules-form.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/rules/components/rule-form.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/rules/components/rule-form.tsx","line":7,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/rules/components/rule-list.tsx","line":7,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/rules/components/rule-suggestions.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/rules/contract.ts","line":1,"toFile":"src/shared/result.ts","typeOnly":true},{"fromFile":"src/rules/contract.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/rules/create-rules.test.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/rules/create-rules.ts","line":3,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/rules/create-rules.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/rules/rls.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/rules/test-utils.ts","line":6,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/rules/test-utils.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/rules/test-utils.ts","line":8,"toFile":"src/shared/test-sessions.ts","typeOnly":false}],"key":"rules->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"rules","imports":[{"fromFile":"src/rules/components/rule-form.tsx","line":8,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/rules/components/use-rule-texts.ts","line":2,"toFile":"src/transactions/index.ts","typeOnly":false},{"fromFile":"src/rules/create-rules.test.ts","line":3,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/rules/create-rules.ts","line":5,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/rules/test-utils.ts","line":9,"toFile":"src/transactions/server.ts","typeOnly":false},{"fromFile":"src/rules/validation.ts","line":2,"toFile":"src/transactions/index.ts","typeOnly":false}],"key":"rules->transactions","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transactions"},{"closesCycle":false,"drift":false,"findings":[],"from":"transactions","imports":[{"fromFile":"src/transactions/access.ts","line":2,"toFile":"src/db-contract/server.ts","typeOnly":false},{"fromFile":"src/transactions/booking-service.ts","line":2,"toFile":"src/db-contract/server.ts","typeOnly":false},{"fromFile":"src/transactions/create-categories.ts","line":3,"toFile":"src/db-contract/server.ts","typeOnly":false}],"key":"transactions->db-contract","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db-contract"},{"closesCycle":false,"drift":false,"findings":[],"from":"transactions","imports":[{"fromFile":"src/transactions/access.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/transactions/booking-codec.ts","line":1,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/transactions/booking-codec.ts","line":2,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/transactions/booking-figures.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transactions/booking-service.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transactions/components/category-manager.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/transactions/components/category-manager.tsx","line":7,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/transactions/components/category-spending.tsx","line":3,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/transactions/components/delete-transaction-button.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/transactions/components/transaction-form.tsx","line":6,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/transactions/components/transaction-form.tsx","line":7,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/transactions/components/transaction-form.tsx","line":8,"toFile":"src/shared/use-translate-key.ts","typeOnly":false},{"fromFile":"src/transactions/components/transaction-list.tsx","line":3,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/transactions/contract.ts","line":1,"toFile":"src/shared/result.ts","typeOnly":true},{"fromFile":"src/transactions/contract.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/transactions/create-categories.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transactions/create-categories.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transactions/create-transactions.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transactions/create-transactions.ts","line":1,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/transactions/create-transactions.ts","line":2,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/transactions/rls.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transactions/test-utils.ts","line":6,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/transactions/test-utils.ts","line":7,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/transactions/test-utils.ts","line":8,"toFile":"src/shared/test-sessions.ts","typeOnly":false},{"fromFile":"src/transactions/validation.ts","line":2,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/transactions/validation.ts","line":3,"toFile":"src/shared/money.ts","typeOnly":false}],"key":"transactions->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"transfers","imports":[{"fromFile":"src/transfers/create-transfers.ts","line":2,"toFile":"src/db-contract/server.ts","typeOnly":false}],"key":"transfers->db-contract","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"db-contract"},{"closesCycle":false,"drift":false,"findings":[],"from":"transfers","imports":[{"fromFile":"src/transfers/components/transfer-inbox.tsx","line":5,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/transfers/components/use-transfer-action.ts","line":5,"toFile":"src/shared/api-client.ts","typeOnly":false},{"fromFile":"src/transfers/components/use-transfer-texts.ts","line":4,"toFile":"src/shared/money.ts","typeOnly":false},{"fromFile":"src/transfers/contract.ts","line":1,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/transfers/create-transfers.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":true},{"fromFile":"src/transfers/create-transfers.ts","line":3,"toFile":"src/shared/field-crypto.ts","typeOnly":true},{"fromFile":"src/transfers/create-transfers.ts","line":4,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transfers/rls.test.ts","line":3,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transfers/signals.ts","line":1,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/transfers/test-utils.ts","line":6,"toFile":"src/shared/field-crypto.ts","typeOnly":false},{"fromFile":"src/transfers/test-utils.ts","line":7,"toFile":"src/shared/iban.ts","typeOnly":false},{"fromFile":"src/transfers/test-utils.ts","line":8,"toFile":"src/shared/rls.ts","typeOnly":false},{"fromFile":"src/transfers/test-utils.ts","line":9,"toFile":"src/shared/test-sessions.ts","typeOnly":false}],"key":"transfers->shared","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"shared"},{"closesCycle":false,"drift":false,"findings":[],"from":"transfers","imports":[{"fromFile":"src/transfers/create-transfers.ts","line":5,"toFile":"src/transactions/server.ts","typeOnly":true},{"fromFile":"src/transfers/test-utils.ts","line":10,"toFile":"src/transactions/server.ts","typeOnly":false}],"key":"transfers->transactions","onCycle":false,"planned":null,"prominent":false,"related":false,"removed":false,"state":"existing","to":"transactions"}],"expanded":[],"fileUnits":["app"],"files":[{"change":"new","name":"[locale]/statistics/category-compare.tsx","path":"src/app/[locale]/statistics/category-compare.tsx","purpose":"Shows spending per category group with one bar per chosen month.","status":"convergence","unit":"app"},{"change":"new","name":"[locale]/statistics/compare-months.test.ts","path":"src/app/[locale]/statistics/compare-months.test.ts","purpose":"Tests for reading the months and building the links.","status":"convergence","unit":"app"},{"change":"new","name":"[locale]/statistics/compare-months.ts","path":"src/app/[locale]/statistics/compare-months.ts","purpose":"Reads the extra months from the address and builds the page links.","status":"convergence","unit":"app"},{"change":"new","name":"[locale]/statistics/compare-picker.tsx","path":"src/app/[locale]/statistics/compare-picker.tsx","purpose":"Lets you add and remove months to compare.","status":"convergence","unit":"app"},{"amendment":"A1","change":"changed","name":"[locale]/statistics/money-flow.tsx","path":"src/app/[locale]/statistics/money-flow.tsx","purpose":"The money flow title can name the year as well.","status":"convergence","unit":"app"},{"change":"changed","name":"[locale]/statistics/month-picker.tsx","path":"src/app/[locale]/statistics/month-picker.tsx","purpose":"Keeps the extra months when you pick the main month from the lists.","status":"convergence","unit":"app"},{"change":"changed","name":"[locale]/statistics/month-switcher.tsx","path":"src/app/[locale]/statistics/month-switcher.tsx","purpose":"Keeps the extra months when you switch the main month.","status":"convergence","unit":"app"},{"change":"changed","name":"[locale]/statistics/page.tsx","path":"src/app/[locale]/statistics/page.tsx","purpose":"Shows tiles and money flow per chosen month and highlights them in the history.","status":"convergence","unit":"app"},{"change":"changed","name":"_lib/messages/de.json","path":"src/app/_lib/messages/de.json","purpose":"German texts for comparing months.","status":"convergence","unit":"app"},{"change":"changed","name":"_lib/messages/en.json","path":"src/app/_lib/messages/en.json","purpose":"English texts for comparing months.","status":"convergence","unit":"app"}],"findings":[],"layout":null,"mode":"final","pills":[{"changes":[1],"filter":"done","label":"1 change done","tone":"ok"},{"filter":"missing","label":"0 missing","tone":"neutral"},{"filter":"unplanned","label":"0 added without a plan","tone":"neutral"}],"project":"haushaltsbuch","refs":[{"label":"before","value":"f4b6ebc5d14f6447d0f2f0e61dfd2498f29ce356"},{"label":"after","value":"working tree"}],"results":{"base":"f4b6ebc5d14f6447d0f2f0e61dfd2498f29ce356","counts":{"absence":0,"convergence":10,"divergence":0},"elements":[{"edges":[],"id":"src/app/[locale]/statistics/category-compare.tsx","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/[locale]/statistics/compare-months.test.ts","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/[locale]/statistics/compare-months.ts","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/[locale]/statistics/compare-picker.tsx","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"amendment":"A1","edges":[],"id":"src/app/[locale]/statistics/money-flow.tsx","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/[locale]/statistics/month-picker.tsx","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/[locale]/statistics/month-switcher.tsx","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/[locale]/statistics/page.tsx","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/_lib/messages/de.json","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]},{"edges":[],"id":"src/app/_lib/messages/en.json","kind":"file","kindLabel":"Files","status":"convergence","units":["app"]}],"head":"working-tree","signoff":[]},"revision":null,"rows":{".":[["app"],["accounts","auth","budgets","db","import","insights","rules","transfers","households"],["transactions"],["db-contract"],["shared"]]},"signoff":[],"slug":"statistics-compare-months","story":{"steps":[{"after":[],"before":[],"changes":[1],"text":"The page reads the extra months from the address and keeps them in every link on the page.","title":"Read and keep the chosen months","units":["app"]},{"after":[],"before":[],"changes":[],"text":"The figure tiles and the money flow chart repeat per month. The categories show one bar per month for each group.","title":"Show each section for every chosen month","units":["app"]}],"summary":"On the statistics page you can add up to two more months to the chosen one. Every section then shows all chosen months one below the other. Without extra months the page looks as before.","unchanged":"The figures, the database, the API and who may see which account stay the same. The year view does not change.","why":"You want to compare months directly, for example this month with last month and the same month last year."},"summary":"1 change done · 0 missing · 0 added without a plan","tabs":["map","changes","files"],"title":"Compare statistics months","units":[{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":false,"id":".","mark":null,"name":".","parent":null,"path":"."},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"accounts","mark":null,"name":"accounts","parent":".","path":"src/accounts"},{"changed":true,"files":{"changed":6,"deleted":0,"new":4,"other":0},"hasRules":true,"id":"app","mark":null,"name":"app","parent":".","path":"src/app"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"auth","mark":null,"name":"auth","parent":".","path":"src/auth"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"budgets","mark":null,"name":"budgets","parent":".","path":"src/budgets"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"db","mark":null,"name":"db","parent":".","path":"src/db"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"db-contract","mark":null,"name":"db-contract","parent":".","path":"src/db-contract"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"households","mark":null,"name":"households","parent":".","path":"src/households"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"import","mark":null,"name":"import","parent":".","path":"src/import"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"insights","mark":null,"name":"insights","parent":".","path":"src/insights"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"rules","mark":null,"name":"rules","parent":".","path":"src/rules"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"shared","mark":null,"name":"shared","parent":".","path":"src/shared"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"transactions","mark":null,"name":"transactions","parent":".","path":"src/transactions"},{"changed":false,"files":{"changed":0,"deleted":0,"new":0,"other":0},"hasRules":true,"id":"transfers","mark":null,"name":"transfers","parent":".","path":"src/transfers"}]}</script>
+<script>
+(function () {
+"use strict";
+var D = JSON.parse(document.getElementById("cm-data").textContent);
+var MODE = D.mode, PLAN = MODE !== "audit", FINAL = MODE === "final";
+var NS = "http://www.w3.org/2000/svg";
+var W = 170, H = 38, GAP_X = 28, GAP_Y = 70, PAD = 18, HEAD = 30, NESTED_MAX = 920;
+
+// ---------- helpers ----------
+function h(tag, cls, text) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = String(text);
+  return n;
+}
+function add(parent) { for (var i = 1; i < arguments.length; i++) if (arguments[i]) parent.appendChild(arguments[i]); return parent; }
+function svgEl(name, attrs, parent) {
+  var n = document.createElementNS(NS, name);
+  for (var k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
+var MARK = new RegExp("(\\*\\*[^*]+\\*\\*|\\x60[^\\x60]+\\x60)");
+/** Text with **bold** and code marks, as elements. */
+function rich(parent, text) {
+  String(text).split(MARK).forEach(function (part) {
+    if (!part) return;
+    if (part.length > 4 && part.slice(0, 2) === "**" && part.slice(-2) === "**") parent.appendChild(h("b", "", part.slice(2, -2)));
+    else if (part.length > 2 && part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96) parent.appendChild(h("code", "", part.slice(1, -1)));
+    else parent.appendChild(document.createTextNode(part));
+  });
+  return parent;
+}
+function richP(cls, text) { return rich(h("p", cls), text); }
+function activate(el, fn) {
+  el.addEventListener("click", fn);
+  if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "0");
+  el.addEventListener("keydown", function (ev) {
+    if (ev.target === el && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); fn(ev); }
+  });
+}
+function arrow(a, b) { return a + " → " + b; }
+
+// ---------- model ----------
+var units = D.units.filter(function (u) { return u.id !== "."; });
+var byId = new Map(units.map(function (u) { return [u.id, u]; }));
+var children = new Map();
+units.forEach(function (u) {
+  u.p = u.parent && u.parent !== "." ? u.parent : null;
+  if (u.p) { if (!children.has(u.p)) children.set(u.p, []); children.get(u.p).push(u.id); }
+});
+function isContainer(id) { return children.has(id); }
+var topLevel = units.filter(function (u) { return !u.p; }).map(function (u) { return u.id; });
+function label(id) { return id === "." ? "repository root" : id.split("/").pop(); }
+function isAncestor(a, b) { var c = byId.get(b); while (c && c.p) { if (c.p === a) return true; c = byId.get(c.p); } return false; }
+function inside(id, u) { return u === id || isAncestor(id, u); }
+var edges = D.edges.filter(function (e) { return !e.related && byId.has(e.from) && byId.has(e.to); });
+function isBad(e) { return e.state === "existing-violation" || e.state === "introduced-violation"; }
+var findings = D.findings;
+var unitFiles = new Map();
+D.files.forEach(function (f) { if (!unitFiles.has(f.unit)) unitFiles.set(f.unit, []); unitFiles.get(f.unit).push(f); });
+var liveCount = new Map();
+D.files.forEach(function (f) { if (f.rev !== "removed") liveCount.set(f.unit, (liveCount.get(f.unit) || 0) + 1); });
+var insideCount = new Map();
+/** Planned files (not removed) in the unit and its descendants; fixed for the page, so counted once. */
+function countInside(id) {
+  if (!insideCount.has(id)) insideCount.set(id, (liveCount.get(id) || 0) + (children.get(id) || []).reduce(function (s, k) { return s + countInside(k); }, 0));
+  return insideCount.get(id);
+}
+
+/** Units a finding starts from (for the badge): the importing side, or every unit of a cycle. */
+function originsOf(f) {
+  var d = f.details || {};
+  if (f.code === "dependency-cycle" || f.code === "planned-cycle") return (d.cycleEdges || []).reduce(function (a, s) { return a.concat(s.map(function (x) { return x.from; })); }, []);
+  if (d.edge) return [d.edge.from];
+  return [];
+}
+var BADGE_CODES = ["existing-violation", "introduced-violation", "entry-point-bypass", "undeclared-signoff", "dependency-cycle"];
+/** Badge per unit: the findings that start inside it. Fixed for the page, so counted once. */
+var issues = new Map();
+findings.forEach(function (f) {
+  if (BADGE_CODES.indexOf(f.code) < 0) return;
+  var error = f.severity === "error" || f.code === "introduced-violation" || f.code === "existing-violation";
+  var hit = new Set();
+  originsOf(f).forEach(function (u) { for (var c = u; c; c = byId.has(c) ? byId.get(c).p : null) hit.add(c); });
+  hit.forEach(function (id) {
+    var v = issues.get(id);
+    if (!v) { v = { n: 0, error: false }; issues.set(id, v); }
+    v.n++; v.error = v.error || error;
+  });
+});
+var NO_ISSUES = { n: 0, error: false };
+var CHANGES = D.changes || [], STORY = D.story;
+var byN = new Map(CHANGES.map(function (c) { return [c.n, c]; }));
+var sigByKey = new Map((D.signoff || []).map(function (s) { return [s.key, s]; }));
+
+// ---------- state, saved layout ----------
+var KEY = "change-map-layout:" + D.project;
+var committed = D.layout;
+var saved = null;
+try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { saved = null; }
+if (saved && (saved.base || null) !== (committed ? committed.hash : null)) saved = null;
+function defaultExpanded() {
+  var list = D.expanded.slice();
+  if (committed) {
+    if (MODE === "audit") list = committed.value.expanded.slice();
+    else list = list.concat(committed.value.expanded);
+  }
+  return new Set(list.filter(isContainer));
+}
+function copyPos(p) { var o = {}; for (var k in p) if (byId.has(k)) o[k] = { x: p[k].x, y: p[k].y }; return o; }
+var state = {
+  view: "map", edges: (saved && saved.edges) || (committed && committed.value.edges) || "focus",
+  selected: null, focus: null, file: null, fileFilter: "all", zoom: 1, panel: "overview", filter: null,
+  expanded: saved && saved.expanded && saved.expanded[MODE] ? new Set(saved.expanded[MODE].filter(isContainer)) : defaultExpanded(),
+  pos: saved ? copyPos(saved.pos || {}) : committed ? copyPos(committed.value.positions) : {},
+};
+function persist() {
+  var exp = (saved && saved.expanded) || {};
+  exp[MODE] = Array.from(state.expanded).sort();
+  saved = { base: committed ? committed.hash : null, pos: state.pos, edges: state.edges, expanded: exp };
+  try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* storage blocked: layout lasts for this visit */ }
+}
+
+// ---------- visible units and edges ----------
+function visibleOf(id) {
+  var cur = id, best = id;
+  while (byId.get(cur) && byId.get(cur).p) {
+    var p = byId.get(cur).p;
+    if (!state.expanded.has(p)) best = p;
+    cur = p;
+  }
+  return best;
+}
+var ORDER = ["divergence", "absence", "convergence"];
+function visibleEdges() {
+  var agg = new Map();
+  edges.forEach(function (e) {
+    var a = visibleOf(e.from), b = visibleOf(e.to);
+    if (a === b || isAncestor(a, b) || isAncestor(b, a)) return;
+    var k = a + "->" + b;
+    var cur = agg.get(k);
+    if (!cur) { cur = { key: k, from: a, to: b, imports: 0, bad: false, raw: [], planned: true, removed: true, signoff: false, warn: false, drift: false, prominent: false, status: null }; agg.set(k, cur); }
+    cur.imports += e.imports.length; cur.bad = cur.bad || isBad(e); cur.raw.push(e);
+    cur.planned = cur.planned && !!e.planned; cur.removed = cur.removed && !!e.removed; cur.signoff = cur.signoff || e.planned === "signoff";
+    cur.warn = cur.warn || e.closesCycle; cur.drift = cur.drift || e.drift; cur.prominent = cur.prominent || e.prominent;
+    if (e.status && (!cur.status || ORDER.indexOf(e.status) < ORDER.indexOf(cur.status))) cur.status = e.status;
+  });
+  return Array.from(agg.values());
+}
+
+// ---------- layout ----------
+var sizes = new Map(), inner = new Map(), abs = new Map();
+/** Sibling-level links: each edge lifted to the children of the lowest unit holding both ends ('.' for the top). */
+var siblingLinks = (function () {
+  var out = new Map();
+  function chain(id) { var c = [id], u = byId.get(id); while (u && u.p) { c.unshift(u.p); u = byId.get(u.p); } return c; }
+  function link(parent, a, b) {
+    if (!out.has(parent)) out.set(parent, new Map());
+    var m = out.get(parent);
+    if (!m.has(a)) m.set(a, []);
+    if (m.get(a).indexOf(b) < 0) m.get(a).push(b);
+  }
+  edges.forEach(function (e) {
+    var a = chain(e.from), b = chain(e.to), k = 0;
+    while (k < a.length && k < b.length && a[k] === b[k]) k++;
+    if (k === a.length || k === b.length) return;
+    var parent = k === 0 ? "." : a[k - 1];
+    link(parent, a[k], b[k]); link(parent, b[k], a[k]);
+  });
+  return out;
+})();
+/**
+ * Places rows of boxes: packed left to right (a row too wide for maxW wraps), then each box is
+ * moved towards the boxes it is linked to in the neighbouring rows (down, up, down), keeping the
+ * order, the gaps and the widest row's width. Deterministic.
+ */
+function placeRows(layers, maxW, startY, gapY, parent) {
+  var place = {}, y = startY, wMax = 0, lines = [];
+  layers.forEach(function (L) {
+    var x = PAD, hRow = 0, line = [];
+    L.forEach(function (k) {
+      var s = sizes.get(k);
+      if (x > PAD && x + s.w > maxW) { lines.push(line); line = []; y += hRow + gapY * 0.6; x = PAD; hRow = 0; }
+      place[k] = { x: x, y: y }; x += s.w + GAP_X; hRow = Math.max(hRow, s.h);
+      line.push(k);
+      wMax = Math.max(wMax, x - GAP_X + PAD);
+    });
+    lines.push(line);
+    y += hRow + gapY;
+  });
+  var links = siblingLinks.get(parent || ".");
+  if (links && lines.length > 1) {
+    var limit = wMax - PAD;
+    var lineOf = new Map();
+    lines.forEach(function (line, i) { line.forEach(function (k) { lineOf.set(k, i); }); });
+    // Aligned by a box's left part (as wide as a closed box), so a container growing (opened, or a
+    // part dragged inside it) doesn't shift it.
+    var centre = function (k) { return place[k].x + W / 2; };
+    var align = function (i, dir) {
+      var line = lines[i];
+      var want = line.map(function (k) {
+        var ns = (links.get(k) || []).filter(function (n) { var j = lineOf.get(n); return j !== undefined && (dir > 0 ? j < i : j > i); });
+        return ns.length ? ns.reduce(function (sum, n) { return sum + centre(n); }, 0) / ns.length - W / 2 : place[k].x;
+      });
+      var xs = [];
+      line.forEach(function (k, n) { xs[n] = Math.max(n ? xs[n - 1] + sizes.get(line[n - 1]).w + GAP_X : PAD, want[n]); });
+      for (var n = line.length - 1; n >= 0; n--) {
+        var right = n === line.length - 1 ? limit : xs[n + 1] - GAP_X;
+        xs[n] = Math.max(PAD, Math.min(xs[n], right - sizes.get(line[n]).w));
+      }
+      line.forEach(function (k, n) { place[k].x = Math.round(xs[n]); });
+    };
+    var n;
+    for (n = 1; n < lines.length; n++) align(n, 1);
+    for (n = lines.length - 2; n >= 0; n--) align(n, -1);
+    for (n = 1; n < lines.length; n++) align(n, 1);
+  }
+  return { place: place, w: wMax, h: y - gapY };
+}
+function layersOf(id, kids) {
+  var kidSet = new Set(kids);
+  var rows = (D.rows[id] || []).map(function (r) { return r.filter(function (k) { return kidSet.has(k); }); }).filter(function (r) { return r.length; });
+  var seen = new Set([].concat.apply([], rows));
+  var rest = kids.filter(function (k) { return !seen.has(k); });
+  if (rest.length) rows.push(rest);
+  return rows;
+}
+function measure(id) {
+  if (!isContainer(id) || !state.expanded.has(id)) { sizes.set(id, { w: W, h: H }); return; }
+  var kids = children.get(id);
+  kids.forEach(measure);
+  var r = placeRows(layersOf(id, kids), NESTED_MAX, HEAD, GAP_Y * 0.55, id);
+  var place = r.place;
+  kids.forEach(function (k) { if (state.pos[k]) place[k] = { x: state.pos[k].x, y: state.pos[k].y }; });
+  var headLen = (label(id) + "  \u00b7  " + kids.length + " inside" + (PLAN && byId.get(id).changed ? "  \u00b7  changes inside" : "")).length;
+  var w = Math.max(r.w, W + 2 * PAD, headLen * 6.8 + 40), hh = r.h + PAD;
+  kids.forEach(function (k) { var s = sizes.get(k); w = Math.max(w, place[k].x + s.w + PAD); hh = Math.max(hh, place[k].y + s.h + PAD); });
+  inner.set(id, place);
+  sizes.set(id, { w: w, h: hh });
+}
+function layout() {
+  sizes.clear(); inner.clear(); abs.clear();
+  topLevel.forEach(measure);
+  var maxW = Math.max(600, (stage.clientWidth || 1000) / state.zoom - 20);
+  var r = placeRows(layersOf(".", topLevel), maxW, 20, GAP_Y);
+  var place = r.place;
+  topLevel.forEach(function (id) { if (state.pos[id]) place[id] = { x: state.pos[id].x, y: state.pos[id].y }; });
+  function put(id, x, y) {
+    var s = sizes.get(id); abs.set(id, { x: x, y: y, w: s.w, h: s.h });
+    var p = inner.get(id);
+    if (p) for (var k in p) put(k, x + p[k].x, y + p[k].y);
+  }
+  topLevel.forEach(function (id) { put(id, place[id].x, place[id].y); });
+}
+
+// ---------- focus and selection ----------
+function relation(ves) {
+  var s = state.selected; if (!s) return null;
+  var sv = visibleOf(s), uses = new Set(), usedBy = new Set();
+  ves.forEach(function (e) { if (e.from === sv) uses.add(e.to); if (e.to === sv) usedBy.add(e.from); });
+  return { sv: sv, uses: uses, usedBy: usedBy };
+}
+function focusOn(key, units, edgeKeys) {
+  state.selected = null;
+  if (state.focus && state.focus.key === key) state.focus = null;
+  else {
+    // Expand containers so focused units are visible where possible.
+    units.forEach(function (u) { var c = byId.get(u); while (c && c.p) { state.expanded.add(c.p); c = byId.get(c.p); } });
+    state.focus = { key: key, units: new Set(units.filter(function (u) { return byId.has(u); }).map(visibleOf)), edges: new Set(edgeKeys) };
+  }
+  if (state.view !== "map") setView("map"); else draw();
+}
+function select(id) { state.selected = state.selected === id ? null : id; state.focus = null; draw(); }
+
+// ---------- counters as filters ----------
+/** The header's counters: each counts changes, and clicking one shows only those. */
+var PILLS = D.pills || [];
+function inFilter(ch) { return !state.filter || state.filter.ns.has(ch.n); }
+function shownChanges() { return CHANGES.filter(inFilter); }
+function setFilter(i) {
+  var p = PILLS[i];
+  if (!p || !p.changes || !p.changes.length || (state.filter && state.filter.i === i)) state.filter = null;
+  else {
+    var ns = new Set(p.changes), us = [], es = [];
+    CHANGES.forEach(function (ch) { if (ns.has(ch.n)) { us = us.concat(ch.units); es = es.concat(ch.edges); } });
+    us.forEach(function (u) { var c = byId.get(u); while (c && c.p) { state.expanded.add(c.p); c = byId.get(c.p); } });
+    state.filter = { i: i, label: p.label, ns: ns, units: us, edges: new Set(es) };
+    state.focus = null; state.selected = null;
+    if (state.view === "map") state.panel = "changes";
+  }
+  document.querySelectorAll("header .counter[data-pill]").forEach(function (b) { b.setAttribute("aria-pressed", state.filter && String(state.filter.i) === b.getAttribute("data-pill") ? "true" : "false"); });
+  draw();
+}
+/** The filter as a focus on the map: its changes' units and uses highlighted, the rest dimmed. */
+function filterFocus() {
+  if (!state.filter) return null;
+  return { key: "filter", units: new Set(state.filter.units.filter(function (u) { return byId.has(u); }).map(visibleOf)), edges: state.filter.edges };
+}
+/** "Showing 1 missing change · Show all" above a filtered list. */
+function filterBar() {
+  if (!state.filter) return null;
+  var bar = h("div", "fbar");
+  bar.setAttribute("role", "status");
+  bar.appendChild(h("span", "", "Showing " + plural(state.filter.ns.size, "change") + ": " + state.filter.label));
+  var b = h("button", "", "Show all"); b.type = "button";
+  b.addEventListener("click", function (ev) { ev.stopPropagation(); setFilter(-1); });
+  bar.appendChild(b);
+  return bar;
+}
+
+// ---------- map ----------
+var stage = document.getElementById("stage"), side = document.getElementById("side");
+var svg = null, routeCache = null;
+
+function draw() {
+  if (state.view === "map") layout(); // before clearing the stage: the layout reads its current width
+  stage.textContent = "";
+  if (state.view === "files") { drawFiles(); drawSide(); return; }
+  if (state.view === "changes") { drawChangeTable(); drawSide(); return; }
+  var wMax = 0, hMax = 0;
+  abs.forEach(function (b) { wMax = Math.max(wMax, b.x + b.w); hMax = Math.max(hMax, b.y + b.h); });
+  wMax += 40; hMax += 40;
+  var z = state.zoom;
+  var bar = add(h("div", "zoom"), zoomBtn("−", "Zoom out", function () { setZoom(state.zoom / 1.25); }), zoomBtn("+", "Zoom in", function () { setZoom(state.zoom * 1.25); }), zoomBtn("Fit", "Fit to width", function () { setZoom(fitZoom(wMax)); }));
+  stage.appendChild(bar);
+  svg = svgEl("svg", { width: Math.round(wMax * z), height: Math.round(hMax * z), viewBox: "0 0 " + wMax + " " + hMax, role: "img", "aria-label": "Units and their dependencies" }, stage);
+  var defs = svgEl("defs", {}, svg);
+  [["a", "var(--edge)"], ["u", "var(--uses)"], ["ub", "var(--usedby)"], ["bad", "var(--bad)"], ["n", "var(--new)"], ["w", "var(--warn)"], ["ab", "var(--absent)"], ["dr", "var(--chg)"], ["g", "var(--muted)"]].forEach(function (m) {
+    var mk = svgEl("marker", { id: "m-" + m[0], viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, defs);
+    svgEl("path", { d: "M0 0L10 5L0 10z", fill: m[1] }, mk);
+  });
+  var ves = visibleEdges(), keys = new Set(ves.map(function (x) { return x.key; }));
+  var rel = relation(ves), fc = state.focus || filterFocus();
+  var gC = svgEl("g", {}, svg), gE = svgEl("g", {}, svg), gN = svgEl("g", {}, svg), gB = svgEl("g", {}, svg);
+
+  // expanded containers, outermost first
+  var exp = Array.from(abs.keys()).filter(function (id) { return isContainer(id) && state.expanded.has(id); })
+    .sort(function (a, b) { return a.split("/").length - b.split("/").length || (a < b ? -1 : a > b ? 1 : 0); });
+  exp.forEach(function (id) {
+    var b = abs.get(id), u = byId.get(id);
+    var related = rel ? (rel.sv === id || rel.uses.has(id) || rel.usedBy.has(id) || hasRelatedChild(id, rel)) : fc ? Array.from(fc.units).some(function (x) { return inside(id, x); }) : true;
+    var g = svgEl("g", { class: "container" + (PLAN && u.changed ? " haschg" : "") + (state.selected === id ? " sel" : "") + (related ? "" : " faded"), "data-id": id }, gC);
+    svgEl("rect", { class: "c", x: b.x, y: b.y, width: b.w, height: b.h, rx: 12 }, g);
+    var t = svgEl("text", { x: b.x + 28, y: b.y + 20 }, g);
+    t.textContent = label(id) + "  ·  " + children.get(id).length + " inside" + (PLAN && u.changed ? "  ·  changes inside" : "");
+    var tg = svgEl("text", { class: "toggle", x: b.x + 10, y: b.y + 20, "data-act": "collapse" }, g); tg.textContent = "▾";
+    var tt = svgEl("title", {}, tg); tt.textContent = "Collapse";
+    tg.addEventListener("click", function (ev) { ev.stopPropagation(); state.expanded.delete(id); persist(); draw(); });
+    makeDraggable(g, id, true);
+  });
+
+  // edges: classes first, then each drawn edge gets its own ports, then routing in key order
+  // (the order decides which edge takes a free lane first)
+  ves.sort(function (x, y) { return x.key < y.key ? -1 : x.key > y.key ? 1 : 0; });
+  var styled = [];
+  ves.forEach(function (e) {
+    var a = abs.get(e.from), b = abs.get(e.to); if (!a || !b) return;
+    var cls = "edge", marker = "a";
+    var touch = rel && (e.from === rel.sv || e.to === rel.sv);
+    var fm = fc && e.raw.some(function (r) { return fc.edges.has(r.key); });
+    var special = true;
+    if (e.removed && e.status !== "absence") { cls += " gone"; marker = "g"; }
+    else if (e.status === "absence") { cls += " absent"; marker = "ab"; }
+    else if (e.status === "divergence") { cls += " div"; marker = "bad"; }
+    else if (e.planned || e.status === "convergence") { cls += " new" + (e.warn ? " warn" : "") + (e.signoff || FINAL ? "" : " allowed"); marker = e.warn ? "w" : "n"; }
+    else special = false;
+    if (special) {
+      if ((rel && !touch) || (fc && !fm)) cls += " dim";
+      if (fm) cls += " focus";
+    } else {
+      if (e.bad) { cls += " bad"; marker = "bad"; } else if (e.drift) { cls += " drift"; marker = "dr"; }
+      if (rel && e.from === rel.sv) { cls += " uses"; if (!e.bad) marker = "u"; }
+      else if (rel && e.to === rel.sv) { cls += " usedby"; if (!e.bad) marker = "ub"; }
+      else if (fm) { cls += " uses focus"; if (!e.bad) marker = "u"; }
+      else if (state.edges === "focus" && !e.prominent && !(fc && fm)) cls += " hidden";
+      else if (rel || fc) cls += " dim";
+    }
+    styled.push({ e: e, a: a, b: b, cls: cls, marker: marker, drawn: cls.indexOf(" hidden") < 0 });
+  });
+  var t0 = performance.now();
+  var drawn = styled.filter(function (s) { return s.drawn; }).map(function (s) { return s.e; });
+  // Selecting or focusing changes only colours: the same boxes and drawn edges reuse their routes.
+  var sig = drawn.map(function (e) { return e.key; }).join("|") + "#";
+  abs.forEach(function (b, id) { sig += id + ":" + b.x + "," + b.y + "," + b.w + "," + b.h + ";"; });
+  if (!routeCache || routeCache.sig !== sig) {
+    var ports = assignPorts(drawn), router = makeRouter(ports), routes = new Map();
+    drawn.forEach(function (e) { routes.set(e.key, router ? router.route(e) : null); });
+    routeCache = { sig: sig, routes: routes };
+  }
+  styled.forEach(function (s) {
+    var e = s.e, both = keys.has(e.to + "->" + e.from);
+    var off = both ? (e.from < e.to ? -9 : 9) : 0;
+    var pts = s.drawn ? routeCache.routes.get(e.key) : null;
+    var attrs = { class: s.cls, d: pts ? roundedPath(pts) : route(s.a, s.b, off), "marker-end": "url(#m-" + s.marker + ")", "data-key": e.key, "data-a": e.from, "data-b": e.to, "data-raw": e.raw.map(function (r) { return r.key; }).join("|") };
+    if (pts) attrs["data-pts"] = pts.map(function (q) { return q[0] + "," + q[1]; }).join(" ");
+    var p = svgEl("path", attrs, gE);
+    var tt = svgEl("title", {}, p);
+    tt.textContent = arrow(e.from, e.to) + ": " + edgeText(e);
+  });
+
+  svg.setAttribute("data-route-ms", String(Math.round((performance.now() - t0) * 10) / 10));
+
+  // boxes
+  abs.forEach(function (b, id) {
+    if (isContainer(id) && state.expanded.has(id)) return;
+    var u = byId.get(id);
+    var cls = "node";
+    if (u.mark === "new") cls += " new";
+    else if (u.mark === "renamed") cls += " renamed";
+    else if (u.mark === "absent") cls += " absent";
+    else if (u.mark === "divergent") cls += " divergent";
+    else if (PLAN && u.changed) cls += " changed";
+    if (rel) {
+      if (id === rel.sv) cls += " sel"; else if (rel.uses.has(id)) cls += " uses"; else if (rel.usedBy.has(id)) cls += " usedby"; else cls += " faded";
+    } else if (fc) cls += fc.units.has(id) ? " sel" : " faded";
+    var g = svgEl("g", { class: cls, "data-id": id, tabindex: 0, role: "button", "aria-label": id }, gN);
+    svgEl("rect", { class: "b", x: b.x, y: b.y, width: b.w, height: b.h, rx: 8 }, g);
+    var t = svgEl("text", { x: b.x + 10, y: b.y + 23 }, g); t.textContent = clip(label(id), isContainer(id) ? 15 : 20);
+    var tl = svgEl("title", {}, g); tl.textContent = id;
+    if (isContainer(id)) {
+      var m = svgEl("text", { class: "meta", x: b.x + b.w - 10, y: b.y + 23, "text-anchor": "end", "data-act": "expand" }, g);
+      m.textContent = "+" + children.get(id).length + " ▸";
+      m.style.cursor = "pointer";
+      m.addEventListener("click", function (ev) { ev.stopPropagation(); state.expanded.add(id); persist(); draw(); });
+    }
+    var tag = tagOf(id);
+    if (tag) {
+      var tgp = svgEl("g", { class: "tag" + (tag.cls ? " " + tag.cls : "") }, g);
+      var tw = tag.text.length * 7 + 10;
+      svgEl("rect", { x: b.x + 8, y: b.y - 9, width: tw, height: 16, rx: 8 }, tgp);
+      var tt2 = svgEl("text", { x: b.x + 8 + tw / 2, y: b.y + 3, "text-anchor": "middle" }, tgp); tt2.textContent = tag.text;
+      var ttl = svgEl("title", {}, tgp); ttl.textContent = tag.title;
+    }
+    var is = issues.get(id) || NO_ISSUES;
+    if (is.n) {
+      var bg = svgEl("g", { class: "badge" + (is.error ? "" : " warn") }, g);
+      var bw = String(is.n).length * 7 + 17;
+      svgEl("rect", { x: b.x + b.w - bw - 6, y: b.y - 9, width: bw, height: 17, rx: 8.5 }, bg);
+      var bt = svgEl("text", { x: b.x + b.w - 6 - bw / 2, y: b.y + 3, "text-anchor": "middle" }, bg); bt.textContent = "!" + is.n;
+      var btl = svgEl("title", {}, bg); btl.textContent = plural(is.n, "finding") + " from here";
+    }
+    g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(id); } });
+    makeDraggable(g, id, false);
+  });
+  if (CHANGES.length) drawBadges(gB);
+  svg.addEventListener("click", function (ev) { if (ev.target === svg) { state.selected = null; state.focus = null; draw(); } });
+  drawSide();
+}
+function zoomBtn(text, title, fn) { var b = h("button", "", text); b.type = "button"; b.title = title; b.setAttribute("aria-label", title); b.addEventListener("click", fn); return b; }
+function fitZoom(w) { return Math.min(1, Math.max(0.3, ((stage.clientWidth || w) - 8) / w)); }
+function setZoom(z) { state.zoom = Math.min(2, Math.max(0.3, z)); draw(); }
+function clip(s, n) { return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+function hasRelatedChild(id, rel) { return (children.get(id) || []).some(function (k) { return k === rel.sv || rel.uses.has(k) || rel.usedBy.has(k) || hasRelatedChild(k, rel); }); }
+function edgeText(e) {
+  if (e.removed) return e.status === "absence" ? "planned to go away, still there" : FINAL ? "gone, as planned" : "goes away with this plan";
+  if (e.status === "absence") return "planned, missing";
+  if (e.status === "divergence") return e.imports + " import" + (e.imports === 1 ? "" : "s") + ", without a plan" + (e.bad ? ", not allowed by the rules" : "");
+  if (e.planned && !e.imports) return "new link" + (e.signoff ? ", needs your decision" : ", already allowed") + (e.warn ? ", creates a loop" : "");
+  return e.imports + " import" + (e.imports === 1 ? "" : "s") + (e.bad ? " (not allowed by the rules)" : "") + (e.planned ? " (planned)" : "") + (e.drift ? " (no record covers it)" : "");
+}
+function tagOf(id) {
+  var u = byId.get(id);
+  if (u.mark === "new") return { text: "NEW PART", cls: "", title: "New part in this plan" };
+  if (u.mark === "renamed") return { text: "RENAMED", cls: "", title: "Renamed from " + u.renamedFrom };
+  if (u.mark === "absent") return { text: "MISSING", cls: "absent", title: "Planned, but not built" };
+  if (u.mark === "divergent") return { text: "NO PLAN", cls: "div", title: "Built without a plan" };
+  if (!PLAN || !u.changed) return null;
+  var n = isContainer(id) && !state.expanded.has(id) ? countInside(id) : liveCount.get(id) || 0;
+  return n ? { text: "~" + n, cls: "chg", title: plural(n, "planned file change") } : null;
+}
+function route(a, b, off) {
+  var ax = a.x + a.w / 2 + off, bx = b.x + b.w / 2 + off;
+  if (b.y >= a.y + a.h + 10) { var y1 = a.y + a.h, y2 = b.y, dy = (y2 - y1) / 2; return "M" + ax + " " + y1 + " C" + ax + " " + (y1 + dy) + " " + bx + " " + (y2 - dy) + " " + bx + " " + (y2 - 1); }
+  if (a.y >= b.y + b.h + 10) { var y3 = a.y, y4 = b.y + b.h, dy2 = (y3 - y4) / 2; return "M" + ax + " " + y3 + " C" + ax + " " + (y3 - dy2) + " " + bx + " " + (y4 + dy2) + " " + bx + " " + (y4 + 1); }
+  var right = bx > ax, x1 = right ? a.x + a.w : a.x, x2 = right ? b.x : b.x + b.w, yy1 = a.y + a.h / 2 + off / 2, yy2 = b.y + b.h / 2 + off / 2, dx = (x2 - x1) / 2;
+  return "M" + x1 + " " + yy1 + " C" + (x1 + dx) + " " + yy1 + " " + (x2 - dx) + " " + yy2 + " " + (x2 + (right ? -1 : 1)) + " " + yy2;
+}
+
+
+// ---------- edge routing (orthogonal, around boxes) ----------
+/**
+ * Where each drawn edge leaves and enters its boxes: the bottom and top sides for an edge going
+ * down (top and bottom going up), the facing left and right sides otherwise. The edges on one side
+ * of a box are spread evenly along it, ordered by where their other end is, so no two share a point
+ * and they don't cross at the box. Returns edge key -> { a, sa, b, sb } (points on the borders, sides).
+ */
+var SNAP = 8, DENSE = 60;
+function assignPorts(list) {
+  var sides = new Map(), out = new Map();
+  function centre(b) { return [b.x + b.w / 2, b.y + b.h / 2]; }
+  function put(id, side, key, other) {
+    var k = id + "|" + side, l = sides.get(k);
+    if (!l) { l = []; sides.set(k, l); }
+    l.push({ key: key, other: other });
+  }
+  list.forEach(function (e) {
+    var A = abs.get(e.from), B = abs.get(e.to), sa, sb;
+    if (B.y >= A.y + A.h) { sa = "b"; sb = "t"; }
+    else if (A.y >= B.y + B.h) { sa = "t"; sb = "b"; }
+    else if (B.x + B.w / 2 >= A.x + A.w / 2) { sa = "r"; sb = "l"; }
+    else { sa = "l"; sb = "r"; }
+    out.set(e.key, { from: e.from, to: e.to, sa: sa, sb: sb, a: null, b: null });
+    put(e.from, sa, e.key + ">a", centre(B));
+    put(e.to, sb, e.key + ">b", centre(A));
+  });
+  sides.forEach(function (l, k) {
+    var bar = k.lastIndexOf("|"), id = k.slice(0, bar), side = k.slice(bar + 1), b = abs.get(id);
+    var horiz = side === "t" || side === "b", axis = horiz ? 0 : 1;
+    l.sort(function (p, q) { return p.other[axis] - q.other[axis] || (p.key < q.key ? -1 : p.key > q.key ? 1 : 0); });
+    // Along the side, leaving the rounded corners free; an open container's left and right ports stay in its title band.
+    var from = horiz ? b.x + 12 : b.y + 8, len = horiz ? b.w - 24 : (isContainer(id) && state.expanded.has(id) ? HEAD : b.h) - 16;
+    // Evenly spread, then snapped to an 8 px grid shared by all boxes (fewer distinct lanes for the
+    // router); a port that lands on a taken slot moves to the next free one.
+    var taken = new Set(), last = from + len;
+    l.forEach(function (p, i) {
+      var t = Math.round((from + len * (i + 1) / (l.length + 1)) / SNAP) * SNAP;
+      while (taken.has(t) && t + SNAP <= last) t += SNAP;
+      if (taken.has(t)) t = Math.round(from + len * (i + 1) / (l.length + 1));
+      taken.add(t);
+      var pt = side === "t" ? [t, b.y] : side === "b" ? [t, b.y + b.h] : side === "l" ? [b.x, t] : [b.x + b.w, t];
+      var key = p.key.slice(0, -2), end = p.key.slice(-1);
+      out.get(key)[end] = pt;
+    });
+  });
+  return out;
+}
+/**
+ * Routes edges with right angles from port to port, around every box that isn't a container
+ * holding one of the ends: a sparse grid from the box borders (plus a margin and two lanes beside
+ * it) and the ports; A* with a cost for length, bends, running along a lane another edge already
+ * uses, and crossing one. Deterministic: same layout, same paths. Returns null when the grid would
+ * be too large (the caller draws curves).
+ */
+function makeRouter(ports) {
+  // Dense maps (many drawn edges) trade lane separation for speed: no extra lanes, the old costs.
+  var dense = ports.size > DENSE;
+  var M = 8, BEND = 24, LANE = 7, NL = dense ? 0 : 2, SHARE = dense ? 0 : 2, CROWD = dense ? 14 : 30, CROSS = dense ? 0 : 10;
+  var rects = [];
+  abs.forEach(function (b, id) { rects.push({ id: id, x1: b.x - M, y1: b.y - M, x2: b.x + b.w + M, y2: b.y + b.h + M, area: (b.w + 2 * M) * (b.h + 2 * M) }); });
+  var xsSet = new Set(), ysSet = new Set();
+  rects.forEach(function (r) {
+    xsSet.add(r.x1); xsSet.add(r.x2); ysSet.add(r.y1); ysSet.add(r.y2);
+    // Extra lanes beside each box, so edges running side by side don't have to share one.
+    for (var l = 1; l <= NL; l++) { xsSet.add(r.x1 - l * LANE); xsSet.add(r.x2 + l * LANE); ysSet.add(r.y1 - l * LANE); ysSet.add(r.y2 + l * LANE); }
+  });
+  // Ports and the points just outside them (on the margin line), where routes start and end.
+  function stub(p, side) { return side === "t" ? [p[0], p[1] - M] : side === "b" ? [p[0], p[1] + M] : side === "l" ? [p[0] - M, p[1]] : [p[0] + M, p[1]]; }
+  ports.forEach(function (pp) {
+    [stub(pp.a, pp.sa), stub(pp.b, pp.sb)].forEach(function (q) { xsSet.add(q[0]); ysSet.add(q[1]); });
+  });
+  var num = function (a, b) { return a - b; };
+  var xs = Array.from(xsSet).sort(num), ys = Array.from(ysSet).sort(num);
+  var nx = xs.length, ny = ys.length, N = nx * ny;
+  if (N > 600000) return null;
+  var xi = new Map(xs.map(function (x, i) { return [x, i]; })), yi = new Map(ys.map(function (y, i) { return [y, i]; }));
+  // Innermost box over each grid point and each unit segment (painted largest first).
+  var node = new Int32Array(N).fill(-1), hs = new Int32Array(N).fill(-1), vs = new Int32Array(N).fill(-1);
+  var order = rects.map(function (r, i) { return i; }).sort(function (a, b) { return rects[b].area - rects[a].area || a - b; });
+  order.forEach(function (ri) {
+    var r = rects[ri], i0 = xi.get(r.x1), i1 = xi.get(r.x2), j0 = yi.get(r.y1), j1 = yi.get(r.y2);
+    for (var i = i0; i <= i1; i++) for (var j = j0; j <= j1; j++) {
+      var k = j * nx + i;
+      if (i > i0 && i < i1 && j > j0 && j < j1) node[k] = ri;
+      if (i < i1 && j > j0 && j < j1) hs[k] = ri;   // segment (i,j) -> (i+1,j)
+      if (j < j1 && i > i0 && i < i1) vs[k] = ri;   // segment (i,j) -> (i,j+1)
+    }
+  });
+  var hUse = new Uint16Array(N), vUse = new Uint16Array(N);
+  // A port's stub belongs to its edge: the grid segment through each port counts as used, so another
+  // edge (say from a part inside a container whose port has the same x) doesn't run over it.
+  function lower(arr, v) { var lo = 0, hi = arr.length; while (lo < hi) { var mid = (lo + hi) >> 1; if (arr[mid] < v) lo = mid + 1; else hi = mid; } return lo; }
+  ports.forEach(function (pp) {
+    [[pp.a, pp.sa], [pp.b, pp.sb]].forEach(function (q) {
+      var p = q[0], side = q[1];
+      if (!p) return;
+      if (side === "t" || side === "b") {
+        var i = xi.get(p[0]), j = lower(ys, p[1]);
+        if (i === undefined || j === 0 || j >= ny) return;
+        if (ys[j] === p[1]) { vUse[j * nx + i]++; if (j > 0) vUse[(j - 1) * nx + i]++; } else vUse[(j - 1) * nx + i]++;
+      } else {
+        var jj = yi.get(p[1]), ii = lower(xs, p[0]);
+        if (jj === undefined || ii === 0 || ii >= nx) return;
+        if (xs[ii] === p[0]) { hUse[jj * nx + ii]++; if (ii > 0) hUse[jj * nx + ii - 1]++; } else hUse[jj * nx + ii - 1]++;
+      }
+    });
+  });
+  // A* over (grid point, orientation): orientation 0 = moving horizontally, 1 = vertically; a bend
+  // is an orientation change. The heuristic is weighted a little (W) to keep large maps fast.
+  var W = 1.2;
+  var dist = new Float64Array(2 * N), prev = new Int32Array(2 * N), seen = new Uint32Array(2 * N), gen = 0;
+  var hf = new Float64Array(16), hsx = new Int32Array(16), hn = 0;
+  function push(f, st) {
+    if (hn === hf.length) { var nf = new Float64Array(hn * 2), nsx = new Int32Array(hn * 2); nf.set(hf); nsx.set(hsx); hf = nf; hsx = nsx; }
+    var i = hn++;
+    while (i > 0) { var p = (i - 1) >> 1; if (hf[p] < f || (hf[p] === f && hsx[p] <= st)) break; hf[i] = hf[p]; hsx[i] = hsx[p]; i = p; }
+    hf[i] = f; hsx[i] = st;
+  }
+  var popF = 0;
+  function pop() {
+    var top = hsx[0]; popF = hf[0];
+    var f = hf[--hn], st = hsx[hn], i = 0;
+    for (;;) {
+      var l = 2 * i + 1, r = l + 1, m = -1, mf = f, ms = st;
+      if (l < hn && (hf[l] < mf || (hf[l] === mf && hsx[l] < ms))) { m = l; mf = hf[l]; ms = hsx[l]; }
+      if (r < hn && (hf[r] < mf || (hf[r] === mf && hsx[r] < ms))) { m = r; }
+      if (m < 0) break;
+      hf[i] = hf[m]; hsx[i] = hsx[m]; i = m;
+    }
+    if (hn > 0) { hf[i] = f; hsx[i] = st; }
+    return top;
+  }
+  /** Is a perpendicular route already through grid point k (for a move in orientation o)? */
+  function crossed(k, o) {
+    var j = (k / nx) | 0, i = k % nx;
+    if (o === 0) return (vUse[k] > 0) || (j > 0 && vUse[k - nx] > 0);
+    return (hUse[k] > 0) || (i > 0 && hUse[k - 1] > 0);
+  }
+  /** First without touching another edge's lane (unless the map is dense); if that finds no way, sharing lanes at a cost. */
+  function route(e) {
+    return (!dense && search(e, true)) || search(e, false);
+  }
+  function search(e, strict) {
+    var pp = ports.get(e.key); if (!pp || !pp.a || !pp.b) return null;
+    // Only the containers around an end may be crossed; the ends themselves are left at their ports.
+    var exempt = new Set();
+    [e.from, e.to].forEach(function (id) { var c = byId.get(id); while (c && c.p) { exempt.add(c.p); c = byId.get(c.p); } });
+    var ok = rects.map(function (r) { return exempt.has(r.id); });
+    var s0p = stub(pp.a, pp.sa), t0p = stub(pp.b, pp.sb);
+    var si = xi.get(s0p[0]), sj = yi.get(s0p[1]), ti = xi.get(t0p[0]), tj = yi.get(t0p[1]);
+    var sOri = pp.sa === "t" || pp.sa === "b" ? 1 : 0, tOri = pp.sb === "t" || pp.sb === "b" ? 1 : 0;
+    var goal = tj * nx + ti, hx = xs[ti], hy = ys[tj];
+    gen++; hn = 0;
+    var start = (sj * nx + si) * 2 + sOri;
+    seen[start] = gen; dist[start] = 0; prev[start] = -1; push(W * (Math.abs(xs[si] - hx) + Math.abs(ys[sj] - hy)), start);
+    var end = -1;
+    while (hn) {
+      var st = pop(), k = st >> 1, ori = st & 1, g = dist[st];
+      var i = k % nx, j = (k / nx) | 0;
+      if (popF > g + W * (Math.abs(xs[i] - hx) + Math.abs(ys[j] - hy)) + 1e-6) continue;
+      if (k === goal) {
+        if (ori === tOri) { end = st; break; }
+        // Turn into the port: one more bend.
+        var ts = k * 2 + tOri, tg = g + BEND;
+        if (!(seen[ts] === gen && dist[ts] <= tg)) { seen[ts] = gen; dist[ts] = tg; prev[ts] = st; push(tg, ts); }
+        continue;
+      }
+      for (var nd = 0; nd < 4; nd++) {
+        var horiz = nd < 2, ni = i + (nd === 0 ? 1 : nd === 1 ? -1 : 0), nj = j + (nd === 2 ? 1 : nd === 3 ? -1 : 0);
+        if (ni < 0 || nj < 0 || ni >= nx || nj >= ny) continue;
+        var nk = nj * nx + ni;
+        var seg = nd === 0 ? hs[k] : nd === 1 ? hs[nk] : nd === 2 ? vs[k] : vs[nk];
+        if ((seg >= 0 && !ok[seg]) || (node[nk] >= 0 && !ok[node[nk]])) continue;
+        var used = horiz ? hUse[nd === 0 ? k : nk] : vUse[nd === 2 ? k : nk];
+        if (used && strict) continue;
+        var no = horiz ? 0 : 1;
+        var len = horiz ? Math.abs(xs[ni] - xs[i]) : Math.abs(ys[nj] - ys[j]);
+        var ng = g + len + (no !== ori ? BEND : 0) + (used ? used * (CROWD + SHARE * len) : 0) + (nk !== goal && crossed(nk, no) ? CROSS : 0);
+        var ns = nk * 2 + no;
+        if (seen[ns] === gen && dist[ns] <= ng) continue;
+        seen[ns] = gen; dist[ns] = ng; prev[ns] = st;
+        push(ng + W * (Math.abs(xs[ni] - hx) + Math.abs(ys[nj] - hy)), ns);
+      }
+    }
+    if (end < 0) return null;
+    var cells = [];
+    for (var cur = end; cur >= 0; cur = prev[cur]) { var c0 = cur >> 1; if (!cells.length || cells[cells.length - 1] !== c0) cells.push(c0); }
+    cells.reverse();
+    for (var c = 1; c < cells.length; c++) {
+      var p0 = cells[c - 1], p1 = cells[c];
+      if (p1 === p0 + 1) hUse[p0]++; else if (p1 === p0 - 1) hUse[p1]++; else if (p1 > p0) vUse[p0]++; else vUse[p1]++;
+    }
+    var pts = [pp.a].concat(cells.map(function (q) { return [xs[q % nx], ys[(q / nx) | 0]]; }), [pp.b]);
+    return simplify(pts);
+  }
+  return { route: route };
+}
+function simplify(pts) {
+  var out = [];
+  pts.forEach(function (p) {
+    if (out.length && out[out.length - 1][0] === p[0] && out[out.length - 1][1] === p[1]) return;
+    if (out.length >= 2) {
+      var a = out[out.length - 2], b = out[out.length - 1];
+      if ((a[0] === b[0] && b[0] === p[0]) || (a[1] === b[1] && b[1] === p[1])) { out[out.length - 1] = p; return; }
+    }
+    out.push(p);
+  });
+  return out;
+}
+/** SVG path for a polyline with rounded corners. */
+function roundedPath(pts) {
+  var d = "M" + pts[0][0] + " " + pts[0][1];
+  for (var k = 1; k < pts.length - 1; k++) {
+    var a = pts[k - 1], c = pts[k], b = pts[k + 1];
+    var l1 = Math.abs(c[0] - a[0]) + Math.abs(c[1] - a[1]), l2 = Math.abs(b[0] - c[0]) + Math.abs(b[1] - c[1]);
+    var r = Math.min(6, l1 / 2, l2 / 2);
+    var u1 = [Math.sign(c[0] - a[0]), Math.sign(c[1] - a[1])], u2 = [Math.sign(b[0] - c[0]), Math.sign(b[1] - c[1])];
+    d += " L" + (c[0] - u1[0] * r) + " " + (c[1] - u1[1] * r) + " Q" + c[0] + " " + c[1] + " " + (c[0] + u2[0] * r) + " " + (c[1] + u2[1] * r);
+  }
+  var last = pts[pts.length - 1];
+  return d + " L" + last[0] + " " + last[1];
+}
+
+// ---------- drag ----------
+function makeDraggable(g, id, isBox) {
+  var start = null, moved = false;
+  g.addEventListener("pointerdown", function (ev) {
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if (act || ev.button > 0) return;
+    if (isBox && ev.target !== g.firstChild && ev.target.tagName !== "text") return;
+    ev.stopPropagation();
+    var b = abs.get(id);
+    start = { mx: ev.clientX, my: ev.clientY, x: b.x, y: b.y }; moved = false;
+    try { g.setPointerCapture(ev.pointerId); } catch (e) { /* not capturable */ }
+    g.classList.add("dragging");
+  });
+  g.addEventListener("pointermove", function (ev) {
+    if (!start) return;
+    var dx = (ev.clientX - start.mx) / state.zoom, dy = (ev.clientY - start.my) / state.zoom;
+    if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+    if (moved) g.setAttribute("transform", "translate(" + dx + " " + dy + ")");
+  });
+  function end(ev) {
+    if (!start) return;
+    var dx = (ev.clientX - start.mx) / state.zoom, dy = (ev.clientY - start.my) / state.zoom;
+    g.classList.remove("dragging");
+    var s = start; start = null;
+    if (!moved) { select(id); return; }
+    var parent = byId.get(id).p;
+    if (parent && state.expanded.has(parent)) {
+      var pb = abs.get(parent);
+      state.pos[id] = { x: Math.round(Math.max(PAD / 2, s.x + dx - pb.x)), y: Math.round(Math.max(HEAD, s.y + dy - pb.y)) };
+    } else state.pos[id] = { x: Math.round(Math.max(0, s.x + dx)), y: Math.round(Math.max(0, s.y + dy)) };
+    persist(); draw();
+  }
+  g.addEventListener("pointerup", end);
+  g.addEventListener("pointercancel", function () { start = null; g.classList.remove("dragging"); g.removeAttribute("transform"); });
+}
+
+// ---------- side panel: findings ----------
+var SOURCE_NOTE = { existing: "already there, not caused by this plan" };
+function severityClass(f) { return f.severity === "error" ? "bad" : f.code === "existing-violation" ? "bad" : "warn"; }
+function importLine(i) { return i.fromFile + " → " + i.toFile + (i.line ? " (line " + i.line + ")" : "") + (i.typeOnly ? " · type only" : ""); }
+function importsList(list) { var ul = h("ul", "imports"); list.forEach(function (i) { ul.appendChild(h("li", "", importLine(i))); }); return ul; }
+/** Explanations seen in the current panel: repeats of a finding type are folded. */
+var shownCodes = new Set();
+function explanationParts(card, ex, opts) {
+  if (!opts || !opts.noWhat) card.appendChild(richP("", ex.what));
+  var code = opts && opts.code;
+  var target = card;
+  if (code && shownCodes.has(code)) {
+    target = h("details", "why");
+    target.appendChild(h("summary", "", "Why it matters, how to fix it"));
+    target.addEventListener("click", function (ev) { ev.stopPropagation(); });
+    card.appendChild(target);
+  }
+  if (code) shownCodes.add(code);
+  if (ex.why) target.appendChild(richP("fix", ex.why));
+  if (ex.fixes.length) {
+    var p = h("p", "fix"); add(p, h("b", "", "Ways to fix it:")); target.appendChild(p);
+    var ul = h("ul", "fixes");
+    ex.fixes.forEach(function (fx) { var li = rich(h("li"), fx.text); if (fx.signoff) li.appendChild(h("span", "need", "needs a decision")); ul.appendChild(li); });
+    target.appendChild(ul);
+  }
+}
+function findingCard(f) {
+  var c = h("div", "card");
+  c.setAttribute("data-finding", f.index);
+  if (state.focus && state.focus.key === "f" + f.index) c.classList.add("focus");
+  c.appendChild(h("div", "kind " + severityClass(f), f.explanation.title + (SOURCE_NOTE[f.source] ? " · " + SOURCE_NOTE[f.source] : "")));
+  var d = f.details || {};
+  c.appendChild(richP("", f.explanation.what));
+  if (d.cycleEdges && d.cycle) {
+    var ul = h("ul", "imports");
+    d.cycle.forEach(function (u, i) {
+      var next = d.cycle[(i + 1) % d.cycle.length];
+      var li = h("li", "", arrow(u, next) + (d.cycleEdges[i] && d.cycleEdges[i].length ? ": " + d.cycleEdges[i].map(function (x) { return arrow(x.from, x.to); }).join(", ") : " (planned)"));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+  } else if (d.imports && d.imports.length && f.code !== "entry-point-bypass") {
+    var det = h("details"); det.appendChild(h("summary", "", plural(d.imports.length, "import") + " behind it"));
+    det.appendChild(importsList(d.imports)); det.addEventListener("click", function (ev) { ev.stopPropagation(); });
+    c.appendChild(det);
+  }
+  explanationParts(c, f.explanation, { noWhat: true, code: f.code === "introduced-violation" ? "existing-violation" : f.code });
+  activate(c, function () { focusOn("f" + f.index, f.units, f.edges); });
+  return c;
+}
+/** Bypasses grouped by the unit whose entry points they skip: one card per unit. */
+function bypassCards(list) {
+  var groups = new Map();
+  list.forEach(function (f) { var u = (f.details && f.details.unit) || "?"; if (!groups.has(u)) groups.set(u, []); groups.get(u).push(f); });
+  var out = [];
+  groups.forEach(function (fs, u) {
+    var c = h("div", "card");
+    var key = "b" + u;
+    if (state.focus && state.focus.key === key) c.classList.add("focus");
+    var errors = fs.some(function (f) { return f.severity === "error"; });
+    c.appendChild(h("div", "kind " + (errors ? "bad" : "warn"), fs[0].explanation.title + " · " + fs.length));
+    var entries = (fs[0].details.entryPoints || []).map(function (e) { return e.split("/").pop(); });
+    rich(c.appendChild(h("p")), "Into **" + u + "**" + (entries.length ? ", whose public files are " + entries.map(function (e) { return "\x60" + e + "\x60"; }).join(", ") : "") + ":");
+    var ul = h("ul", "imports");
+    fs.forEach(function (f) { (f.details.imports || []).forEach(function (i) { ul.appendChild(h("li", "", importLine(i))); }); });
+    c.appendChild(ul);
+    var ex = fs[0].explanation;
+    explanationParts(c, { what: "", why: ex.why, fixes: ex.fixes }, { noWhat: true, code: "entry-point-bypass" });
+    var unitsAll = [], edgesAll = [];
+    fs.forEach(function (f) { unitsAll = unitsAll.concat(f.units); edgesAll = edgesAll.concat(f.edges); });
+    activate(c, function () { focusOn(key, unitsAll, edgesAll); });
+    out.push(c);
+  });
+  return out;
+}
+function findingsSection(parent, list, emptyText) {
+  var bypass = [], gaps = [], drift = [], main = [];
+  list.forEach(function (f) {
+    if (f.code === "entry-point-bypass") bypass.push(f);
+    else if (f.code === "unit-without-rules" || f.code === "unmapped-rule") gaps.push(f);
+    else if (f.code === "undeclared-change") drift.push(f);
+    else main.push(f);
+  });
+  main.forEach(function (f) { parent.appendChild(findingCard(f)); });
+  bypassCards(bypass).forEach(function (c) { parent.appendChild(c); });
+  if (drift.length) {
+    var dd = h("details", "fold"); dd.open = true;
+    dd.appendChild(h("summary", "", "Changes since " + (D.baseline || "the last record") + " that no record covers (" + drift.length + ")"));
+    drift.forEach(function (f) { dd.appendChild(findingCard(f)); });
+    parent.appendChild(dd);
+  }
+  if (gaps.length) {
+    var gd = h("details", "fold");
+    gd.appendChild(h("summary", "", "Not checked: parts without rules, and rules the map can't read (" + gaps.length + ")"));
+    gaps.forEach(function (f) { gd.appendChild(findingCard(f)); });
+    parent.appendChild(gd);
+  }
+  if (!list.length && emptyText) parent.appendChild(h("p", "hint", emptyText));
+}
+
+// ---------- side panel: views ----------
+function drawSide() {
+  side.textContent = "";
+  shownCodes = new Set();
+  if (state.file && state.file.from !== sideKey()) state.file = null;
+  if (state.file) return drawFile(state.file.path);
+  if (state.selected) return drawUnit(state.selected);
+  if (MODE === "audit") return drawAudit();
+  return drawStory();
+}
+function drawAudit() {
+  add(side, h("h2", "", "What this map shows"),
+    h("p", "hint", "Each box is a part of the app: a folder with its own job and its own rules. An arrow from one part to another means it uses code from there. Only uses that break the rules are drawn; click a box to see everything it uses and everything that uses it, or switch to “Uses: all”. Drag boxes to rearrange; the layout is kept in this browser, and “Export layout” saves it for everyone."),
+    h("h3", "", "From the check (" + findings.length + ")"));
+  findingsSection(side, findings, "No findings.");
+}
+function statusChip(s) {
+  var text = { approved: "approved", rejected: "rejected", "changes-requested": "changes requested", stale: "changed since your answer", unanswered: "waiting for your answer" }[s.status || "unanswered"];
+  return h("span", "status " + (s.status || "unanswered"), text);
+}
+var REV_TEXT = { added: "new this round", changed: "changed", reworded: "reason reworded", removed: "removed" };
+function itemCard(it) {
+  var c = h("div", "card" + (it.rev === "removed" ? " removed" : ""));
+  c.setAttribute("data-key", it.key);
+  var key = "i" + it.key;
+  if (state.focus && state.focus.key === key) c.classList.add("focus");
+  var k = add(h("div", "kind new", it.kindLabel));
+  if (it.amendment) k.title = "Added later (" + it.amendment + ")";
+  if (it.rev) k.appendChild(h("span", "rev", REV_TEXT[it.rev]));
+  c.appendChild(k);
+  add(c.appendChild(h("p")), h("b", "", it.subject));
+  if (it.previousSubject) c.appendChild(h("p", "hint", "was: " + it.previousSubject));
+  if (it.reason) c.appendChild(h("p", "hint", it.reason));
+  if (it.previousReason) c.appendChild(h("p", "hint", "reason was: " + it.previousReason));
+  it.findings.forEach(function (i) {
+    var f = findings[i];
+    var box = h("div", f.severity === "error" ? "errbox" : "warnbox");
+    add(box, h("b", "", f.explanation.title + ": "));
+    rich(box, f.explanation.what);
+    c.appendChild(box);
+  });
+  if (FINAL || it.status || PLAN) c.appendChild(statusChip(it));
+  if (it.implemented) c.appendChild(h("span", "status", "built: " + { yes: "yes", no: "no", "not-verifiable": "not verifiable" }[it.implemented]));
+  if (it.comment) c.appendChild(h("p", "hint", "“" + it.comment + "”"));
+  activate(c, function () { focusOn(key, it.units, it.edges); });
+  return c;
+}
+// ---------- side panel: overview and change list (plan, final) ----------
+var DECISION_TEXT = { approved: "✓ you approved this", waiting: "waiting for your answer", rejected: "you rejected this", "changes-requested": "you asked for changes", none: "no decision needed" };
+var RESULT_TEXT = { done: "✓ done", missing: "missing", unplanned: "added without a plan", "not-checkable": "can't be checked automatically" };
+function decisionChip(c) { return h("span", "dec " + c.decision, DECISION_TEXT[c.decision]); }
+function resultChip(c) { return c.result ? h("span", "dec " + c.result, RESULT_TEXT[c.result]) : null; }
+function kindClass(c) { return c.kind === "part-new" || c.kind === "use-new" || c.kind === "use-expected" ? "new" : c.kind === "use-gone" ? "gone" : c.kind === "move" ? "move" : c.kind === "unplanned" ? "bad" : ""; }
+function shortFile(f) { return f.replace(/^src\//, ""); }
+function changeOn(c) { return !!(state.focus && state.focus.key === "c" + c.n); }
+function stepText(c) { return c.step !== null ? "step " + (c.step + 1) : c.amendment ? "added during the work (" + c.amendment + ")" : ""; }
+/** Focuses a change on the map and shows it in the change list. */
+function focusChange(n, scroll) {
+  var c = byN.get(n); if (!c) return;
+  state.panel = "changes";
+  focusOn("c" + n, c.units, c.edges);
+  if (scroll) {
+    var card = side.querySelector('.chrow[data-n="' + n + '"]');
+    if (card && card.scrollIntoView) card.scrollIntoView({ block: "nearest" });
+  }
+}
+/** Selects a change on the Changes tab (again: clears it). */
+function selectRow(n) {
+  var c = byN.get(n); if (!c) return;
+  if (state.focus && state.focus.key === "c" + n) state.focus = null;
+  else state.focus = { key: "c" + n, units: new Set(c.units.filter(function (u) { return byId.has(u); }).map(visibleOf)), edges: new Set(c.edges) };
+  state.selected = null;
+  draw();
+}
+/** Focuses a step: its units, and the planned uses (new, expected, going away) between them. */
+function focusStep(i) {
+  var st = STORY.steps[i], set = new Set(st.units), keys = [];
+  st.changes.forEach(function (n) { keys = keys.concat(byN.get(n).edges); });
+  edges.forEach(function (e) { if ((e.planned || e.removed) && set.has(e.from) && set.has(e.to)) keys.push(e.key); });
+  focusOn("s" + i, st.units, keys);
+}
+function stepChanges(i) { return new Set(STORY && STORY.steps[i] ? STORY.steps[i].changes : []); }
+
+function drawStory() {
+  if (state.view === "changes") {
+    var on = state.focus && state.focus.key.charAt(0) === "c" ? byN.get(Number(state.focus.key.slice(1))) : null;
+    if (on) {
+      var back = h("button", "back", "← Overview"); back.type = "button";
+      back.addEventListener("click", function () { state.focus = null; draw(); });
+      var go = h("button", "back", "Show on map"); go.type = "button";
+      go.addEventListener("click", function () { var n = on.n; state.focus = null; focusChange(n, true); });
+      add(side, add(h("div", "backs"), back, go), changeCard(on));
+    } else drawOverview();
+    return;
+  }
+  var tabs = h("div", "ptabs");
+  [["overview", "Overview"], ["changes", "All changes (" + CHANGES.length + ")"]].forEach(function (t) {
+    var b = h("button", state.panel === t[0] ? "on" : "", t[1]);
+    b.type = "button"; b.setAttribute("data-p", t[0]);
+    b.addEventListener("click", function () { state.panel = t[0]; drawSide(); });
+    tabs.appendChild(b);
+  });
+  side.appendChild(tabs);
+  if (state.panel === "changes") drawChangeList(); else drawOverview();
+}
+
+function drawOverview() {
+  var errors = findings.filter(function (f) { return f.source === "check" && f.severity === "error"; });
+  if (D.blocked) {
+    side.appendChild(h("h3", "", "Fix these first (" + errors.length + ")"));
+    side.appendChild(h("p", "hint", "The check found problems in the plan. They have to be fixed before you are asked anything."));
+    findingsSection(side, errors);
+  }
+  side.appendChild(h("h2", "", D.title));
+  if (STORY && STORY.summary) side.appendChild(h("p", "lead", STORY.summary));
+  if (STORY && STORY.why) add(side, h("h3", "", "Why"), h("p", "prose", STORY.why));
+
+  // Steps
+  var steps = STORY ? STORY.steps : [];
+  side.appendChild(h("h3", "", "Step by step"));
+  if (steps.length) side.appendChild(h("p", "hint", "Click a step to see it on the map."));
+  else side.appendChild(h("p", "hint", "The plan has no step-by-step description."));
+  steps.forEach(function (st, i) {
+    var c = h("div", "step" + (state.focus && state.focus.key === "s" + i ? " on" : ""));
+    c.setAttribute("data-step", i);
+    add(c, h("div", "num", i + 1), h("h4", "", st.title), h("p", "", st.text));
+    if (st.before.length || st.after.length) {
+      var ba = h("div", "ba");
+      if (st.before.length) add(ba, h("span", "l", "Today"), h("span", "b", st.before.join(", ")));
+      if (st.after.length) add(ba, h("span", "l", "After"), h("span", "a", st.after.join(", ")));
+      c.appendChild(ba);
+    }
+    if (FINAL) {
+      var missing = st.changes.filter(function (n) { return byN.get(n).result === "missing"; }).length;
+      c.appendChild(h("span", "dec sres " + (missing ? "missing" : "done"), missing ? missing + " missing" : "✓ all done"));
+    }
+    activate(c, function () { focusStep(i); });
+    side.appendChild(c);
+  });
+
+  // Decisions
+  var decide = CHANGES.filter(function (c) { return c.decision !== "none"; });
+  side.appendChild(h("h3", "", (FINAL ? "What you decided (" : "What you decide (") + decide.length + ")"));
+  if (!decide.length) side.appendChild(h("p", "hint", "Nothing to decide: this plan changes nothing that needs your decision."));
+  else if (!FINAL) side.appendChild(h("p", "hint", "Claude asks you once in the chat whether you approve all of them. Click one to see it on the map."));
+  decide.forEach(function (ch) { side.appendChild(decisionCard(ch)); });
+
+  // No decision needed
+  var none = CHANGES.filter(function (c) { return c.decision === "none" && c.kind !== "unplanned"; });
+  if (none.length) {
+    side.appendChild(h("h3", "", "No decision needed (" + none.length + ")"));
+    side.appendChild(changeLines(none, function (c) { return c.noDecisionWhy; }));
+  }
+  var unplanned = CHANGES.filter(function (c) { return c.kind === "unplanned"; });
+  if (unplanned.length) {
+    side.appendChild(h("h3", "", "Added without a plan (" + unplanned.length + ")"));
+    side.appendChild(changeLines(unplanned, function (c) { return c.note || ""; }));
+  }
+  if (STORY && STORY.unchanged) add(side, h("h3", "", "What stays the same"), h("p", "prose", STORY.unchanged));
+
+  // Check findings not shown yet
+  var attached = new Set([].concat.apply([], (D.signoff || []).map(function (i) { return i.findings; })));
+  var other = findings.filter(function (f) { return f.source === "check" && !attached.has(f.index) && !(D.blocked && f.severity === "error"); });
+  if (other.length) { side.appendChild(h("h3", "", (FINAL ? "From the check after the work (" : "Notes from the check (") + other.length + ")")); findingsSection(side, other); }
+  var existing = findings.filter(function (f) { return f.source === "existing"; });
+  if (existing.length) {
+    var d = h("details", "fold existing");
+    d.appendChild(h("summary", "", "Problems that were already there, not caused by this plan (" + existing.length + ")"));
+    findingsSection(d, existing);
+    side.appendChild(d);
+  }
+  if (FINAL && D.results) side.appendChild(finalDetails());
+  side.appendChild(glossary());
+}
+
+/** A grouped change's items: what each one is, its sentence and reason, and its own state where it differs. */
+function partsList(ch, opts) {
+  if (!ch.parts || !ch.parts.length) return null;
+  var ul = h("ul", "parts");
+  ch.parts.forEach(function (p) {
+    var li = h("li");
+    li.title = p.itemKey;
+    li.appendChild(h("b", "", p.title));
+    if (p.plain) li.appendChild(h("div", "", p.plain));
+    if (p.why && !(opts && opts.noWhy)) li.appendChild(h("div", "hint", "Why: " + p.why));
+    var chips = [];
+    if (p.decision !== ch.decision) chips.push(decisionChip(p));
+    if (p.result && p.result !== ch.result) chips.push(resultChip(p));
+    if (chips.length) { var row = h("div"); chips.forEach(function (c, i) { if (i) row.appendChild(document.createTextNode(" ")); row.appendChild(c); }); li.appendChild(row); }
+    if (p.note) li.appendChild(h("div", "hint", p.note));
+    add(li, reasonsBlock(p.missing));
+    ul.appendChild(li);
+  });
+  return ul;
+}
+function decisionCard(ch) {
+  var c = h("div", "card" + (changeOn(ch) ? " focus" : ""));
+  c.setAttribute("data-change", ch.n);
+  if (ch.itemKey) c.title = ch.itemKey;
+  c.appendChild(h("div", "kind new", ch.n + " · " + ch.label));
+  add(c.appendChild(h("p")), h("b", "", ch.title));
+  if (ch.plain && !ch.parts) c.appendChild(h("p", "", ch.plain));
+  if (ch.why) c.appendChild(h("p", "hint", "Why: " + ch.why));
+  add(c, partsList(ch));
+  var it = ch.itemKey && sigByKey.get(ch.itemKey);
+  if (it) it.findings.forEach(function (i) {
+    var f = findings[i];
+    var box = h("div", f.severity === "error" ? "errbox" : "warnbox");
+    add(box, h("b", "", f.explanation.title + ": "));
+    rich(box, f.explanation.what);
+    c.appendChild(box);
+  });
+  if (it && it.comment) c.appendChild(h("p", "hint", "Your comment: “" + it.comment + "”"));
+  if (!ch.parts) add(c, reasonsBlock(ch.missing));
+  add(c, decisionChip(ch), document.createTextNode(" "), resultChip(ch));
+  activate(c, function () { focusOn("c" + ch.n, ch.units, ch.edges); });
+  return c;
+}
+
+function changeLines(list, reason) {
+  var ul = h("ul", "nod");
+  list.forEach(function (ch) {
+    var li = h("li", changeOn(ch) ? "on" : "");
+    li.setAttribute("data-change", ch.n);
+    add(li, h("span", "nb", ch.n), document.createTextNode(ch.title));
+    var r = reason(ch);
+    var line = h("span", "r", r);
+    if (ch.result) { line.appendChild(document.createTextNode(r ? " " : "")); line.appendChild(resultChip(ch)); }
+    li.appendChild(line);
+    add(li, reasonsBlock(ch.missing));
+    activate(li, function () { focusOn("c" + ch.n, ch.units, ch.edges); });
+    ul.appendChild(li);
+  });
+  return ul;
+}
+
+function glossary() {
+  var d = h("details", "fold");
+  d.appendChild(h("summary", "", "Words used on this map"));
+  var dl = h("dl", "gloss");
+  [["Part", "A folder of the app with its own job and its own rules (on the map: a box)."],
+    ["Uses", "Part A uses code from part B (on the map: an arrow from A to B)."],
+    ["Loop", "Parts that use each other in a loop. Hard to change one without the other."],
+    ["Rules", "Which part may use which. They are checked automatically."]].forEach(function (g) { add(dl, h("dt", "", g[0]), h("dd", "", g[1])); });
+  d.appendChild(dl);
+  return d;
+}
+
+/** Why a missing change is missing: what change-map found (a fact), and Claude's explanation (a claim). */
+function reasonsBlock(list) {
+  if (!list || !list.length) return null;
+  var box = h("div", "reasons");
+  list.forEach(function (r) {
+    if (r.found) { var p = h("p", "found"); add(p, h("b", "", "What change-map found: "), document.createTextNode(r.found)); box.appendChild(p); }
+    if (r.explanation) { var q = h("blockquote", "claude"); add(q, h("b", "", "Claude's explanation: "), document.createTextNode(r.explanation)); box.appendChild(q); }
+  });
+  return box;
+}
+function changeCard(ch) {
+  var d = h("div", "chrow" + (changeOn(ch) ? " on" : ""));
+  d.setAttribute("data-n", ch.n);
+  if (ch.itemKey) d.title = ch.itemKey;
+  d.appendChild(h("div", "num", ch.n));
+  d.appendChild(h("div", "k " + kindClass(ch), ch.label + (stepText(ch) ? " · " + stepText(ch) : "")));
+  d.appendChild(h("h4", "", ch.title));
+  if (ch.plain && !ch.parts) d.appendChild(h("p", "", ch.plain));
+  if (ch.why) { var w = h("p", "why"); add(w, h("b", "", "Why: "), document.createTextNode(ch.why)); d.appendChild(w); }
+  else if (ch.noDecisionWhy) d.appendChild(h("p", "why", ch.noDecisionWhy));
+  if (ch.note) d.appendChild(h("p", "why", ch.note));
+  add(d, partsList(ch));
+  if (!ch.parts) add(d, reasonsBlock(ch.missing));
+  var row = h("div", "row2");
+  var chips = h("span");
+  if (ch.kind !== "unplanned") chips.appendChild(decisionChip(ch));
+  if (ch.result) { chips.appendChild(document.createTextNode(" ")); chips.appendChild(resultChip(ch)); }
+  row.appendChild(chips);
+  if (ch.files.length) {
+    var det = h("details");
+    det.appendChild(h("summary", "", plural(ch.files.length, "file")));
+    var ul = h("ul");
+    ch.files.forEach(function (f) { var li = h("li"); li.appendChild(h("code", "", shortFile(f))); ul.appendChild(li); });
+    det.appendChild(ul);
+    det.addEventListener("click", function (ev) { ev.stopPropagation(); });
+    row.appendChild(det);
+  }
+  d.appendChild(row);
+  activate(d, function () { focusChange(ch.n); });
+  return d;
+}
+
+function drawChangeList() {
+  side.appendChild(h("p", "hint", "Every change in this plan. The numbers are also on the map: click one there, or a card here."));
+  add(side, filterBar());
+  if (!CHANGES.length) side.appendChild(h("p", "hint", "The plan lists no changes."));
+  shownChanges().forEach(function (ch) { side.appendChild(changeCard(ch)); });
+}
+
+// ---------- changes tab: the same list as a table ----------
+function drawChangeTable() {
+  var wrap = h("div", "ctable");
+  wrap.appendChild(h("p", "hint", "All changes of this plan in one table. Click a row to see it on the map."));
+  add(wrap, filterBar());
+  var table = h("table"), thead = h("thead"), tr = h("tr");
+  // Fixed narrow columns for #, step, result and files; change and why share the rest.
+  var cg = h("colgroup");
+  ["c-n", "c-what", "c-why", "c-step", "c-res", "c-files"].forEach(function (c) { cg.appendChild(h("col", c)); });
+  table.appendChild(cg);
+  ["#", "Change", "Why", "Step", FINAL ? "Result" : "Your decision", "Files"].forEach(function (t) { tr.appendChild(h("th", "", t)); });
+  thead.appendChild(tr); table.appendChild(thead);
+  var tbody = h("tbody");
+  shownChanges().forEach(function (ch) {
+    var row = h("tr", changeOn(ch) ? "on" : "");
+    row.setAttribute("data-n", ch.n);
+    if (ch.itemKey) row.title = ch.itemKey;
+    var no = h("td"); no.appendChild(h("span", "no", ch.n)); row.appendChild(no);
+    var what = h("td");
+    if (ch.title.indexOf(ch.label) !== 0) what.appendChild(h("div", "sub", ch.label));
+    what.appendChild(h("b", "", ch.title));
+    if (ch.plain && !ch.parts) what.appendChild(h("div", "", ch.plain));
+    add(what, partsList(ch, { noWhy: true }));
+    if (!ch.parts) add(what, reasonsBlock(ch.missing));
+    row.appendChild(what);
+    var whyCell = h("td", "why", ch.why || ch.noDecisionWhy || ch.note || "");
+    if (ch.parts && !ch.why) ch.parts.forEach(function (p) { if (p.why) { var w = h("div"); add(w, h("b", "", p.title.replace(/ \(.*\)$/, "") + ": "), document.createTextNode(p.why)); whyCell.appendChild(w); } });
+    row.appendChild(whyCell);
+    var st = STORY && ch.step !== null ? STORY.steps[ch.step] : null;
+    row.appendChild(h("td", "step", st ? ch.step + 1 + ". " + st.title : ch.amendment ? "added during the work (" + ch.amendment + ")" : "–"));
+    var dec = h("td");
+    if (ch.kind !== "unplanned") dec.appendChild(decisionChip(ch));
+    if (ch.result) { dec.appendChild(document.createTextNode(" ")); dec.appendChild(resultChip(ch)); }
+    row.appendChild(dec);
+    var files = h("td", "files");
+    if (!ch.files.length) files.textContent = "–";
+    // Paths break after a slash, never inside a name.
+    ch.files.forEach(function (f) {
+      var line = h("div");
+      shortFile(f).split("/").forEach(function (part, i) { if (i) { line.appendChild(document.createTextNode("/")); line.appendChild(document.createElement("wbr")); } line.appendChild(document.createTextNode(part)); });
+      files.appendChild(line);
+    });
+    row.appendChild(files);
+    // On this tab a click selects the row: the side panel shows it, "Show on map" goes to the map.
+    activate(row, function () { selectRow(ch.n); });
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody); wrap.appendChild(table);
+  if (!CHANGES.length) wrap.appendChild(h("p", "hint", "The plan lists no changes."));
+  stage.appendChild(wrap);
+}
+
+// ---------- number badges on the map ----------
+function drawBadges(layer) {
+  var paths = Array.prototype.slice.call(svg.querySelectorAll("path.edge")).filter(function (p) { return !p.classList.contains("hidden"); });
+  var fk = state.focus && state.focus.key, inStep = fk && fk.charAt(0) === "s" ? stepChanges(Number(fk.slice(1))) : null;
+  // Badges never sit on a box (or a container's title) or on another badge.
+  var R = 12, blocks = [], placed = [];
+  abs.forEach(function (b, id) {
+    if (isContainer(id) && state.expanded.has(id)) blocks.push({ x: b.x, y: b.y, w: b.w, h: HEAD });
+    else blocks.push({ x: b.x, y: b.y - 9, w: b.w, h: b.h + 9 });
+  });
+  function free(x, y) {
+    for (var i = 0; i < blocks.length; i++) {
+      var r = blocks[i], cx = Math.max(r.x, Math.min(x, r.x + r.w)), cy = Math.max(r.y, Math.min(y, r.y + r.h));
+      if ((x - cx) * (x - cx) + (y - cy) * (y - cy) < R * R) return false;
+    }
+    for (var j = 0; j < placed.length; j++) if (Math.abs(placed[j][0] - x) < 2 * R && Math.abs(placed[j][1] - y) < 2 * R) return false;
+    return true;
+  }
+  function firstFree(cands) { for (var i = 0; i < cands.length; i++) if (free(cands[i][0], cands[i][1])) return cands[i]; return null; }
+  /** Spots along a drawn edge: its segments, longest first, each at the middle, then nearer the ends. */
+  function edgeSpots(p) {
+    var raw = p.getAttribute("data-pts");
+    if (!raw) {
+      if (!p.getTotalLength) return [];
+      var L = p.getTotalLength();
+      return [0.5, 0.35, 0.65, 0.2, 0.8].map(function (t) { var q = p.getPointAtLength(L * t); return [q.x, q.y]; });
+    }
+    var pts = raw.split(" ").map(function (t) { return t.split(",").map(Number); });
+    var segs = [];
+    for (var i = 1; i < pts.length; i++) segs.push({ a: pts[i - 1], b: pts[i], len: Math.abs(pts[i][0] - pts[i - 1][0]) + Math.abs(pts[i][1] - pts[i - 1][1]), i: i });
+    segs.sort(function (x, y) { return y.len - x.len || x.i - y.i; });
+    var out = [];
+    segs.forEach(function (sg) { [0.5, 0.3, 0.7, 0.15, 0.85].forEach(function (t) { out.push([sg.a[0] + (sg.b[0] - sg.a[0]) * t, sg.a[1] + (sg.b[1] - sg.a[1]) * t]); }); });
+    return out;
+  }
+  CHANGES.forEach(function (ch) {
+    var spot = null, fallback = null;
+    for (var k = 0; k < ch.edges.length && !spot; k++) {
+      var key = ch.edges[k];
+      var p = paths.filter(function (pp) { return (pp.getAttribute("data-raw") || "").split("|").indexOf(key) >= 0; })[0];
+      if (!p) continue;
+      var spots = edgeSpots(p);
+      if (spots.length && !fallback) fallback = spots[0];
+      spot = firstFree(spots);
+    }
+    var u = !spot ? ch.units.filter(function (id) { return byId.has(id); })[0] : null;
+    var b = u ? abs.get(visibleOf(u)) : null;
+    if (!spot && !b && !fallback) return;
+    if (!spot && b) {
+      var cands = [];
+      for (var n = 0; n < 6; n++) {
+        cands.push([b.x + b.w - 12 - n * 24, b.y + b.h + 14]);
+        cands.push([b.x + b.w + 14 + n * 24, b.y + b.h / 2]);
+        cands.push([b.x + 12 + n * 24, b.y + b.h + 14]);
+        cands.push([b.x + b.w - 12 - n * 24, b.y - 24]);
+      }
+      for (var m = 1; m < 4 && !spot; m++) cands.push([b.x + b.w - 12, b.y + b.h + 14 + m * 24]);
+      spot = firstFree(cands) || fallback || cands[0];
+    }
+    spot = spot || fallback;
+    placed.push(spot);
+    var x = spot[0], y = spot[1];
+    var cls = "badge-n" + (ch.result ? " " + ch.result : "") + (fk === "c" + ch.n ? " on" : "");
+    if (fk && fk !== "c" + ch.n && !(inStep && inStep.has(ch.n))) cls += " faded";
+    else if (!fk && state.filter && !state.filter.ns.has(ch.n)) cls += " faded";
+    var g = svgEl("g", { class: cls, "data-n": ch.n, role: "button", tabindex: 0, "aria-label": "Change " + ch.n + ": " + ch.title }, layer);
+    svgEl("circle", { cx: x, cy: y, r: 10 }, g);
+    var t = svgEl("text", { x: x, y: y + 4, "text-anchor": "middle" }, g); t.textContent = ch.n;
+    var tt = svgEl("title", {}, g); tt.textContent = ch.n + ". " + ch.title;
+    g.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
+    g.addEventListener("click", function (ev) { ev.stopPropagation(); focusChange(ch.n, true); });
+    g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); focusChange(ch.n, true); } });
+  });
+}
+
+// ---------- final mode: the detailed results ----------
+var STATUS_SIGN = { convergence: "=", divergence: "+", absence: "−" };
+var STATUS_TEXT = { convergence: "Done: planned and built", divergence: "Built without a plan", absence: "Missing: planned, not built" };
+function finalDetails() {
+  var r = D.results;
+  var wrap = h("details", "fold");
+  wrap.appendChild(h("summary", "", "Details: every planned element and decision"));
+  ["divergence", "absence", "convergence"].forEach(function (st) {
+    var list = r.elements.filter(function (e) { return e.status === st; });
+    if (!list.length) return;
+    wrap.appendChild(h("h3", "", STATUS_TEXT[st] + " (" + list.length + ")"));
+    var ul = h("ul", "results");
+    list.forEach(function (e, i) {
+      var key = "r" + st + i;
+      var li = h("li", state.focus && state.focus.key === key ? "focus" : "");
+      li.setAttribute("data-result", e.kind + ":" + e.id);
+      add(li, h("span", "fb " + st, STATUS_SIGN[st]), h("span", "", e.kindLabel.replace(/s$/, "") + " "), h("b", "", e.kind === "edge" ? e.id.replace("->", " → ") : e.id));
+      if (e.amendment) li.title = "Added later (" + e.amendment + ")";
+      if (e.note) li.appendChild(h("span", "note", e.note));
+      add(li, reasonsBlock(e.found || e.explanation ? [{ found: e.found, explanation: e.explanation }] : null));
+      activate(li, function () { focusOn(key, e.units, e.edges); });
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+  });
+  var items = D.signoff || [];
+  if (items.length) { wrap.appendChild(h("h3", "", "Decisions (" + items.length + ")")); items.forEach(function (it) { wrap.appendChild(itemCard(it)); }); }
+  return wrap;
+}
+function drawUnit(id) {
+  var u = byId.get(id);
+  var head = add(h("h2", "", id));
+  if (u.mark) head.appendChild(document.createTextNode(" "));
+  if (u.mark) head.appendChild(h("span", "pill " + (u.mark === "absent" ? "" : u.mark === "divergent" ? "danger" : "ok"), { new: "new part", renamed: "renamed", absent: "missing", divergent: "without a plan" }[u.mark]));
+  side.appendChild(head);
+  side.appendChild(h("div", "path", (u.path || id) + "/"));
+  if (u.renamedFrom) side.appendChild(h("p", "hint", "Renamed from " + u.renamedFrom + "."));
+  if (u.hasRules === false) side.appendChild(h("p", "hint", "No rules say what this part may use."));
+  var pf = D.files.filter(function (f) { return f.rev !== "removed" && inside(id, f.unit); });
+  if (pf.length) {
+    side.appendChild(h("h3", "", (FINAL ? "Files (" : "Planned changes (") + pf.length + ")"));
+    side.appendChild(fileList(pf, id));
+  }
+  var kids = children.get(id);
+  if (kids) side.appendChild(h("p", "hint", "Contains " + plural(kids.length, "part") + ": " + kids.map(label).join(", ") + "."));
+  if (FINAL) {
+    var miss = CHANGES.filter(function (ch) { return ch.result === "missing" && ch.units.some(function (x) { return inside(id, x); }); });
+    if (miss.length) {
+      side.appendChild(h("h3", "", "Missing here (" + miss.length + ")"));
+      side.appendChild(changeLines(miss, function (ch) { return ch.note || ""; }));
+    }
+  }
+  var outAgg = new Map(), inAgg = new Map();
+  function bump(map, k, e) {
+    var v = map.get(k);
+    if (!v) { v = { n: 0, bad: false, planned: false, removed: false, signoff: false, warn: false, status: null, imports: [] }; map.set(k, v); }
+    v.n += e.imports.length; v.bad = v.bad || isBad(e); v.planned = v.planned || !!e.planned; v.removed = v.removed || !!e.removed; v.signoff = v.signoff || e.planned === "signoff";
+    v.warn = v.warn || e.closesCycle; v.imports = v.imports.concat(e.imports);
+    if (e.status && (!v.status || ORDER.indexOf(e.status) < ORDER.indexOf(v.status))) v.status = e.status;
+  }
+  edges.forEach(function (e) {
+    if (inside(id, e.from) && !inside(id, e.to)) bump(outAgg, e.to, e);
+    if (inside(id, e.to) && !inside(id, e.from)) bump(inAgg, e.from, e);
+  });
+  side.appendChild(h("h3", "", "Uses (" + outAgg.size + ")")).style.color = "var(--uses)";
+  side.appendChild(depList(outAgg, "var(--uses)"));
+  side.appendChild(h("h3", "", "Used by (" + inAgg.size + ")")).style.color = "var(--usedby)";
+  side.appendChild(depList(inAgg, "var(--usedby)"));
+  var here = findings.filter(function (f) { return f.units.some(function (x) { return inside(id, x); }); });
+  here.sort(function (a, b) { return (a.source === "check" ? 0 : 1) - (b.source === "check" ? 0 : 1) || a.index - b.index; });
+  side.appendChild(h("h3", "", "From the check (" + here.length + ")"));
+  findingsSection(side, here, "Nothing from the check for this part.");
+  side.appendChild(h("p", "hint", "Click another unit in the lists or on the map. Click the empty canvas to clear the selection."));
+}
+function depList(agg, color) {
+  var ul = h("ul", "deps");
+  var list = Array.from(agg.entries()).sort(function (a, b) { return b[1].n - a[1].n || (a[0] < b[0] ? -1 : 1); });
+  if (!list.length) { ul.appendChild(h("li", "hint", "none")); return ul; }
+  list.forEach(function (entry) {
+    var k = entry[0], v = entry[1];
+    var li = h("li"); li.setAttribute("data-u", k);
+    var row = h("div", "row");
+    var name = h("span");
+    var dot = h("span", "dot"); dot.style.background = v.bad ? "var(--bad)" : v.status === "absence" ? "var(--absent)" : v.planned && !v.n ? "var(--new)" : color;
+    add(name, dot, document.createTextNode(k));
+    if (v.bad) add(name, document.createTextNode(" · "), h("b", "", "not allowed by the rules")).lastChild.style.color = "var(--bad)";
+    if (v.removed) add(name, document.createTextNode(" · "), h("b", "", FINAL ? "planned to go away" : "goes away")).lastChild.style.color = "var(--muted)";
+    if (v.planned) {
+      var t = v.warn ? "new link, creates a loop" : v.signoff ? "new link, needs your decision" : "new link, already allowed";
+      add(name, document.createTextNode(" · "), h("b", "", t)).lastChild.style.color = v.warn ? "var(--warn)" : "var(--new)";
+    }
+    if (v.status && v.status !== "convergence") add(name, document.createTextNode(" · "), h("b", "", v.status === "absence" ? "missing" : "without a plan")).lastChild.style.color = v.status === "absence" ? "var(--absent)" : "var(--bad)";
+    add(row, name, h("span", "n", v.n ? plural(v.n, "import") : "planned"));
+    activate(row, function () { select(k); });
+    li.appendChild(row);
+    if (v.imports.length) {
+      var det = h("details"); det.appendChild(h("summary", "", plural(new Set(v.imports.map(function (i) { return i.fromFile; })).size, "file")));
+      det.appendChild(importsList(v.imports)); li.appendChild(det);
+    }
+    ul.appendChild(li);
+  });
+  return ul;
+}
+var CHANGE_SIGN = { new: "+", changed: "~", deleted: "−", unplanned: "!" };
+function fileList(list, unit) {
+  var ul = h("ul", "planned");
+  list.forEach(function (f) {
+    var li = h("li");
+    li.setAttribute("data-change", f.change);
+    if (f.rev) li.setAttribute("data-rev", f.rev);
+    if (state.fileFilter !== "all" && !matchesFilter(f)) li.className = "hidden";
+    add(li, h("span", "fb " + f.change, CHANGE_SIGN[f.change]));
+    if (f.status) add(li, h("span", "fb " + f.status, STATUS_SIGN[f.status]));
+    add(li, h("span", "pf", unit && f.unit === unit ? f.name : f.path.replace(/^src\//, "")));
+    if (f.amendment) li.title = "Added later (" + f.amendment + ")";
+    if (f.rev) li.appendChild(h("span", "rev", REV_TEXT[f.rev]));
+    if (f.purpose) li.appendChild(h("div", "pp", f.purpose));
+    if (f.previous) li.appendChild(h("div", "pp", "was: " + f.previous.change + ", " + f.previous.purpose));
+    if (f.note) li.appendChild(h("div", "pp", f.note));
+    if (DIFFS && f.rev !== "removed") {
+      li.classList.add("opens");
+      li.title = (li.title ? li.title + ". " : "") + "Show the changes";
+      li.setAttribute("data-path", f.path);
+      activate(li, function () { state.file = { path: f.path, from: sideKey() }; drawSide(); side.scrollTop = 0; });
+    }
+    ul.appendChild(li);
+  });
+  return ul;
+}
+// ---------- a file's diff (final mode with diffs) ----------
+var DIFFS = FINAL && D.diffs ? D.diffs : null;
+/** What the side panel showed when a file was opened: closing the file returns to it; changing it closes the file. */
+function sideKey() { return state.view + "|" + (state.selected || ""); }
+var OMITTED_TEXT = { binary: "Binary file: git has no text diff to show.", lockfile: "Lockfile: left out, its diff is long and nobody reads it." };
+function shellPath(p) { return /^[\w.\/-]+$/.test(p) ? p : "'" + p.replace(/'/g, "'\\''") + "'"; }
+function diffCommand(path) {
+  var r = D.results;
+  var range = r.head === "working-tree" ? r.base.slice(0, 7) : r.base.slice(0, 7) + ".." + r.head.slice(0, 7);
+  return "git diff -M " + range + " -- " + shellPath(path);
+}
+function drawFile(path) {
+  var f = D.files.find(function (x) { return x.path === path && x.rev !== "removed"; }) || { path: path, name: path, change: "unplanned" };
+  var d = DIFFS[path];
+  var back = h("button", "back", "← " + (state.selected ? "Back to " + label(state.selected) : state.view === "files" ? "Back to the files" : "Back")); back.type = "button";
+  back.addEventListener("click", function () { state.file = null; drawSide(); });
+  var wide = h("button", "wide", wideLabel()); wide.type = "button";
+  wide.title = "Make the side panel wider to read the changes. You can also drag its left edge.";
+  wide.addEventListener("click", toggleWide);
+  side.appendChild(add(h("div", "backs"), back, wide));
+  side.appendChild(h("h2", "", path.slice(path.lastIndexOf("/") + 1)));
+  side.appendChild(h("div", "path", path));
+  var marks = add(h("p", "fmarks"), h("span", "fb " + f.change, CHANGE_SIGN[f.change]));
+  if (f.status) add(marks, h("span", "fb " + f.status, STATUS_SIGN[f.status]));
+  add(marks, h("span", "", f.change === "unplanned" ? "changed without a plan" : "planned: " + ({ new: "new", changed: "changed", deleted: "deleted" }[f.change] || f.change)));
+  if (d) add(marks, h("span", "dstat add", "+" + d.added), h("span", "dstat del", "−" + d.removed));
+  side.appendChild(marks);
+  if (f.purpose) side.appendChild(h("p", "hint", f.purpose));
+  if (f.note) side.appendChild(h("p", "hint", f.note));
+  if (d && d.renamedFrom) side.appendChild(h("p", "hint", "Renamed from " + d.renamedFrom + "."));
+  if (!d) {
+    side.appendChild(h("p", "hint", f.status === "absence" ? "Not changed in the work, so there is nothing to show." : "No changes recorded for this file."));
+    return;
+  }
+  if (d.omitted || d.text === undefined) {
+    side.appendChild(h("p", "hint", OMITTED_TEXT[d.omitted] || "Not shown."));
+    var cmd = add(h("p", "hint"), document.createTextNode("To see it: "), h("code", "", diffCommand(path)));
+    side.appendChild(cmd);
+    return;
+  }
+  if (!d.text) { side.appendChild(h("p", "hint", "Only the name or the file mode changed.")); return; }
+  side.appendChild(diffBlock(d.text));
+}
+/** The hunks as lines with old and new line numbers; text only (never parsed as HTML). */
+function diffBlock(text) {
+  var box = h("div", "diff");
+  box.setAttribute("role", "table");
+  box.setAttribute("aria-label", "Changes in this file");
+  var oldN = 0, newN = 0;
+  text.split("\n").forEach(function (line) {
+    var c = line.charAt(0), cls, a = "", b = "";
+    if (c === "@") {
+      var m = /^@@ -(\d+)(?:,\d+)? \+(\d+)/.exec(line);
+      if (m) { oldN = Number(m[1]); newN = Number(m[2]); }
+      cls = "hunk";
+    } else if (c === "+") { cls = "add"; b = newN++; }
+    else if (c === "-") { cls = "del"; a = oldN++; }
+    else if (c === "\\") cls = "meta";
+    else { cls = "ctx"; a = oldN++; b = newN++; }
+    var row = h("div", "dl " + cls);
+    row.setAttribute("role", "row");
+    add(row, h("span", "ln", a), h("span", "ln", b), h("span", "tx", line));
+    box.appendChild(row);
+  });
+  return box;
+}
+function matchesFilter(f) {
+  if (state.fileFilter === "rev") return !!f.rev;
+  return f.change === state.fileFilter;
+}
+
+// ---------- files tab ----------
+function drawFiles() {
+  var wrap = h("div", "files-view");
+  D.fileUnits.forEach(function (uid) {
+    var list = unitFiles.get(uid) || [];
+    var u = byId.get(uid);
+    var c = h("div", "fcard" + (u && u.mark === "new" ? " isnew" : u && u.mark === "absent" ? " isabsent" : ""));
+    c.setAttribute("data-unit", uid);
+    var title = h("h4", "", uid === "." ? "Project files" : uid);
+    c.appendChild(title);
+    var out = edges.filter(function (e) { return e.planned && e.from === uid; }).map(function (e) { return label(e.to); });
+    var inc = edges.filter(function (e) { return e.planned && e.to === uid; }).map(function (e) { return label(e.from); });
+    var meta = [u && u.mark === "new" ? "new part" : u && u.mark === "renamed" ? "renamed from " + u.renamedFrom : u && u.mark === "absent" ? "planned, missing" : uid === "." ? "project files" : "changes inside",
+      out.length ? "new link of " + out.join(", ") : "", inc.length ? "newly used by " + inc.join(", ") : ""].filter(Boolean).join(" · ");
+    c.appendChild(h("div", "fmeta", meta));
+    c.appendChild(fileList(list, uid));
+    if (list.every(function (f) { return state.fileFilter !== "all" && !matchesFilter(f); })) c.appendChild(h("div", "empty", "No files match the filter."));
+    if (uid !== "." && u) activate(title, function () { state.selected = uid; state.focus = null; setView("map"); });
+    wrap.appendChild(c);
+  });
+  if (!D.fileUnits.length) wrap.appendChild(h("p", "hint", "The plan lists no files."));
+  stage.appendChild(wrap);
+}
+
+// ---------- toolbar ----------
+function setView(v) {
+  state.view = v;
+  document.body.setAttribute("data-view", v);
+  document.querySelectorAll("#viewSeg button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-v") === v); });
+  var fs = document.getElementById("fileSeg"); if (fs) fs.hidden = v !== "files";
+  draw();
+}
+function seg(id, attr, fn) {
+  document.querySelectorAll("#" + id + " button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("#" + id + " button").forEach(function (x) { x.classList.toggle("on", x === b); });
+      fn(b.getAttribute(attr));
+    });
+  });
+}
+seg("viewSeg", "data-v", setView);
+seg("fileSeg", "data-f", function (f) { state.fileFilter = f; draw(); });
+seg("edgeSeg", "data-e", function (e) { state.edges = e; persist(); draw(); });
+document.querySelectorAll("#edgeSeg button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-e") === state.edges); });
+document.getElementById("expandAll").addEventListener("click", function () { units.forEach(function (u) { if (isContainer(u.id)) state.expanded.add(u.id); }); persist(); draw(); });
+document.getElementById("collapseAll").addEventListener("click", function () { state.expanded.clear(); persist(); draw(); });
+document.getElementById("resetLayout").addEventListener("click", function () {
+  state.pos = committed ? copyPos(committed.value.positions) : {};
+  state.expanded = defaultExpanded();
+  state.edges = (committed && committed.value.edges) || "focus";
+  document.querySelectorAll("#edgeSeg button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-e") === state.edges); });
+  saved = null;
+  try { localStorage.removeItem(KEY); } catch (e) { /* storage blocked */ }
+  draw();
+});
+document.getElementById("exportLayout").addEventListener("click", function () {
+  var positions = {};
+  Object.keys(state.pos).sort().forEach(function (k) { positions[k] = state.pos[k]; });
+  var data = { version: 1, positions: positions, expanded: Array.from(state.expanded).sort(), edges: state.edges };
+  var blob = new Blob([JSON.stringify(data, null, 2) + "\n"], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "change-map.layout.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+});
+
+// Theme: auto (system) -> light -> dark, remembered when storage is available.
+var THEMES = ["auto", "light", "dark"], theme = "auto";
+var themeBtn = document.getElementById("theme");
+try { theme = localStorage.getItem("change-map-theme") || "auto"; } catch (e) { theme = "auto"; }
+if (THEMES.indexOf(theme) < 0) theme = "auto";
+function applyTheme() {
+  if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme);
+  themeBtn.textContent = "Theme: " + theme;
+}
+themeBtn.addEventListener("click", function () {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  try { localStorage.setItem("change-map-theme", theme); } catch (e) { /* storage blocked */ }
+  applyTheme();
+});
+applyTheme();
+
+// Side panel width: drag the line between the map and the panel, or use the arrow keys.
+var SIDE_KEY = "change-map-side-w", SIDE_DEFAULT = 380, SIDE_MIN = 300, STAGE_MIN = 320;
+var mainEl = document.querySelector("main"), split = document.getElementById("split"), sideW = SIDE_DEFAULT;
+try { sideW = Number(localStorage.getItem(SIDE_KEY)) || SIDE_DEFAULT; } catch (e) { sideW = SIDE_DEFAULT; }
+/** The widest the panel may get: the map keeps at least STAGE_MIN pixels. */
+function sideMax() { return Math.max(SIDE_MIN, mainEl.clientWidth - 40 - 16 - STAGE_MIN); }
+function wideW() { return Math.max(SIDE_MIN, Math.round(mainEl.clientWidth * 0.6)); }
+function setSide(w, save) {
+  sideW = Math.round(Math.max(SIDE_MIN, Math.min(w, sideMax())));
+  mainEl.style.setProperty("--side-w", sideW + "px");
+  split.setAttribute("aria-valuenow", String(sideW));
+  split.setAttribute("aria-valuemin", String(SIDE_MIN));
+  split.setAttribute("aria-valuemax", String(sideMax()));
+  var wb = side.querySelector(".backs .wide"); if (wb) wb.textContent = wideLabel();
+  if (save) { try { localStorage.setItem(SIDE_KEY, String(sideW)); } catch (e) { /* storage blocked */ } }
+}
+function isWide() { return sideW >= wideW() - 10; }
+function wideLabel() { return isWide() ? "Narrower" : "Wider"; }
+function sideResized() { lastWidth = stage.clientWidth; if (state.view === "map") draw(); }
+split.addEventListener("pointerdown", function (ev) {
+  if (ev.button !== 0) return;
+  ev.preventDefault();
+  split.setPointerCapture(ev.pointerId);
+  document.body.classList.add("resizing");
+  var right = mainEl.getBoundingClientRect().right - 20;
+  function move(e) { setSide(right - e.clientX - 8, false); }
+  function up() {
+    split.removeEventListener("pointermove", move);
+    split.removeEventListener("pointerup", up);
+    split.removeEventListener("pointercancel", up);
+    document.body.classList.remove("resizing");
+    setSide(sideW, true); sideResized();
+  }
+  split.addEventListener("pointermove", move);
+  split.addEventListener("pointerup", up);
+  split.addEventListener("pointercancel", up);
+});
+split.addEventListener("dblclick", function () { setSide(SIDE_DEFAULT, true); sideResized(); });
+split.addEventListener("keydown", function (ev) {
+  var step = ev.shiftKey ? 120 : 40, w = null;
+  if (ev.key === "ArrowLeft") w = sideW + step;
+  else if (ev.key === "ArrowRight") w = sideW - step;
+  else if (ev.key === "Home") w = sideMax();
+  else if (ev.key === "End") w = SIDE_MIN;
+  if (w === null) return;
+  ev.preventDefault(); setSide(w, true); sideResized();
+});
+/** The diff's "Wider" button: toggles between the default width and about 60% of the page. */
+function toggleWide() { setSide(isWide() ? SIDE_DEFAULT : wideW(), true); sideResized(); }
+setSide(sideW, false);
+
+var pending = false, lastWidth = stage.clientWidth;
+window.addEventListener("resize", function () {
+  if (sideW > sideMax()) setSide(sideW, false);
+  if (pending || stage.clientWidth === lastWidth) return;
+  pending = true;
+  requestAnimationFrame(function () { pending = false; lastWidth = stage.clientWidth; if (state.view === "map") draw(); });
+});
+
+document.querySelectorAll("header .counter[data-pill]").forEach(function (b) {
+  b.addEventListener("click", function () { setFilter(Number(b.getAttribute("data-pill"))); });
+});
+document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && state.filter) setFilter(-1); });
+
+layout();
+if (window.innerWidth < 900) {
+  var wMax = 0; abs.forEach(function (b) { wMax = Math.max(wMax, b.x + b.w); });
+  if (wMax + 40 > stage.clientWidth) state.zoom = fitZoom(wMax + 40);
+}
+draw();
+})();
+</script>
+</body>
+</html>

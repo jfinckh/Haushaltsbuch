@@ -40,18 +40,21 @@ export function MoneyFlow({
   flow,
   account,
   categoryNames,
+  withYear = false,
 }: {
   flow: Flow;
   /** An account id or "all". */
   account: string;
   /** Names of own categories (the page's catalog). */
   categoryNames: Record<string, string>;
+  /** Name the year in the title too, e.g. when several months are compared. */
+  withYear?: boolean;
 }) {
   const t = useTranslations("app.statistics");
   const uncategorized = useTranslations("transactions.spending")("uncategorized");
   const categoryName = useCategoryName(categoryNames);
   const format = useFormatter();
-  const monthName = format.dateTime(new Date(`${flow.month}-01T00:00:00Z`), { month: "long", timeZone: "UTC" });
+  const monthName = format.dateTime(new Date(`${flow.month}-01T00:00:00Z`), { month: "long", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC" });
 
   const name = (node: Source | Target) => {
     if (node.kind === "category" || (node.kind === "income" && node.group !== null)) return categoryName(node.group!);

@@ -10,9 +10,12 @@ import { insights } from "@/app/_lib/insights";
 import { ALL_MINE, selectAccount } from "@/insights";
 import type { StatisticsComparison, StatisticsRow } from "@/insights/server";
 import { formatEuro } from "@/shared/money";
+import { CategoryCompare } from "./category-compare";
 import { CategoryTrends } from "./category-trends";
+import { chosenCompare, compareParams, shownMonths, statisticsHref } from "./compare-months";
+import { ComparePicker } from "./compare-picker";
 import { MoneyFlow } from "./money-flow";
-import { chosenMonth, MonthSwitcher } from "./month-switcher";
+import { chosenMonth, currentMonth, MonthSwitcher, shiftMonth, yearChoices } from "./month-switcher";
 import Link from "next/link";
 import { bookingsHref } from "@/app/_lib/bookings-href";
 import { ViewTabs } from "./view-tabs";
@@ -38,7 +41,8 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ? 
 
 /**
  * One month (?month=YYYY-MM, default: the current one) of one visible account (?account=<id>) or of
- * all own private accounts (?account=all), with the 12 months up to it.
+ * all own private accounts (?account=all), with the 12 months up to it. Up to two more months
+ * (?compare=YYYY-MM,YYYY-MM) are shown next to it in every section.
  */
 async function Statistics({ searchParams }: Props) {
   const { caller } = await requireCaller("/sign-in");
@@ -49,6 +53,7 @@ async function Statistics({ searchParams }: Props) {
   const selected = selectAccount(visibleAccounts, first(query.account));
   const selectedId = selected === ALL_MINE ? ALL_MINE : (selected?.id ?? "");
   const month = chosenMonth(first(query.month));
+  const compare = chosenCompare(first(query.compare), month, currentMonth());
   const t = await getTranslations("app.statistics");
 
   return (
@@ -57,9 +62,10 @@ async function Statistics({ searchParams }: Props) {
         {selected ? (
           <>
             <ViewTabs view="months" accountId={selectedId} />
-            <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/statistics" params={{ month }} />
-            <MonthSwitcher month={month} accountId={selectedId} />
-            <MonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} month={month} />
+            <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/statistics" params={{ month, ...compareParams(compare) }} />
+            <MonthSwitcher month={month} accountId={selectedId} compare={compare} />
+            <CompareBar month={month} compare={compare} accountId={selectedId} />
+            <MonthSeries caller={caller} accountId={selected === ALL_MINE ? null : selected.id} month={month} compare={compare} />
           </>
         ) : (
           <p className="opacity-70">{t("noAccounts")}</p>
@@ -68,31 +74,98 @@ async function Statistics({ searchParams }: Props) {
   );
 }
 
-/** accountId null: all of the caller's own private accounts together. */
-async function MonthSeries({ caller, accountId, month }: { caller: Caller; accountId: string | null; month: string }) {
+/** The compared months as chips and the lists to add one. */
+async function CompareBar({ month, compare, accountId }: { month: string; compare: string[]; accountId: string }) {
+  const t = await getTranslations("app.statistics");
+  const format = await getFormatter();
+  const current = currentMonth();
+  const shown = shownMonths(month, compare);
+  // Start the lists on the month before the oldest shown one.
+  const suggestion = shiftMonth(shown.at(-1)!, -1);
+  const name = (m: string) => format.dateTime(monthDate(m), { month: "long", year: "numeric", timeZone: "UTC" });
+  const monthNames = Array.from({ length: 12 }, (_, i) => format.dateTime(new Date(Date.UTC(2000, i, 1)), { month: "long", timeZone: "UTC" }));
+
+  return (
+    // A new choice starts the picker afresh, so its lists start on the new suggestion.
+    <ComparePicker
+      key={`${month}|${compare.join(",")}`}
+      account={accountId}
+      month={month}
+      compare={compare}
+      current={current}
+      suggestion={suggestion < "1970-01" ? "1970-01" : suggestion}
+      chips={compare.map((m) => ({ month: m, name: name(m), removeLabel: t("compareRemove", { month: name(m) }) }))}
+      monthNames={monthNames}
+      years={yearChoices(current, suggestion)}
+      labels={{ group: t("compareGroup"), add: t("compareAdd"), confirm: t("compareConfirm"), cancel: t("compareCancel"), month: t("month"), year: t("year") }}
+    />
+  );
+}
+
+/**
+ * The main month and the compared ones, newest first: the figure tiles and the money flow per month,
+ * the categories (one bar per month when comparing) and the 12 months up to the main month.
+ * accountId null: all of the caller's own private accounts together.
+ */
+async function MonthSeries({ caller, accountId, month, compare }: { caller: Caller; accountId: string | null; month: string; compare: string[] }) {
   const target = accountId ?? ({ ownPrivate: true } as const);
-  const [statistics, trends, flow, { names }] = await Promise.all([
-    insights.statistics(caller, target, MONTHS, month),
-    insights.categoryTrends(caller, target, month),
-    insights.moneyFlow(caller, target, month),
+  const months = shownMonths(month, compare);
+  const comparing = months.length > 1;
+  const [perMonth, { names }] = await Promise.all([
+    Promise.all(
+      months.map(async (m) => {
+        const [statistics, trends, flow] = await Promise.all([
+          insights.statistics(caller, target, MONTHS, m),
+          insights.categoryTrends(caller, target, m),
+          insights.moneyFlow(caller, target, m),
+        ]);
+        return { month: m, statistics, trends, flow };
+      }),
+    ),
     categories.catalog(caller),
   ]);
-  if (!statistics.ok) return null;
-  const { rows, comparison, running, scaleCents: scale } = statistics;
+  const main = perMonth.find((p) => p.month === month)!;
+  if (!main.statistics.ok) return null;
+  const { rows, scaleCents: scale } = main.statistics;
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const shortName = (m: string) => format.dateTime(monthDate(m), { month: "short", year: "numeric", timeZone: "UTC" });
+  const longName = (m: string) => format.dateTime(monthDate(m), { month: "long", year: "numeric", timeZone: "UTC" });
   const accountParam = accountId ?? ALL_MINE;
+  // A compared month clicked in the history becomes the main month, and the main month takes its place.
+  const historyHref = (m: string) =>
+    statisticsHref({ account: accountParam, month: m, compare: compare.map((c) => (c === m ? month : c)) });
 
   return (
     <>
-      <CurrentMonth row={rows[0]} account={accountParam} comparison={comparison} previousMonth={rows[1]?.month} running={running} />
-      {flow.ok && <MoneyFlow flow={flow} account={accountParam} categoryNames={names} />}
-      {trends.ok && <CategoryTrends trends={trends} account={accountParam} categoryNames={names} />}
+      {perMonth.map(({ month: m, statistics }) =>
+        statistics.ok ? (
+          <CurrentMonth
+            key={m}
+            title={comparing ? longName(m) : undefined}
+            row={statistics.rows[0]}
+            account={accountParam}
+            comparison={statistics.comparison}
+            previousMonth={statistics.rows[1]?.month}
+            running={statistics.running}
+          />
+        ) : null,
+      )}
+      {perMonth.map(({ month: m, flow }) => flow.ok && <MoneyFlow key={m} flow={flow} account={accountParam} categoryNames={names} withYear={comparing} />)}
+      {comparing ? (
+        <CategoryCompare
+          months={perMonth.flatMap(({ month: m, trends }) => (trends.ok ? [{ month: m, groups: trends.groups.map((g) => ({ group: g.group, cents: g.trend.at(-1) ?? 0 })) }] : []))}
+          main={month}
+          account={accountParam}
+          categoryNames={names}
+        />
+      ) : (
+        main.trends.ok && <CategoryTrends trends={main.trends} account={accountParam} categoryNames={names} />
+      )}
       <Section title={t("history", { from: shortName(rows.at(-1)!.month), to: shortName(rows[0].month) })}>
         <ol className="flex flex-col divide-y divide-base-300">
           {rows.map((row) => (
-            <MonthRow key={row.month} row={row} scale={scale} href={`/statistics?${new URLSearchParams({ account: accountParam, month: row.month })}`} />
+            <MonthRow key={row.month} row={row} scale={scale} href={historyHref(row.month)} highlighted={comparing && months.includes(row.month)} />
           ))}
         </ol>
       </Section>
@@ -120,12 +193,15 @@ type Figure = "income" | "spent" | "saved" | "available";
  * compared with the month before and with the usual month (the months before with bookings).
  */
 async function CurrentMonth({
+  title,
   row,
   account,
   comparison,
   previousMonth,
   running,
 }: {
+  /** A visible heading (the month's name) when several months are compared. */
+  title?: string;
   row: StatisticsRow;
   /** An account id or "all". */
   account: string;
@@ -199,7 +275,7 @@ async function CurrentMonth({
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="sr-only">{t("overview")}</h2>
+      {title ? <h2 className="text-lg font-semibold">{title}</h2> : <h2 className="sr-only">{t("overview")}</h2>}
       <dl className="flex flex-wrap gap-px overflow-hidden rounded-box border border-base-300 bg-base-300">
         {tiles.map(({ label, value, notes, href, negative }) => (
           // A linked tile's link sits in the value and stretches over the whole tile.
@@ -231,7 +307,7 @@ async function CurrentMonth({
   );
 }
 
-async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: number; href: string }) {
+async function MonthRow({ row, scale, href, highlighted = false }: { row: StatisticsRow; scale: number; href: string; highlighted?: boolean }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
   const name = format.dateTime(monthDate(row.month), { month: "long", year: "numeric", timeZone: "UTC" });
@@ -244,7 +320,11 @@ async function MonthRow({ row, scale, href }: { row: StatisticsRow; scale: numbe
 
   return (
     // Months without bookings stay in the list but recede.
-    <li className={`flex flex-col gap-2 py-4 first:pt-1 ${row.incomeCents === 0 && spent === 0 ? "opacity-45" : ""}`}>
+    // A compared month is marked with a bar at its left edge.
+    <li
+      aria-current={highlighted ? "true" : undefined}
+      className={`flex flex-col gap-2 py-4 first:pt-1 ${highlighted ? "-mx-3 rounded-box border-l-4 border-primary bg-base-200/60 px-3" : ""} ${row.incomeCents === 0 && spent === 0 ? "opacity-45" : ""}`}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="text-sm font-semibold">
           <Link href={href} className="link link-hover">

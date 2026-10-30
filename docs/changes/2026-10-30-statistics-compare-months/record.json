@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "slug": "statistics-compare-months",
+  "description": "Compare statistics months",
+  "plan": {
+    "path": "docs/plans/2026-10-30-statistics-compare-months.md",
+    "sha256": "53db7a8a9356bb2f28c4b6370c80dcccf8127c08e562609162257baa10e38e4d"
+  },
+  "status": "final",
+  "base": "f4b6ebc5d14f6447d0f2f0e61dfd2498f29ce356",
+  "report": "Finalized statistics-compare-months (f4b6ebc..working-tree)\nFiles: 10 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-30-statistics-compare-months/map.html\n",
+  "shownAt": "2026-10-30T12:47:39Z"
+}
