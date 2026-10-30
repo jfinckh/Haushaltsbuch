@@ -133,7 +133,9 @@
     "addTitle": "Add booking",
     "editTitle": "Edit booking",
     "back": "Back",
-    "noAccounts": "Add an account first."
+    "noAccounts": "Add an account first.",
+    "backToStatistics": "Back to statistics",
+    "backToOverview": "Back to overview"
   },
   "imports": {
     "title": "Import CSV",

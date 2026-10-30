@@ -17,4 +17,9 @@ describe("bookingsHref", () => {
       "/transactions?account=a1&month=2026-10&kind=expense&category=none",
     );
   });
+
+  it("adds the page it was opened from", () => {
+    const href = bookingsHref({ account: "a1", month: "2026-10", kind: "expense", category: "housing", origin: "/statistics?account=a1&month=2026-10" });
+    expect(new URL(href, "http://x").searchParams.get("origin")).toBe("/statistics?account=a1&month=2026-10");
+  });
 });

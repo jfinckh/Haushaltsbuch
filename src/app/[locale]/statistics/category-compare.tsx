@@ -19,6 +19,7 @@ export function CategoryCompare({
   months,
   main,
   account,
+  origin,
   categoryNames,
 }: {
   /** The compared months, newest first. */
@@ -27,6 +28,8 @@ export function CategoryCompare({
   main: string;
   /** An account id or "all". */
   account: string;
+  /** The address of the page, for the bookings links. */
+  origin: string;
   /** Names of own categories (the page's catalog). */
   categoryNames: Record<string, string>;
 }) {
@@ -77,7 +80,7 @@ export function CategoryCompare({
                         aria-label={`${label}, ${monthName(m.month)}: ${formatEuro(cents)}`}
                       />
                       <span className="text-right tabular-nums">
-                        <Link href={bookingsHref({ account, month: m.month, kind: "expense", category: group })} className="link link-hover font-medium">
+                        <Link href={bookingsHref({ account, month: m.month, kind: "expense", category: group, origin })} className="link link-hover font-medium">
                           {formatEuro(cents)}
                         </Link>{" "}
                         <span className="text-base-content/50">· {t("share", { percent: share })}</span>

@@ -21,11 +21,14 @@ const ARROW: Record<Direction, string> = { more: "↑", less: "↓", same: "≈"
 export function CategoryTrends({
   trends,
   account,
+  origin,
   categoryNames,
 }: {
   trends: Trends;
   /** An account id or "all". */
   account: string;
+  /** The address of the page, for the bookings links. */
+  origin: string;
   /** Names of own categories (the page's catalog). */
   categoryNames: Record<string, string>;
 }) {
@@ -63,7 +66,7 @@ export function CategoryTrends({
                 : direction === "same"
                   ? t("usualSame")
                   : t(direction === "more" ? "usualMore" : "usualLess", { amount: formatEuro(Math.abs(difference)) });
-            const href = bookingsHref({ account, month, kind: "expense", category: g.group });
+            const href = bookingsHref({ account, month, kind: "expense", category: g.group, origin });
             return (
               <li key={g.group ?? ""} className="flex flex-col gap-1.5 py-3">
                 <div className="flex items-baseline justify-between gap-3 text-sm">

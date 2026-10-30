@@ -133,7 +133,9 @@
     "addTitle": "Buchung hinzufügen",
     "editTitle": "Buchung bearbeiten",
     "back": "Zurück",
-    "noAccounts": "Lege zuerst ein Konto an."
+    "noAccounts": "Lege zuerst ein Konto an.",
+    "backToStatistics": "Zurück zur Statistik",
+    "backToOverview": "Zurück zur Übersicht"
   },
   "imports": {
     "title": "CSV importieren",

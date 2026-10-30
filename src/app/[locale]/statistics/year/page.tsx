@@ -33,6 +33,9 @@ export default function YearPage(props: Props) {
   );
 }
 
+/** The address of the year view, so bookings opened from it link back. */
+const yearOrigin = (account: string, year: number) => `/statistics/year?${new URLSearchParams({ account, year: String(year) })}`;
+
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 /** One calendar year of one visible account (?account=<id>) or of all own private accounts (?account=all). */
@@ -103,7 +106,7 @@ async function YearFigures({ caller, accountId, year }: { caller: Caller; accoun
 async function Totals({ overview: { totals }, account, year }: { overview: Overview; account: string; year: number }) {
   const t = await getTranslations("app.statistics");
   const format = await getFormatter();
-  const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, year, kind });
+  const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, year, kind, origin: yearOrigin(account, year) });
   const figures: [string, string, string?][] = [
     [t("income"), formatEuro(totals.incomeCents), bookings("income")],
     [t("expenses"), formatEuro(-totals.expenseCents), bookings("expense")],
@@ -141,7 +144,7 @@ async function MonthTable({ overview: { months, totals }, account, year }: { ove
   const rate = (value: number | null) => (value === null ? t("noRate") : format.number(value, { style: "percent", maximumFractionDigits: 1 }));
   // The amounts link to the bookings of the month, or of the year for the totals row.
   const amount = (cents: number, kind: "expense" | "income" | "saving", period: { month: string } | { year: number }) => (
-    <Link href={bookingsHref({ account, ...period, kind })} className="link decoration-base-content/30 underline-offset-2">
+    <Link href={bookingsHref({ account, ...period, kind, origin: yearOrigin(account, year) })} className="link decoration-base-content/30 underline-offset-2">
       {formatCents(cents)}
     </Link>
   );
@@ -231,7 +234,7 @@ function YearCategories({
               <li key={group ?? ""} className="flex flex-col gap-1">
                 <span className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate font-medium">
-                    <Link href={bookingsHref({ account, year, kind: "expense", category: group })} className="link link-hover">
+                    <Link href={bookingsHref({ account, year, kind: "expense", category: group, origin: yearOrigin(account, year) })} className="link link-hover">
                       {name}
                     </Link>
                   </span>

@@ -39,12 +39,15 @@ const BAR = 8;
 export function MoneyFlow({
   flow,
   account,
+  origin,
   categoryNames,
   withYear = false,
 }: {
   flow: Flow;
   /** An account id or "all". */
   account: string;
+  /** The address of the page, for the bookings links. */
+  origin: string;
   /** Names of own categories (the page's catalog). */
   categoryNames: Record<string, string>;
   /** Name the year in the title too, e.g. when several months are compared. */
@@ -60,7 +63,7 @@ export function MoneyFlow({
     if (node.kind === "category" || (node.kind === "income" && node.group !== null)) return categoryName(node.group!);
     return node.kind === "uncategorized" ? uncategorized : t(`flow.${node.kind}`);
   };
-  const filter = (node: Source | Target): Omit<BookingsFilter, "account" | "month"> | null => {
+  const filter = (node: Source | Target): Omit<BookingsFilter, "account" | "month" | "origin"> | null => {
     switch (node.kind) {
       case "income":
         return { kind: "income", category: node.group };
@@ -78,7 +81,7 @@ export function MoneyFlow({
   };
   const href = (node: Source | Target) => {
     const f = filter(node);
-    return f ? bookingsHref({ account, month: flow.month, ...f }) : null;
+    return f ? bookingsHref({ account, month: flow.month, ...f, origin }) : null;
   };
   const share = (cents: number) => t("share", { percent: Math.round((cents * 100) / flow.totalCents) });
 

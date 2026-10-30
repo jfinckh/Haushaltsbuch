@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeBack } from "./back-link";
+import { safeBack, safeOrigin } from "./back-link";
 
 describe("safeBack", () => {
   it.each([
@@ -47,4 +47,20 @@ describe("safeBack", () => {
     expect(safeBack(["/", "/transactions"])).toBe("/");
     expect(safeBack(["https://evil.example", "/"])).toBeNull();
   });
+});
+
+describe("safeOrigin", () => {
+  it.each(["/", "/?account=all", "/statistics", "/statistics?account=a1&month=2026-10&compare=2026-09,2026-08", "/statistics/year?account=all&year=2026"])(
+    "accepts %s",
+    (value) => {
+      expect(safeOrigin(value)).toBe(value);
+    },
+  );
+
+  it.each([undefined, "", "//evil.example", "https://evil.example", "/transactions", "/statistics/other", "/statisticsx", "/accounts/a1", "/\\evil"])(
+    "refuses %s",
+    (value) => {
+      expect(safeOrigin(value)).toBeNull();
+    },
+  );
 });

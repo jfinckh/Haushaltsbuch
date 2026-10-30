@@ -132,6 +132,8 @@ async function MonthSeries({ caller, accountId, month, compare }: { caller: Call
   const shortName = (m: string) => format.dateTime(monthDate(m), { month: "short", year: "numeric", timeZone: "UTC" });
   const longName = (m: string) => format.dateTime(monthDate(m), { month: "long", year: "numeric", timeZone: "UTC" });
   const accountParam = accountId ?? ALL_MINE;
+  // Bookings opened from here link back to this view.
+  const origin = statisticsHref({ account: accountParam, month, compare });
   // A compared month clicked in the history becomes the main month, and the main month takes its place.
   const historyHref = (m: string) =>
     statisticsHref({ account: accountParam, month: m, compare: compare.map((c) => (c === m ? month : c)) });
@@ -145,22 +147,24 @@ async function MonthSeries({ caller, accountId, month, compare }: { caller: Call
             title={comparing ? longName(m) : undefined}
             row={statistics.rows[0]}
             account={accountParam}
+            origin={origin}
             comparison={statistics.comparison}
             previousMonth={statistics.rows[1]?.month}
             running={statistics.running}
           />
         ) : null,
       )}
-      {perMonth.map(({ month: m, flow }) => flow.ok && <MoneyFlow key={m} flow={flow} account={accountParam} categoryNames={names} withYear={comparing} />)}
+      {perMonth.map(({ month: m, flow }) => flow.ok && <MoneyFlow key={m} flow={flow} account={accountParam} origin={origin} categoryNames={names} withYear={comparing} />)}
       {comparing ? (
         <CategoryCompare
           months={perMonth.flatMap(({ month: m, trends }) => (trends.ok ? [{ month: m, groups: trends.groups.map((g) => ({ group: g.group, cents: g.trend.at(-1) ?? 0 })) }] : []))}
           main={month}
           account={accountParam}
+          origin={origin}
           categoryNames={names}
         />
       ) : (
-        main.trends.ok && <CategoryTrends trends={main.trends} account={accountParam} categoryNames={names} />
+        main.trends.ok && <CategoryTrends trends={main.trends} account={accountParam} origin={origin} categoryNames={names} />
       )}
       <Section title={t("history", { from: shortName(rows.at(-1)!.month), to: shortName(rows[0].month) })}>
         <ol className="flex flex-col divide-y divide-base-300">
@@ -196,6 +200,7 @@ async function CurrentMonth({
   title,
   row,
   account,
+  origin,
   comparison,
   previousMonth,
   running,
@@ -205,6 +210,8 @@ async function CurrentMonth({
   row: StatisticsRow;
   /** An account id or "all". */
   account: string;
+  /** The address of this view, for the bookings links. */
+  origin: string;
   comparison: StatisticsComparison;
   previousMonth: string | undefined;
   running: boolean;
@@ -259,7 +266,7 @@ async function CurrentMonth({
     });
   }
 
-  const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, month: row.month, kind });
+  const bookings = (kind: "expense" | "income" | "saving") => bookingsHref({ account, month: row.month, kind, origin });
   const tiles: { label: string; value: string; notes: Note[]; href?: string; negative?: boolean }[] = [
     { label: t("income"), value: formatEuro(row.incomeCents), notes: moneyNotes("income"), href: bookings("income") },
     { label: t("expenses"), value: formatEuro(-row.expenseCents), notes: moneyNotes("spent"), href: bookings("expense") },

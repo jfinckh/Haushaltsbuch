@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { AccountSwitcher } from "@/app/_lib/account-switcher";
 import { accounts } from "@/app/_lib/accounts";
 import { AppShell, PageHeader } from "@/app/_lib/app-shell";
+import { safeOrigin } from "@/app/_lib/back-link";
 import { sanitizeBookingsQuery } from "@/app/_lib/bookings-query";
 import { requireCaller } from "@/app/_lib/caller";
 import { categories } from "@/app/_lib/categories";
@@ -42,11 +43,20 @@ async function Bookings({ searchParams }: Props) {
   const visibleAccounts = await accounts.listAccounts(caller);
   const selected = selectAccount(visibleAccounts, first(query.account));
   const t = await getTranslations("app.transactions");
+  // Opened from the overview or a statistics page: link back there, and keep the address in every link the page builds.
+  const origin = safeOrigin(query.origin);
+  const header = (
+    <PageHeader
+      title={t("title")}
+      back={origin ? { href: origin, label: t(origin.startsWith("/statistics") ? "backToStatistics" : "backToOverview") } : undefined}
+    />
+  );
+  const keep: Record<string, string> = origin ? { origin } : {};
 
   if (!selected) {
     return (
       <div className="flex flex-col gap-6">
-        <PageHeader title={t("title")} />
+        {header}
         <p className="opacity-70">{t("noAccounts")}</p>
       </div>
     );
@@ -66,9 +76,9 @@ async function Bookings({ searchParams }: Props) {
     selected === ALL_MINE ? Object.fromEntries(visibleAccounts.filter((a) => a.visibility === "private").map((a) => [a.id, a.name])) : undefined;
 
   const more = listed.ok && limit < MAX_LIMIT && listed.total.count > listed.transactions.length;
-  const moreHref = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, limit: String(Math.min(limit + PAGE_SIZE, MAX_LIMIT)) })}`;
+  const moreHref = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, ...keep, limit: String(Math.min(limit + PAGE_SIZE, MAX_LIMIT)) })}`;
 
-  const back = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, ...(limit !== PAGE_SIZE && { limit: String(limit) }) })}`;
+  const back = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, ...keep, ...(limit !== PAGE_SIZE && { limit: String(limit) }) })}`;
 
   // Search and dates are typed in: changing them must not rebuild the filters, or the field loses focus.
   const filtersKey = new URLSearchParams(
@@ -77,9 +87,9 @@ async function Bookings({ searchParams }: Props) {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <PageHeader title={t("title")} />
-      <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/transactions" params={kept} />
-      <TransactionFilters key={filtersKey} values={kept} periods params={{ account: selectedId }} categoryGroups={groups} categoryNames={catalog.names} />
+      {header}
+      <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/transactions" params={{ ...kept, ...keep }} />
+      <TransactionFilters key={filtersKey} values={kept} periods params={{ account: selectedId, ...keep }} categoryGroups={groups} categoryNames={catalog.names} />
       {listed.ok ? (
         <>
           <p className="text-sm text-base-content/70">{t("count", { count: listed.total.count, sum: formatEuro(listed.total.sumCents) })}</p>

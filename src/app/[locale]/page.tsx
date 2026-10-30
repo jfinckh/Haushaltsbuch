@@ -184,7 +184,7 @@ async function MonthFigures({
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-box border border-base-300 bg-base-300 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
         {figures.map(([key, cents]) => {
           const kind = key === "income" ? "income" : key === "expenses" ? "expense" : key === "saving" ? "saving" : undefined;
-          const href = kind && bookingsHref({ account, month, kind });
+          const href = kind && bookingsHref({ account, month, kind, origin: `/?${new URLSearchParams({ account })}` });
           // A linked tile's link sits in the value and stretches over the whole tile.
           return (
             <div key={key} className={`relative min-w-0 bg-base-100 px-4 py-3 ${href ? "transition-colors has-[a:hover]:bg-base-200" : ""}`}>
