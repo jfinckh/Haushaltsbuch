@@ -2,7 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { CategoryChoice } from "../categories";
 import { TRANSACTION_KINDS, type TransactionKind } from "../kinds";
 import { isMonth, monthOf, monthRange, shiftMonth, today } from "../months";
@@ -35,6 +35,9 @@ type Props = {
   categoryNames?: Record<string, string>;
 };
 
+/** How long the search and date fields wait after the last change before they apply. */
+const APPLY_DELAY_MS = 400;
+
 /** Exactly one of these is active. A range may have an empty side. */
 type Period = { month: string } | { year: string } | { from: string; to: string };
 type Filters = { kind?: TransactionKind; category?: string; q?: string };
@@ -49,6 +52,8 @@ const isDay = (value: string | undefined): value is string => {
   // Out-of-range parts (month 13) give an invalid date; overflowing days (Feb 31) do not round-trip.
   return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value ?? "");
 };
+/** A date field applies only once it holds a full date (not "0202" while the year is typed) or is cleared. */
+const isReadyDay = (value: string) => value === "" || (isDay(value) && Number(value.slice(0, 4)) >= 1970);
 
 function periodOf(raw: TransactionFilterValues, periods: boolean): Period {
   if (periods && (isDay(raw.from) || isDay(raw.to))) return { from: isDay(raw.from) ? raw.from : "", to: isDay(raw.to) ? raw.to : "" };
@@ -71,34 +76,73 @@ export function TransactionFilters({ values: raw, periods = false, params, categ
   const format = useFormatter();
   const router = useRouter();
   const pathname = usePathname();
-  const [kind, setKind] = useState<string>(values.kind ?? "");
-  const [category, setCategory] = useState(values.category ?? "");
+  const fromUrl = {
+    kind: values.kind ?? "",
+    category: values.category ?? "",
+    q: values.q ?? "",
+    from: "from" in period ? period.from : "",
+    to: "from" in period ? period.to : "",
+  };
+  type Field = keyof typeof fromUrl;
+  const [fields, setFields] = useState(fromUrl);
+  const [seen, setSeen] = useState(fromUrl);
+  const [focused, setFocused] = useState<Field | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
 
-  function go(nextPeriod: Period, next: Filters) {
+  // The URL changed (back button, chip, a filter applied): take its values, except in the field being typed in.
+  const changed = (Object.keys(fromUrl) as Field[]).filter((field) => fromUrl[field] !== seen[field]);
+  if (changed.length > 0) {
+    setSeen(fromUrl);
+    setFields((prev) => {
+      const next = { ...prev };
+      for (const field of changed) if (field !== focused) next[field] = fromUrl[field];
+      return next;
+    });
+  }
+  const { kind, category, q } = fields;
+
+  /** Applies the fields; `update` holds the change that has not reached the state yet. */
+  function apply(update: Partial<typeof fields>, options: { delay?: boolean; replace?: boolean } = {}) {
+    const next = { ...fields, ...update };
+    setFields(next);
+    clearTimeout(timer.current);
+    const nextPeriod: Period =
+      "from" in period ? { from: isDay(next.from) ? next.from : "", to: isDay(next.to) ? next.to : "" } : period;
+    const filters: Filters = { kind: isKind(next.kind) ? next.kind : undefined, category: next.category || undefined, q: next.q.trim() || undefined };
+    const run = () => go(nextPeriod, filters, options.replace);
+    if (options.delay) timer.current = setTimeout(run, APPLY_DELAY_MS);
+    else run();
+  }
+
+  function go(nextPeriod: Period, next: Filters, replace = false) {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(params ?? {})) if (value) query.set(key, value);
     for (const [key, value] of Object.entries(nextPeriod)) if (value) query.set(key, value);
     if (next.kind) query.set("kind", next.kind);
     if (next.category) query.set("category", next.category);
     if (next.q) query.set("q", next.q);
-    router.push(`${pathname}?${query}`);
+    const href = `${pathname}?${query}`;
+    if (replace) router.replace(href);
+    else router.push(href);
   }
 
+  /** Enter in the search field applies at once. */
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const q = String(data.get("q") ?? "").trim();
-    let nextPeriod = period;
-    if ("from" in period) {
-      const from = String(data.get("from") ?? "");
-      const to = String(data.get("to") ?? "");
-      nextPeriod = { from: isDay(from) ? from : "", to: isDay(to) ? to : "" };
-    }
-    go(nextPeriod, { kind: isKind(kind) ? kind : undefined, category: category || undefined, q: q || undefined });
+    apply({});
   }
+
+  function onDateChange(field: "from" | "to", value: string) {
+    if (isReadyDay(value)) apply({ [field]: value }, { delay: true });
+    else setFields((prev) => ({ ...prev, [field]: value }));
+  }
+
+  const focus = (field: Field) => ({ onFocus: () => setFocused(field), onBlur: () => setFocused(null) });
 
   function switchTab(next: Tab) {
     if (next === tab) return;
+    clearTimeout(timer.current);
     const now = today();
     go(next === "month" ? { month: monthOf(now) } : next === "year" ? { year: now.slice(0, 4) } : monthRange(monthOf(now)), values);
   }
@@ -157,13 +201,13 @@ export function TransactionFilters({ values: raw, periods = false, params, categ
           {"from" in period && (
             <div className="flex gap-2">
               <label className="sr-only" htmlFor="filter-from">{t("from")}</label>
-              <input id="filter-from" key={period.from} name="from" type="date" defaultValue={period.from} className="input input-sm" />
+              <input id="filter-from" name="from" type="date" value={fields.from} onChange={(e) => onDateChange("from", e.target.value)} {...focus("from")} className="input input-sm" />
               <label className="sr-only" htmlFor="filter-to">{t("to")}</label>
-              <input id="filter-to" key={period.to} name="to" type="date" defaultValue={period.to} className="input input-sm" />
+              <input id="filter-to" name="to" type="date" value={fields.to} onChange={(e) => onDateChange("to", e.target.value)} {...focus("to")} className="input input-sm" />
             </div>
           )}
           <label className="sr-only" htmlFor="filter-kind">{t("kind")}</label>
-          <select id="filter-kind" className="select select-sm w-full @xl:w-auto @xl:min-w-32 @xl:flex-1" value={kind} onChange={(e) => setKind(e.target.value)}>
+          <select id="filter-kind" className="select select-sm w-full @xl:w-auto @xl:min-w-32 @xl:flex-1" value={kind} onChange={(e) => apply({ kind: e.target.value })}>
             <option value="">{t("allKinds")}</option>
             {TRANSACTION_KINDS.map((k) => (
               <option key={k} value={k}>
@@ -177,19 +221,26 @@ export function TransactionFilters({ values: raw, periods = false, params, categ
               id="filter-category"
               kinds={kind === "expense" || kind === "income" ? [kind] : ["expense", "income"]}
               value={category}
-              onChange={setCategory}
+              onChange={(value) => apply({ category: value })}
               emptyLabel={t("allCategories")}
               noneLabel={periods ? t("uncategorized") : undefined}
               groups={categoryGroups}
               names={categoryNames}
             />
           </div>
-          <div className="join w-full @xl:basis-full @3xl:w-auto @3xl:flex-[1.4] @3xl:basis-auto">
+          <div className="w-full @xl:basis-full @3xl:w-auto @3xl:flex-[1.4] @3xl:basis-auto">
             <label className="sr-only" htmlFor="filter-q">{t("search")}</label>
-            <input key={values.q ?? ""} id="filter-q" name="q" type="search" defaultValue={values.q ?? ""} placeholder={t("searchPlaceholder")} className="input input-sm join-item w-full" maxLength={100} />
-            <button type="submit" className="btn btn-sm join-item">
-              {t("apply")}
-            </button>
+            <input
+              id="filter-q"
+              name="q"
+              type="search"
+              value={q}
+              onChange={(e) => apply({ q: e.target.value }, { delay: true, replace: true })}
+              {...focus("q")}
+              placeholder={t("searchPlaceholder")}
+              className="input input-sm w-full"
+              maxLength={100}
+            />
           </div>
         </form>
       </div>
@@ -202,10 +253,7 @@ export function TransactionFilters({ values: raw, periods = false, params, categ
                 className="badge badge-neutral gap-1"
                 aria-label={t("remove", { label: chip.label })}
                 onClick={() => {
-                  const next = { ...values, [chip.param]: undefined };
-                  if (chip.param === "kind") setKind("");
-                  if (chip.param === "category") setCategory("");
-                  go(period, next);
+                  apply({ [chip.param]: "" });
                 }}
               >
                 {chip.label}

@@ -70,11 +70,16 @@ async function Bookings({ searchParams }: Props) {
 
   const back = `/transactions?${new URLSearchParams({ account: selectedId, ...kept, ...(limit !== PAGE_SIZE && { limit: String(limit) }) })}`;
 
+  // Search and dates are typed in: changing them must not rebuild the filters, or the field loses focus.
+  const filtersKey = new URLSearchParams(
+    Object.entries({ account: selectedId, ...kept }).filter(([key, value]) => value !== undefined && !["q", "from", "to"].includes(key)) as [string, string][],
+  ).toString();
+
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <PageHeader title={t("title")} />
       <AccountSwitcher accounts={visibleAccounts} selectedId={selectedId} path="/transactions" params={kept} />
-      <TransactionFilters key={new URLSearchParams({ account: selectedId, ...kept }).toString()} values={kept} periods params={{ account: selectedId }} categoryGroups={groups} categoryNames={catalog.names} />
+      <TransactionFilters key={filtersKey} values={kept} periods params={{ account: selectedId }} categoryGroups={groups} categoryNames={catalog.names} />
       {listed.ok ? (
         <>
           <p className="text-sm text-base-content/70">{t("count", { count: listed.total.count, sum: formatEuro(listed.total.sumCents) })}</p>
