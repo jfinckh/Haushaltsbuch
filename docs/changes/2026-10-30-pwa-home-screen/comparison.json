@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "base": "acc0450dd4cf132bd2355772833bbd44a062976b",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/app/icon.svg",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "public/icons/apple-touch-icon.png",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "public/icons/icon-192.png",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "public/icons/icon-512.png",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/manifest.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/manifest.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/layout.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "infra/cloudflare.tf",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "README.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/deployment.md",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "permission-change:cloudflare-access:pwa-files-without-login",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    }
+  ]
+}

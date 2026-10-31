@@ -30,6 +30,9 @@ GitHub  ──SSH────▶ Cloudflare Access (service token) ─Tunnel─�
   both the app and SSH through one tunnel. The Hetzner firewall has no inbound rule.
 - **Two Access applications.** The app address allows the listed emails. The SSH address allows the
   service token OpenTofu makes for GitHub, and the listed emails; both still need the deploy SSH key.
+  A third, small application lets `/manifest.webmanifest` and `/icons/*` through without login, so a
+  phone can install the app (browsers load the manifest without cookies). Those paths show only the
+  app name and icon, no data.
 - **Login values come from OpenTofu.** The Access application's audience tag (`IDENTITY_AUDIENCE`) is an
   OpenTofu output; the workflow writes it into `app.env`. Nobody copies it by hand.
 - **Secrets stay out of the state.** App keys and passphrases are GitHub secrets; the deploy SSH key is

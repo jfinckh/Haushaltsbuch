@@ -78,6 +78,28 @@ resource "cloudflare_zero_trust_access_application" "app" {
   policies = [{ id = cloudflare_zero_trust_access_policy.people.id, precedence = 1 }]
 }
 
+# Home-screen app: browsers load the manifest without cookies, so the login above would block it.
+# Only the manifest and the icons skip the login; they show the app name and icon, no data.
+# A path-specific application wins over the one for the whole host.
+resource "cloudflare_zero_trust_access_policy" "pwa_files" {
+  account_id = var.cloudflare_account_id
+  name       = "Haushaltsbuch: app name and icons, no login"
+  decision   = "bypass"
+  include    = [{ everyone = {} }]
+}
+
+resource "cloudflare_zero_trust_access_application" "pwa_files" {
+  account_id = var.cloudflare_account_id
+  name       = "Haushaltsbuch: app name and icons"
+  type       = "self_hosted"
+  destinations = [
+    { type = "public", uri = "${local.app_host}/manifest.webmanifest" },
+    { type = "public", uri = "${local.app_host}/icons/*" },
+  ]
+
+  policies = [{ id = cloudflare_zero_trust_access_policy.pwa_files.id, precedence = 1 }]
+}
+
 # --- Access: SSH for the deploy job ------------------------------------------------------------
 
 resource "cloudflare_zero_trust_access_service_token" "deploy" {

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "permission-change:cloudflare-access:pwa-files-without-login",
+      "itemHash": "sha256:da14e94b9d4a738ee01ea2ac48cdcb33bc2b62a87864f8e44b54f4c1289cb0f3",
+      "decision": "approve",
+      "at": "2026-10-30T15:18:51Z",
+      "source": "hook"
+    }
+  ]
+}

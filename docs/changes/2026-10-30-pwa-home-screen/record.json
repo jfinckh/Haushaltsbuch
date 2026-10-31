@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "slug": "pwa-home-screen",
+  "description": "Home-screen app (PWA basics)",
+  "plan": {
+    "path": "docs/plans/2026-10-30-pwa-home-screen.md",
+    "sha256": "77ea5de70fb7503919a8c51566183e20bf5a07ce905e2b5220552b477ac9dbba"
+  },
+  "status": "final",
+  "base": "acc0450dd4cf132bd2355772833bbd44a062976b",
+  "report": "Finalized pwa-home-screen (acc0450..working-tree)\nFiles: 10 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 1 approved.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-10-30-pwa-home-screen/map.html\n",
+  "shownAt": "2026-10-30T15:39:28Z"
+}

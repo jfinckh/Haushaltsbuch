@@ -350,6 +350,30 @@ settings as the workflow), or delete it in Zero Trust → Access → Service aut
 **If SSH through the tunnel does not work** (e.g. `cloudflared` stopped): the Hetzner console has a
 **Rescue** system and a web console. The app keeps working as long as `cloudflared` and Docker run.
 
+### Install on the iPhone (home screen)
+
+The app can sit on the home screen like a normal app: own icon, full screen, no Safari bar. There is
+no offline mode; it needs the server.
+
+1. Open the app address in **Safari** (not another browser) and sign in.
+2. Tap **Teilen** (square with arrow) → **Zum Home-Bildschirm**. If shown, leave **Als Web-App
+   öffnen** on. Tap **Hinzufügen**.
+3. Open the app from the home screen.
+
+**Sign in again once.** A home-screen app keeps its own cookies, separate from Safari. So the first
+start asks for the Cloudflare email code again, and again when the Access session runs out (about a
+month, `access_session_duration` in `infra/variables.tf`).
+
+**TODO after the first deploy with this feature, check once on your iPhone:**
+
+- [ ] The home-screen icon is the green book, not a screenshot of the page.
+- [ ] The app opens without the Safari bar.
+- [ ] Signing in with the email code works inside the app window and brings you back into the app.
+  If it gets stuck, the plain Safari bookmark still works; tell Claude what you saw.
+
+Only the app name and icon (`/manifest.webmanifest`, `/icons/*`) can be loaded without login: browsers
+fetch the manifest without cookies. OpenTofu sets this up (`infra/cloudflare.tf`), nothing by hand.
+
 ## Auth module
 
 `src/auth` is self-contained and reusable. Use it only through its entry points:
