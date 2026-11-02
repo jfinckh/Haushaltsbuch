@@ -19,7 +19,8 @@
   "list": {
     "empty": "Keine Buchungen in diesem Zeitraum.",
     "uncategorized": "Ohne Kategorie",
-    "noText": "Buchung"
+    "noText": "Buchung",
+    "countsFor": "Zählt für {month}"
   },
   "spending": {
     "title": "Ausgaben nach Kategorie",
@@ -71,7 +72,14 @@
     "rulePattern": "Text, den die Regel sucht",
     "learnRuleHint": "Legt eine Regel für dieses Konto an. Kürze den Text auf das Wesentliche, z. B. „Spotify“.",
     "rulePatternNotInText": "Der Text muss in der Buchung vorkommen.",
-    "ruleFailed": "Gespeichert, aber die Regel konnte nicht angelegt werden."
+    "ruleFailed": "Gespeichert, aber die Regel konnte nicht angelegt werden.",
+    "countsFor": "Zählt für Monat",
+    "countsForAuto": "Automatisch",
+    "countsForBookingMonth": "Buchungsmonat",
+    "countsForNextMonth": "Folgemonat",
+    "countsForSalary": "Zählt automatisch für {month} (Gehalt ab dem {day}.).",
+    "countsForSameMonth": "Zählt für {month} (Buchungsmonat).",
+    "countsForChosen": "Zählt für {month} (von dir festgelegt)."
   },
   "actions": {
     "delete": "Buchung löschen",

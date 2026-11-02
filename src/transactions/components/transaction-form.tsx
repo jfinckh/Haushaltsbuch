@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { callApi } from "@/shared/api-client";
@@ -8,9 +8,10 @@ import { formatCents, parseGermanAmount } from "@/shared/money";
 import { useTranslateKey } from "@/shared/use-translate-key";
 import { isCategoryFor, isOwnCategoryKey, type CategoryCatalog } from "../categories";
 import type { TransactionView } from "../contract";
+import { countingMonthOf, SALARY_SHIFT_FROM_DAY, shiftsAutomatically } from "../counting-month";
 import { proposedKind, TRANSACTION_KINDS, type TransactionKind } from "../kinds";
-import { today } from "../months";
-import { createTransactionSchema } from "../validation";
+import { monthOf, today } from "../months";
+import { createTransactionSchema, isIsoDate } from "../validation";
 import { CategorySelect } from "./category-select";
 
 type Props = {
@@ -37,6 +38,12 @@ type Props = {
 
 type RuleField = "counterparty" | "reference";
 
+/** The month choice in the form: automatic, booking month, next month. */
+type MonthChoice = "auto" | "booking" | "next";
+
+const choiceOf = (countsNextMonth: boolean | null | undefined): MonthChoice =>
+  countsNextMonth === true ? "next" : countsNextMonth === false ? "booking" : "auto";
+
 const normalize = (text: string) => text.trim().replace(/\s+/g, " ").toLocaleLowerCase("de");
 
 /** Message keys per field, translated when shown. */
@@ -62,12 +69,15 @@ export function TransactionForm({
   const t = useTranslations("transactions.form");
   const tKinds = useTranslations("transactions.kinds");
   const tk = useTranslateKey();
+  const format = useFormatter();
   const router = useRouter();
   const editing = Boolean(transaction);
   const [account, setAccount] = useState(transaction?.accountId ?? accountId ?? accounts[0]?.id ?? "");
   const [kind, setKind] = useState<TransactionKind>(transaction?.kind ?? "expense");
   const [kindTouched, setKindTouched] = useState(editing);
   const [category, setCategory] = useState(transaction?.category ?? "");
+  const [date, setDate] = useState(transaction?.date ?? today());
+  const [monthChoice, setMonthChoice] = useState<MonthChoice>(choiceOf(transaction?.countsNextMonth));
   const [errors, setErrors] = useState<Errors>({});
   const [pending, setPending] = useState(false);
   const ruleFields = (["counterparty", "reference"] as const).filter((field) => transaction?.[field]);
@@ -117,6 +127,8 @@ export function TransactionForm({
       counterparty: text("counterparty"),
       counterpartyIban: text("counterpartyIban"),
       reference: text("reference"),
+      // Transfers count in no month, so they keep no choice.
+      countsNextMonth: kind === "transfer" || monthChoice === "auto" ? null : monthChoice === "next",
     };
     // The form always sends every field, so a new and an edited booking follow the same rules.
     const checked = createTransactionSchema.safeParse(body);
@@ -144,6 +156,16 @@ export function TransactionForm({
     }
     router.push(returnTo ?? `${accountsHref}/${account}`);
     router.refresh();
+  }
+
+  /** Which month the booking counts for with the current inputs, and why. */
+  function countsForHint() {
+    const booking = { bookingDate: date, kind, category: category || null };
+    const month = countingMonthOf({ ...booking, countsNextMonth: monthChoice === "auto" ? null : monthChoice === "next" });
+    const name = format.dateTime(new Date(`${month}-01T00:00:00Z`), { timeZone: "UTC", month: "long", year: "numeric" });
+    if (monthChoice !== "auto") return t("countsForChosen", { month: name });
+    if (shiftsAutomatically(booking)) return t("countsForSalary", { month: name, day: SALARY_SHIFT_FROM_DAY });
+    return month === monthOf(date) ? t("countsForSameMonth", { month: name }) : t("countsForChosen", { month: name });
   }
 
   const error = (field: string) => errors[field] && <p className="label text-error">{tk(errors[field])}</p>;
@@ -174,7 +196,8 @@ export function TransactionForm({
             id="transaction-date"
             name="date"
             type="date"
-            defaultValue={transaction?.date ?? today()}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             className="input w-full"
             required
           />
@@ -218,6 +241,23 @@ export function TransactionForm({
           </fieldset>
         )}
       </div>
+
+      {kind !== "transfer" && (
+        <fieldset className="fieldset">
+          <label className="fieldset-legend" htmlFor="transaction-month">{t("countsFor")}</label>
+          <select
+            id="transaction-month"
+            className="select w-full"
+            value={monthChoice}
+            onChange={(e) => setMonthChoice(e.target.value as MonthChoice)}
+          >
+            <option value="auto">{t("countsForAuto")}</option>
+            <option value="booking">{t("countsForBookingMonth")}</option>
+            <option value="next">{t("countsForNextMonth")}</option>
+          </select>
+          {isIsoDate(date) && <p className="label whitespace-normal">{countsForHint()}</p>}
+        </fieldset>
+      )}
 
       {transaction?.classifiedBy === "rule" && !classificationChanged && (
         <p className="text-base-content/70 text-sm">{t("classifiedByRule")}</p>

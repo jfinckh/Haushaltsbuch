@@ -29,6 +29,11 @@ describe("createTransactionSchema", () => {
     });
   });
 
+  it("keeps a month choice", () => {
+    expect(createTransactionSchema.parse({ ...valid, countsNextMonth: true }).countsNextMonth).toBe(true);
+    expect(createTransactionSchema.parse({ ...valid, countsNextMonth: false }).countsNextMonth).toBe(false);
+  });
+
   it("treats empty optional fields as missing", () => {
     const parsed = createTransactionSchema.parse({ ...valid, category: "", counterparty: " ", counterpartyIban: "", reference: "" });
     expect(parsed).toMatchObject({ category: null, counterparty: null, counterpartyIban: null, reference: null });
@@ -79,6 +84,13 @@ describe("createTransactionSchema", () => {
 });
 
 describe("updateTransactionSchema", () => {
+  it("takes the month choice, and null to go back to automatic", () => {
+    expect(updateTransactionSchema.parse({ countsNextMonth: true })).toEqual({ countsNextMonth: true });
+    expect(updateTransactionSchema.parse({ countsNextMonth: null })).toEqual({ countsNextMonth: null });
+    expect(updateTransactionSchema.parse({})).toEqual({});
+    expect(updateTransactionSchema.safeParse({ countsNextMonth: "yes" }).success).toBe(false);
+  });
+
   it("parses only the given fields", () => {
     expect(updateTransactionSchema.parse({ amount: "-4,20" })).toEqual({ amountCents: -420 });
     expect(updateTransactionSchema.parse({ category: "", reference: "" })).toEqual({ category: null, reference: null });

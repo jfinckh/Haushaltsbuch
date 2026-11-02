@@ -1,10 +1,11 @@
-import { and, eq, gte, inArray, lte, ne, or, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { withSession, type RlsDatabase } from "@/shared/rls";
 import { notOnSavingsAccount, targetFilter, visible } from "./access";
 import { spendingByGroup } from "./categories";
 import type { BookingFigures, CategorySpendingsResult, MonthSummariesResult } from "./contract";
 import type { TransactionKind } from "./kinds";
-import { isMonth, monthOf, monthRange, shiftMonth } from "./months";
+import { countingMonth, inCountingMonths } from "./counting-month-sql";
+import { isMonth, monthOf, shiftMonth } from "./months";
 import { transaction } from "./schema";
 
 export type BookingFiguresDeps = {
@@ -17,18 +18,19 @@ export type BookingFiguresDeps = {
 const MAX_MONTHS = 24;
 
 /**
- * The `count` months ending with `until`, newest first, and the dates they cover; null if the
+ * The `count` months ending with `until`, newest first, and the first and last of them; null if the
  * input is invalid.
  */
 function monthSeries(count: number, until: string) {
   if (!isMonth(until) || !Number.isInteger(count) || count < 1 || count > MAX_MONTHS) return null;
   const months = Array.from({ length: count }, (_, i) => shiftMonth(until, -i));
-  return { months, from: monthRange(months[count - 1]).from, to: monthRange(until).to };
+  return { months, from: months[count - 1], to: until };
 }
 
-const bookingMonth = sql<string>`to_char(${transaction.bookingDate}, 'YYYY-MM')`;
-
-/** Totals of the bookings the caller may see (documented on BookingFigures). */
+/**
+ * Totals of the bookings the caller may see (documented on BookingFigures), per counting month
+ * (counting-month.ts): end-of-month salary counts for the next month.
+ */
 export function createBookingFigures({ db, today }: BookingFiguresDeps): BookingFigures {
   const monthSummaries: BookingFigures["monthSummaries"] = async (caller, target, count, until = monthOf(today())) => {
     const series = monthSeries(count, until);
@@ -37,7 +39,7 @@ export function createBookingFigures({ db, today }: BookingFiguresDeps): Booking
       const accounts = await targetFilter(tx, target);
       if (!accounts) return { ok: false, reason: "not-found" };
       const rows = await tx
-        .select({ month: bookingMonth, kind: transaction.kind, sum: sql<string>`sum(${transaction.amountCents})` })
+        .select({ month: countingMonth, kind: transaction.kind, sum: sql<string>`sum(${transaction.amountCents})` })
         .from(transaction)
         .where(
           and(
@@ -45,11 +47,10 @@ export function createBookingFigures({ db, today }: BookingFiguresDeps): Booking
             accounts,
             inArray(transaction.kind, ["income", "expense", "saving"]),
             typeof target === "string" ? undefined : or(ne(transaction.kind, "saving"), notOnSavingsAccount),
-            gte(transaction.bookingDate, series.from),
-            lte(transaction.bookingDate, series.to),
+            inCountingMonths(series.from, series.to),
           ),
         )
-        .groupBy(bookingMonth, transaction.kind);
+        .groupBy(countingMonth, transaction.kind);
       const sumOf = (m: string, kind: TransactionKind) => Number(rows.find((row) => row.month === m && row.kind === kind)?.sum ?? 0);
       return {
         ok: true,
@@ -78,18 +79,17 @@ export function createBookingFigures({ db, today }: BookingFiguresDeps): Booking
       const accounts = await targetFilter(tx, target);
       if (!accounts) return { ok: false, reason: "not-found" };
       const rows = await tx
-        .select({ month: bookingMonth, category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
+        .select({ month: countingMonth, category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
         .from(transaction)
         .where(
           and(
             visible,
             accounts,
             eq(transaction.kind, kind),
-            gte(transaction.bookingDate, series.from),
-            lte(transaction.bookingDate, series.to),
+            inCountingMonths(series.from, series.to),
           ),
         )
-        .groupBy(bookingMonth, transaction.category);
+        .groupBy(countingMonth, transaction.category);
       // spendingByGroup counts money out as positive; income is money in, so its sign flips.
       const sign = kind === "expense" ? 1 : -1;
       return {

@@ -31,7 +31,8 @@
     "statistics": "Statistics",
     "categories": "Categories",
     "groupPrivate": "Private",
-    "groupShared": "Shared"
+    "groupShared": "Shared",
+    "addBooking": "Add booking"
   },
   "statistics": {
     "title": "Statistics",
@@ -161,7 +162,8 @@
     "back": "Back",
     "noAccounts": "Add an account first.",
     "backToStatistics": "Back to statistics",
-    "backToOverview": "Back to overview"
+    "backToOverview": "Back to overview",
+    "addBooking": "Add booking"
   },
   "imports": {
     "title": "Import CSV",
@@ -195,6 +197,7 @@
     "categories": "Categories",
     "household": "Household",
     "householdLong": "Household & accounts",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "addBooking": "Add booking"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-02",
+  "slug": "add-booking-entry-points",
+  "description": "More ways to add a booking",
+  "plan": {
+    "path": "docs/plans/2026-11-02-add-booking-entry-points.md",
+    "sha256": "67f5f86136f2300fb9faf37219886113f1516c45cb3ac35d1dbccd06dd55b3c5"
+  },
+  "status": "final",
+  "base": "6160e1a8a8be600b695e68ca9663c720e23379fc",
+  "report": "Finalized add-booking-entry-points (6160e1a..working-tree)\nFiles: 9 converge, 0 diverge, 0 absent. Elements: 0 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-11-02-add-booking-entry-points/map.html\n",
+  "shownAt": "2026-11-02T15:38:09Z"
+}

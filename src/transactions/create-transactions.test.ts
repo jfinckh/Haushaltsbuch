@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { withSession, type Caller } from "@/shared/rls";
+import { countingMonth } from "./counting-month-sql";
 import { createCategories } from "./create-categories";
 import type { TransactionView } from "./contract";
 import { createTransactions } from "./create-transactions";
@@ -1178,5 +1179,75 @@ describe("own categories on bookings", () => {
     expect(await check(max, "home-shared", hobby.key)).toBe(false);
     expect(await check(erika, "erika-private", hobby.key)).toBe(false);
     expect(await check(erika, "max-private", "groceries")).toBe(false);
+  });
+});
+
+describe("counting month: end-of-month salary counts for the next month", () => {
+  const totals = (caller: Caller, accountId: string, month: string) =>
+    withSession(setup.db, caller, (tx) => transactions.expenseTotals(tx, accountId, month));
+
+  it("counts salary from the 20th on in the next month's summary, other income in its own month", async () => {
+    await create(max, { date: "2026-09-30", amount: "3.000,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-19", amount: "100,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-30", amount: "3.100,00", kind: "income", category: "salary" });
+    await create(max, { date: "2026-10-30", amount: "5,00", kind: "income", category: "investmentIncome" });
+
+    const october = await transactions.monthSummary(max, "max-private", "2026-10");
+    expect(october).toMatchObject({ incomeCents: 300000 + 10000 + 500, availableCents: 310500 });
+    const series = await transactions.monthSummaries(max, "max-private", 2, "2026-11");
+    expect(series.ok && series.months.map((m) => [m.month, m.incomeCents])).toEqual([
+      ["2026-11", 310000],
+      ["2026-10", 310500],
+    ]);
+    const incomes = await transactions.categoryIncomes(max, "max-private", 1, "2026-11");
+    expect(incomes.ok && incomes.months[0].totalCents).toBe(310000);
+  });
+
+  it("follows a choice by hand in both directions, for summaries, budgets and the list", async () => {
+    const salary = await create(max, { date: "2026-10-30", amount: "3.000,00", kind: "income", category: "salary", countsNextMonth: false });
+    const rent = await create(max, { date: "2026-10-28", amount: "-900,00", category: "housing", countsNextMonth: true });
+    expect(salary).toMatchObject({ countsNextMonth: false, countingMonth: "2026-10" });
+    expect(rent).toMatchObject({ countsNextMonth: true, countingMonth: "2026-11" });
+
+    expect(await transactions.monthSummary(max, "max-private", "2026-10")).toMatchObject({ incomeCents: 300000, expenseCents: 0 });
+    expect(await transactions.monthSummary(max, "max-private", "2026-11")).toMatchObject({ incomeCents: 0, expenseCents: -90000 });
+    expect(await totals(max, "max-private", "2026-10")).toEqual({ month: "2026-10", totals: {} });
+    expect(await totals(max, "max-private", "2026-11")).toEqual({ month: "2026-11", totals: { housing: -90000 } });
+    expect((await list(max, { accountId: "max-private", month: "2026-11" })).map((t) => t.id)).toEqual([rent.id]);
+
+    const back = await transactions.updateTransaction(max, rent.id, { countsNextMonth: null });
+    expect(back.ok && back.transaction).toMatchObject({ countsNextMonth: null, countingMonth: "2026-10" });
+  });
+
+  it("lists a booking in its counting month and year, but a date range by booking date", async () => {
+    const salary = await create(max, { date: "2026-12-29", amount: "3.000,00", kind: "income", category: "salary" });
+    const ids = async (query: Record<string, unknown>) => (await list(max, { accountId: "max-private", ...query })).map((t) => t.id);
+    expect(await ids({ month: "2026-12" })).toEqual([]);
+    expect(await ids({ month: "2027-01" })).toEqual([salary.id]);
+    expect(await ids({ year: "2026" })).toEqual([]);
+    expect(await ids({ year: "2027" })).toEqual([salary.id]);
+    expect(await ids({ from: "2026-12-01", to: "2026-12-31" })).toEqual([salary.id]);
+  });
+
+  it("agrees with the rule in code for every booking", async () => {
+    const views = [
+      await create(max, { date: "2026-10-19", amount: "1,00", kind: "income", category: "salary" }),
+      await create(max, { date: "2026-10-20", amount: "1,00", kind: "income", category: "salary" }),
+      await create(max, { date: "2026-01-31", amount: "1,00", kind: "income", category: "salary" }),
+      await create(max, { date: "2026-10-25", amount: "1,00", kind: "income", category: "otherIncome" }),
+      await create(max, { date: "2026-10-25", amount: "-1,00", category: "groceries", countsNextMonth: true }),
+      await create(max, { date: "2026-10-25", amount: "1,00", kind: "income", category: "salary", countsNextMonth: false }),
+    ];
+    const rows = await setup.db.select({ id: transaction.id, month: countingMonth }).from(transaction);
+    for (const view of views) expect(rows.find((row) => row.id === view.id)?.month).toBe(view.countingMonth);
+    expect(views.map((v) => v.countingMonth)).toEqual(["2026-10", "2026-11", "2026-02", "2026-10", "2026-11", "2026-10"]);
+  });
+
+  it("never counts or lists another member's private salary, in any month", async () => {
+    await create(max, { date: "2026-10-30", amount: "3.000,00", kind: "income", category: "salary" });
+    expect(await transactions.monthSummary(erika, "max-private", "2026-11")).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.listTransactions(erika, { accountId: "max-private", month: "2026-11" })).toEqual({ ok: false, reason: "not-found" });
+    expect(await transactions.monthSummary(erika, { ownPrivate: true }, "2026-11")).toMatchObject({ incomeCents: 0 });
+    expect(await totals(erika, "max-private", "2026-11")).toEqual({ month: "2026-11", totals: {} });
   });
 });

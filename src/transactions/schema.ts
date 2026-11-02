@@ -26,6 +26,9 @@ export const transaction = pgTable(
     // Who set kind and category: the import or transfer matching (auto), a rule, or a person
     // (manual). Rules never change a manual classification.
     classifiedBy: text("classified_by", { enum: CLASSIFIED_BY }).notNull().default("auto"),
+    // Which month the amount counts for, chosen by a person: true = the month after the booking
+    // date, false = the booking month, null = automatic (src/transactions/counting-month.ts).
+    countsNextMonth: boolean("counts_next_month"),
     createdByUserId: text("created_by_user_id").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

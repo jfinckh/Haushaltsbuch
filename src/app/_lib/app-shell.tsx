@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { SignOutButton } from "@/auth";
 import { LocaleSwitcher } from "@/shared/locale-switcher";
+import { AddBookingButton } from "./add-booking-button";
 import { AppVersion } from "./app-version";
 
 type NavKey = "overview" | "transactions" | "statistics" | "imports" | "rules" | "categories" | "household";
@@ -179,6 +180,11 @@ export function AppShell({ children, narrow = false }: { children: ReactNode; na
           <CurrentNavLinks variant="bar" />
         </Suspense>
       </nav>
+
+      {/* Path and query are only known at request time. */}
+      <Suspense fallback={null}>
+        <AddBookingButton />
+      </Suspense>
     </div>
   );
 }

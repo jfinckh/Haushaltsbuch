@@ -36,7 +36,17 @@ function Row({ transaction, href, accountName, categoryNames, back }: { transact
   const categoryName = useCategoryName(categoryNames);
   const categorized = transaction.kind === "transfer" || transaction.kind === "saving" || transaction.category !== null;
   const label = transaction.category ? categoryName(transaction.category) : t(`kinds.${transaction.kind}`);
+  const format = useFormatter();
   const badge = !categorized && <span className="badge badge-soft badge-warning badge-sm">{t("list.uncategorized")}</span>;
+  // A booking that counts for another month than its date (end-of-month salary, or chosen by hand).
+  const countsElsewhere = transaction.kind !== "transfer" && transaction.countingMonth !== transaction.date.slice(0, 7);
+  const monthBadge = countsElsewhere && (
+    <span className="badge badge-soft badge-info badge-sm whitespace-nowrap">
+      {t("list.countsFor", {
+        month: format.dateTime(new Date(`${transaction.countingMonth}-01T00:00:00Z`), { timeZone: "UTC", month: "long" }),
+      })}
+    </span>
+  );
   const columns = accountName === undefined ? "@xl:grid-cols-[minmax(0,1fr)_12rem_7.5rem]" : "@xl:grid-cols-[minmax(0,1fr)_12rem_10rem_7.5rem]";
   return (
     <li>
@@ -50,11 +60,13 @@ function Row({ transaction, href, accountName, categoryNames, back }: { transact
             {label}
             {accountName && <span>· {accountName}</span>}
             {badge}
+            {monthBadge}
           </p>
         </div>
         <p className="hidden min-w-0 items-center gap-1.5 text-sm text-base-content/70 @xl:flex">
           <span className="truncate">{label}</span>
           {badge}
+          {monthBadge}
         </p>
         {accountName !== undefined && <p className="hidden truncate text-sm text-base-content/60 @xl:block">{accountName}</p>}
         <span className={`text-right font-medium whitespace-nowrap ${amountClass(transaction)}`}>{formatEuro(transaction.amountCents)}</span>
@@ -63,7 +75,10 @@ function Row({ transaction, href, accountName, categoryNames, back }: { transact
   );
 }
 
-/** Bookings grouped by date, newest first; uncategorized expenses and income are marked. */
+/**
+ * Bookings grouped by date, newest first; uncategorized expenses and income are marked, and so are
+ * bookings that count for another month than their date.
+ */
 export function TransactionList({ transactions, href = "/transactions", accountNames, categoryNames, back }: Props) {
   const t = useTranslations("transactions.list");
   const format = useFormatter();

@@ -33,6 +33,7 @@ Technische Leitplanken:
 - Umbuchungen als **Paar** zweier verknüpfter Transaktionen, damit beide Konten stimmen.
 - Jede Transaktion behält die **Rohdaten** aus dem Import, damit Regeln später neu angewendet werden können.
 - Ein Monat ist immer der **Kalendermonat** (vom 1. bis zum letzten Tag); es gibt keinen einstellbaren Monatsbeginn.
+- Jede Buchung zählt für einen **Zählmonat**, normalerweise ihren Buchungsmonat. **Gehalt** (Kategorie Gehalt und ihre Unterkategorien), das ab dem 20. eingeht, zählt für den Folgemonat: Es bezahlt den nächsten Monat, und so hat jeder Monat genau ein Gehalt. Im Buchungsformular lässt sich jede Buchung von Hand auf Buchungsmonat oder Folgemonat setzen; das gewinnt immer. Verfügbar, Statistik, Budgets und die Buchungsliste je Monat oder Jahr rechnen mit dem Zählmonat; die Liste zeigt „Zählt für November“ an der Buchung.
 
 ## Familienfunktionen
 

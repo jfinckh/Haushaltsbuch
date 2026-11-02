@@ -24,6 +24,10 @@ export type TransactionView = {
   createdByMe: boolean;
   /** Who set kind and category: the import or matching (auto), a rule, or a person (manual). */
   classifiedBy: ClassifiedBy;
+  /** A person's choice of month: true = next month, false = booking month, null = automatic. */
+  countsNextMonth: boolean | null;
+  /** The month the amount counts for (YYYY-MM, counting-month.ts). */
+  countingMonth: string;
 };
 
 /** One visible account, or all of the caller's own private accounts together (dashboard). */
@@ -85,7 +89,8 @@ export type CategoryIncomesResult = Result<{ months: MonthCategoryIncome[] }, Re
 export interface BookingService {
   /**
    * Bookings of one account, or of all own private accounts (`scope`), newest first, for a month, a
-   * year or from/to; without any, the current calendar month. The search text is matched against
+   * year or from/to; without any, the current calendar month. A month or year goes by counting
+   * month (counting-month.ts), from/to by booking date. The search text is matched against
    * counterparty and reference after decryption, so only within the range. `total` covers all hits;
    * `limit` cuts the list after the search. With `kind=saving` within the own private accounts,
    * saving bookings on savings accounts are left out (the other side of one on an everyday account).
@@ -177,15 +182,18 @@ export interface BookingStore {
   classifyBookings(tx: RlsTransaction, items: Classification[]): Promise<string[]>;
 
   /**
-   * Net sum (cents) of a visible account's expenses per category key in a calendar month
-   * (budgets). Negative means money spent; refunds booked as positive expenses lower it. Expenses
+   * Net sum (cents) of a visible account's expenses per category key in a calendar month, by
+   * counting month (budgets). Negative means money spent; refunds booked as positive expenses lower it. Expenses
    * without category, income, transfers and saving are left out. Without a month, the current one.
    * An account the caller cannot see gives no totals.
    */
   expenseTotals(tx: RlsTransaction, accountId: string, month?: string): Promise<{ month: string; totals: Record<string, number> }>;
 }
 
-/** Totals of the bookings the caller may see. */
+/**
+ * Totals of the bookings the caller may see. Every month is a counting month (counting-month.ts):
+ * a booking counts for its booking month, end-of-month salary or a person's choice for the next one.
+ */
 export interface BookingFigures {
   /**
    * Income, expenses and saving of a visible account in a calendar month (cents, signed as booked:

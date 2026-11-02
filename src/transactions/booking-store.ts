@@ -1,10 +1,11 @@
 import { and, asc, eq, gte, inArray, isNotNull, isNull, lte, ne, sql, type SQL } from "drizzle-orm";
 import { categoryAllowed, findVisible, visible } from "./access";
 import type { BookingCodec } from "./booking-codec";
+import { inCountingMonths } from "./counting-month-sql";
 import { isCategoryFor, ownCategoryId } from "./categories";
 import type { BookingStore, Classification } from "./contract";
 import type { TransactionKind } from "./kinds";
-import { monthOf, monthRange } from "./months";
+import { monthOf } from "./months";
 import { transaction } from "./schema";
 import { transactionValuesSchema } from "./validation";
 
@@ -167,7 +168,6 @@ export function createBookingStore({ codec, today }: BookingStoreDeps): BookingS
     },
 
     async expenseTotals(tx, accountId, month = monthOf(today())) {
-      const { from, to } = monthRange(month);
       const rows = await tx
         .select({ category: transaction.category, sum: sql<string>`sum(${transaction.amountCents})` })
         .from(transaction)
@@ -177,8 +177,7 @@ export function createBookingStore({ codec, today }: BookingStoreDeps): BookingS
             eq(transaction.accountId, accountId),
             eq(transaction.kind, "expense"),
             isNotNull(transaction.category),
-            gte(transaction.bookingDate, from),
-            lte(transaction.bookingDate, to),
+            inCountingMonths(month, month),
           ),
         )
         .groupBy(transaction.category);

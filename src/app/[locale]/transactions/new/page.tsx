@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { accounts } from "@/app/_lib/accounts";
+import { safeBack } from "@/app/_lib/back-link";
 import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { TransactionForm } from "@/transactions";
@@ -22,7 +23,10 @@ export default function NewTransactionPage(props: Props) {
 
 async function NewTransaction({ searchParams }: Props) {
   const { caller } = await requireCaller("/sign-in");
-  const requested = (await searchParams).accountId;
+  const query = await searchParams;
+  const requested = query.accountId;
+  // Opened from a list page: go back there (also after saving).
+  const back = safeBack(query.back);
   const [visible, catalog] = await Promise.all([accounts.listAccounts(caller), categories.catalog(caller)]);
   const bookable = visible.filter((a) => !a.archived).map(({ id, name, visibility }) => ({ id, name, visibility }));
   // Only an account the caller may see is preselected.
@@ -30,8 +34,8 @@ async function NewTransaction({ searchParams }: Props) {
   const t = await getTranslations("app.transactions");
   return (
     <>
-      <PageHeader title={t("addTitle")} back={{ href: accountId ? `/accounts/${accountId}` : "/", label: t("back") }} />
-      {bookable.length === 0 ? <p className="opacity-70">{t("noAccounts")}</p> : <TransactionForm accounts={bookable} accountId={accountId} categories={catalog} />}
+      <PageHeader title={t("addTitle")} back={{ href: back ?? (accountId ? `/accounts/${accountId}` : "/"), label: t("back") }} />
+      {bookable.length === 0 ? <p className="opacity-70">{t("noAccounts")}</p> : <TransactionForm accounts={bookable} accountId={accountId} categories={catalog} returnTo={back ?? undefined} />}
     </>
   );
 }

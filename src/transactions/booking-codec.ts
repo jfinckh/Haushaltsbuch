@@ -1,6 +1,7 @@
 import type { FieldCrypto } from "@/shared/field-crypto";
 import { formatIban } from "@/shared/iban";
 import type { TransactionView } from "./contract";
+import { countingMonthOf } from "./counting-month";
 import type { transaction } from "./schema";
 import type { TransactionValues } from "./validation";
 
@@ -49,6 +50,8 @@ export function createBookingCodec(fieldCrypto: FieldCrypto): BookingCodec {
         reference: decrypt(row.referenceEncrypted, CONTEXT.reference),
         createdByMe: row.createdByUserId === userId,
         classifiedBy: row.classifiedBy,
+        countsNextMonth: row.countsNextMonth,
+        countingMonth: countingMonthOf(row),
       };
     },
 
@@ -62,6 +65,7 @@ export function createBookingCodec(fieldCrypto: FieldCrypto): BookingCodec {
         counterparty: decrypt(row.counterpartyEncrypted, CONTEXT.counterparty),
         counterpartyIban: decrypt(row.counterpartyIbanEncrypted, CONTEXT.counterpartyIban),
         reference: decrypt(row.referenceEncrypted, CONTEXT.reference),
+        countsNextMonth: row.countsNextMonth,
       };
     },
 

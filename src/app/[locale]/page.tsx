@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
 import { BudgetSection } from "@/budgets";
 import { AccountSwitcher } from "@/app/_lib/account-switcher";
+import { addBookingHref } from "@/app/_lib/add-booking-href";
 import { bookingsHref } from "@/app/_lib/bookings-href";
 import { accounts } from "@/app/_lib/accounts";
 import { budgets } from "@/app/_lib/budgets";
@@ -56,9 +57,15 @@ async function Dashboard({ searchParams }: Props) {
         title={t("greeting", { name: user.name })}
         actions={
           selected && (
-            <Link href={`/statistics?account=${selectedId}`} className="btn btn-ghost btn-sm">
-              {t("statistics")}
-            </Link>
+            <>
+              <Link href={`/statistics?account=${selectedId}`} className="btn btn-ghost btn-sm">
+                {t("statistics")}
+              </Link>
+              {/* On phones the round button in the frame does this. */}
+              <Link href={addBookingHref("/", `account=${selectedId}`)} className="btn btn-primary btn-sm hidden lg:inline-flex">
+                {t("addBooking")}
+              </Link>
+            </>
           )
         }
       />

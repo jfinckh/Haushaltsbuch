@@ -3,9 +3,10 @@ import { accountIsVisible } from "@/db-contract/server";
 import { withSession, type RlsDatabase } from "@/shared/rls";
 import { categoryAllowed, findVisible, notOnSavingsAccount, ownPrivate, targetFilter, visible } from "./access";
 import type { BookingCodec } from "./booking-codec";
+import { inCountingMonths } from "./counting-month-sql";
 import { isCategoryFor } from "./categories";
 import type { BookingService, LatestTransactionsResult, ListTransactionsResult, SaveTransactionResult } from "./contract";
-import { monthOf, monthRange } from "./months";
+import { monthOf } from "./months";
 import { transaction } from "./schema";
 import { createTransactionSchema, listQuerySchema, transactionValuesSchema, updateTransactionSchema } from "./validation";
 
@@ -25,13 +26,17 @@ export function createBookingService({ db, codec, today }: BookingServiceDeps): 
       const parsed = listQuerySchema.safeParse(query);
       if (!parsed.success) return { ok: false, reason: "invalid-input" };
       const { accountId, scope, kind, category, q, limit } = parsed.data;
-      const { from, to } = parsed.data.month
-        ? monthRange(parsed.data.month)
-        : parsed.data.year
-          ? { from: `${parsed.data.year}-01-01`, to: `${parsed.data.year}-12-31` }
+      // A month or a year goes by counting month (counting-month.ts), like the figures; a date range
+      // given as from/to goes by booking date.
+      const { month, year } = parsed.data;
+      const months = month
+        ? { from: month, to: month }
+        : year
+          ? { from: `${year}-01`, to: `${year}-12` }
           : parsed.data.from || parsed.data.to
-            ? { from: parsed.data.from, to: parsed.data.to }
-            : monthRange(monthOf(today()));
+            ? null
+            : { from: monthOf(today()), to: monthOf(today()) };
+      const { from, to } = months ? { from: undefined, to: undefined } : parsed.data;
 
       return withSession(db, caller, async (tx, userId): Promise<ListTransactionsResult> => {
         let target: SQL;
@@ -46,6 +51,7 @@ export function createBookingService({ db, codec, today }: BookingServiceDeps): 
           target,
           visible,
           scope && kind === "saving" && notOnSavingsAccount,
+          months && inCountingMonths(months.from, months.to),
           from && gte(transaction.bookingDate, from),
           to && lte(transaction.bookingDate, to),
           kind && eq(transaction.kind, kind),

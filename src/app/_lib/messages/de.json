@@ -31,7 +31,8 @@
     "statistics": "Statistik",
     "categories": "Kategorien",
     "groupPrivate": "Privat",
-    "groupShared": "Gemeinsam"
+    "groupShared": "Gemeinsam",
+    "addBooking": "Buchung hinzufügen"
   },
   "statistics": {
     "title": "Statistik",
@@ -161,7 +162,8 @@
     "back": "Zurück",
     "noAccounts": "Lege zuerst ein Konto an.",
     "backToStatistics": "Zurück zur Statistik",
-    "backToOverview": "Zurück zur Übersicht"
+    "backToOverview": "Zurück zur Übersicht",
+    "addBooking": "Buchung hinzufügen"
   },
   "imports": {
     "title": "CSV importieren",
@@ -195,6 +197,7 @@
     "categories": "Kategorien",
     "household": "Haushalt",
     "householdLong": "Haushalt & Konten",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "addBooking": "Buchung hinzufügen"
   }
 }

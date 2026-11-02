@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:src/transactions/schema.ts",
+      "itemHash": "sha256:08b5834600859563a1859ff711f7987361fa8a387e3cce5ece883a3ec30cb0a5",
+      "decision": "approve",
+      "at": "2026-11-02T15:40:45Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/0027_counts_next_month.sql",
+      "itemHash": "sha256:3f19f671ec2eba127bba6a871f61f065d25d526da720e005b3f6d56d2019cc6d",
+      "decision": "approve",
+      "at": "2026-11-02T15:40:45Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/0027_snapshot.json",
+      "itemHash": "sha256:1c8fd46894a8be5b2c783106d33151dfc025e19419ee0a23b715a5b3d6553ef7",
+      "decision": "approve",
+      "at": "2026-11-02T15:40:45Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "finding-accepted:guarded-file-without-signoff:drizzle/meta/_journal.json",
+      "itemHash": "sha256:0db6dc98c5d3037bda3c88cc1d1c69b57c67a72b173d47612a86a9e9dada192d",
+      "decision": "approve",
+      "at": "2026-11-02T15:40:45Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:transaction",
+      "itemHash": "sha256:ca6e8a4d7d2851ebe1139b5eaeb2cde035d9d1577a3e88e0857548b0654add29",
+      "decision": "approve",
+      "at": "2026-11-02T15:56:13Z",
+      "source": "hook"
+    }
+  ]
+}

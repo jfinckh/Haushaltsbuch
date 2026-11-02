@@ -49,6 +49,8 @@ const fields = {
   counterparty: optionalText(200, "transactions.validation.counterpartyTooLong"),
   counterpartyIban: ibanSchema,
   reference: optionalText(500, "transactions.validation.referenceTooLong"),
+  /** Which month the booking counts for: true = next month, false = booking month, null = automatic. */
+  countsNextMonth: z.boolean().nullish(),
 };
 
 /** A complete booking as stored (before encryption). Also checks a booking after an update. */
@@ -62,6 +64,7 @@ export const transactionValuesSchema = z
     counterparty: z.string().max(200).nullable(),
     counterpartyIban: z.string().refine(isValidIban).nullable(),
     reference: z.string().max(500).nullable(),
+    countsNextMonth: z.boolean().nullish(),
   })
   .superRefine((values, ctx) => {
     // An own category's key is only checked for its format here; the server checks it in the database.
@@ -92,6 +95,7 @@ export const updateTransactionSchema = z
     counterparty: fields.counterparty.optional(),
     counterpartyIban: fields.counterpartyIban.optional(),
     reference: fields.reference.optional(),
+    countsNextMonth: fields.countsNextMonth,
   })
   .transform(({ date, amount, ...rest }) => {
     // Absent fields come out as undefined; drop them so they do not overwrite stored values.
