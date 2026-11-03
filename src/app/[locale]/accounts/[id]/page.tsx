@@ -7,6 +7,7 @@ import { budgets } from "@/app/_lib/budgets";
 import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
 import { insights } from "@/app/_lib/insights";
+import { recurring } from "@/app/_lib/recurring";
 import { transactions } from "@/app/_lib/transactions";
 import { householdMembers, transfers } from "@/app/_lib/transfers";
 import { BudgetSection } from "@/budgets";
@@ -56,6 +57,7 @@ async function AccountBookings({ params, searchParams }: Props) {
     categories.catalog(caller),
   ]);
   if (!listed.ok && listed.reason === "not-found") notFound();
+  const recurringIds = new Set(listed.ok ? (await recurring.templateOfBookings(caller, listed.transactions.map((b) => b.id))).keys() : []);
   // A shared account never offers personal categories.
   const groups = account.visibility === "shared" ? catalog.shared : catalog.private;
   const balance = balances[account.id];
@@ -102,7 +104,7 @@ async function AccountBookings({ params, searchParams }: Props) {
           )}
           <TransactionFilters values={filters} categoryGroups={groups} categoryNames={catalog.names} />
           {listed.ok ? (
-            <TransactionList transactions={listed.transactions} categoryNames={catalog.names} back={back} />
+            <TransactionList transactions={listed.transactions} categoryNames={catalog.names} back={back} recurringIds={recurringIds} />
           ) : (
             <div role="alert" className="alert alert-warning alert-soft">
               <span>{t("invalidFilter")}</span>

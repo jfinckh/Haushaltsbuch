@@ -32,8 +32,8 @@ async function Recurring() {
         title={t("title")}
         subtitle={t("intro")}
         actions={
-          <Link href="/transactions/new" className="btn btn-primary btn-sm">
-            {t("add")}
+          <Link href="/recurring/new" className="btn btn-primary btn-sm">
+            {t("addTemplate")}
           </Link>
         }
       />

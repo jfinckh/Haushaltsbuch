@@ -164,7 +164,9 @@
     "noAccounts": "Add an account first.",
     "backToStatistics": "Back to statistics",
     "backToOverview": "Back to overview",
-    "addBooking": "Add booking"
+    "addBooking": "Add booking",
+    "fromTemplate": "This booking comes from a regular booking.",
+    "editTemplate": "Edit regular booking"
   },
   "imports": {
     "title": "Import CSV",

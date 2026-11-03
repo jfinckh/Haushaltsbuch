@@ -20,7 +20,8 @@
     "empty": "Keine Buchungen in diesem Zeitraum.",
     "uncategorized": "Ohne Kategorie",
     "noText": "Buchung",
-    "countsFor": "Zählt für {month}"
+    "countsFor": "Zählt für {month}",
+    "recurring": "Regelmäßig"
   },
   "spending": {
     "title": "Ausgaben nach Kategorie",

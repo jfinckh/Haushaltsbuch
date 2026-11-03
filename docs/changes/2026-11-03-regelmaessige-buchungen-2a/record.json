@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-03",
+  "slug": "regelmaessige-buchungen-2a",
+  "description": "Regelmäßige Buchungen 2a – Vorlage anlegen und bearbeiten",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-11-03-regelmaessige-buchungen-2a-vorlage-bearbeiten.md",
+    "sha256": "b6ecadeae6fa77ae1284f7f455ab22206c0110decacbb7649b3165757965467d"
+  },
+  "status": "final",
+  "base": "bdba4257eae89a087703adedd31e21dde805cf25",
+  "report": "Finalized regelmaessige-buchungen-2a (bdba425..working-tree)\nFiles: 26 converge, 0 diverge, 0 absent. Elements: 5 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 2 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-11-03-regelmaessige-buchungen-2a/map.html\n",
+  "shownAt": "2026-11-03T09:07:52Z"
+}

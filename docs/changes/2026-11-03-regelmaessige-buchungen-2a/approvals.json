@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "edge-new:recurring->db-contract",
+      "itemHash": "sha256:d277194edc1732bd5d008b11ed83a3dce0b22c8188d495428d9d8290e53df8e2",
+      "decision": "approve",
+      "at": "2026-11-03T08:41:02Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:client:TemplateForm",
+      "itemHash": "sha256:6a1dfe488420326aa406fccac224f80f472b7b1ce08384f9e9cf13a84cbdb677",
+      "decision": "approve",
+      "at": "2026-11-03T08:41:02Z",
+      "source": "hook"
+    }
+  ]
+}

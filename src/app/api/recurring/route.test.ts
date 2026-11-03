@@ -143,3 +143,53 @@ describe("/api/recurring/[id]", () => {
     expect((await templateAs(null).DELETE(request("DELETE"), ctx(id))).status).toBe(401);
   });
 });
+
+describe("POST /api/recurring and PATCH with fields", () => {
+  const template = (accountId: string, overrides: Record<string, unknown> = {}) => ({
+    accountId,
+    amount: "-12,99",
+    kind: "expense",
+    category: null,
+    counterparty: "Streaming GmbH",
+    counterpartyIban: "",
+    reference: "",
+    countsNextMonth: null,
+    intervalMonths: 1,
+    nextDueDate: "2026-11-15",
+    endDate: null,
+    ...overrides,
+  });
+
+  it("creates a template", async () => {
+    const response = await templateAs("erika").POST(request("POST", template(shared)));
+    expect(response.status).toBe(201);
+    expect((await response.json()).template).toMatchObject({ amountCents: -1299, nextDueDate: "2026-11-15" });
+    expect(await count("transaction")).toBe(0);
+  });
+
+  it("answers 404 for max's private account as erika", async () => {
+    expect((await templateAs("erika").POST(request("POST", template(maxPrivate)))).status).toBe(404);
+    expect(await count("recurring_template")).toBe(0);
+  });
+
+  it("answers 400 for a next date before today", async () => {
+    expect((await templateAs("max").POST(request("POST", template(shared, { nextDueDate: "2026-11-02" })))).status).toBe(400);
+  });
+
+  it("updates a template", async () => {
+    const id = await createTemplate("max", shared);
+    const response = await templateAs("erika").PATCH(request("PATCH", template(shared, { amount: "-1.250,00", nextDueDate: "2026-11-28" })), ctx(id));
+    expect(response.status).toBe(200);
+    expect((await response.json()).template).toMatchObject({ amountCents: -125000 });
+  });
+
+  it("answers 404 to erika updating max's private template, unchanged", async () => {
+    const id = await createTemplate("max", maxPrivate);
+    expect((await templateAs("erika").PATCH(request("PATCH", template(shared)), ctx(id))).status).toBe(404);
+    expect(await recurring.getTemplate(await caller("max"), id)).toMatchObject({ amountCents: -120000, accountId: maxPrivate });
+  });
+
+  it("needs a session to create", async () => {
+    expect((await templateAs(null).POST(request("POST", template(shared)))).status).toBe(401);
+  });
+});

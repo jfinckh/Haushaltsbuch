@@ -11,6 +11,7 @@ import { sanitizeBookingsQuery } from "@/app/_lib/bookings-query";
 import { requireCaller } from "@/app/_lib/caller";
 import { categories } from "@/app/_lib/categories";
 import { households } from "@/app/_lib/households";
+import { recurring } from "@/app/_lib/recurring";
 import { transactions } from "@/app/_lib/transactions";
 import { ALL_MINE, selectAccount } from "@/insights";
 import { formatEuro } from "@/shared/money";
@@ -81,6 +82,7 @@ async function Bookings({ searchParams }: Props) {
 
   const target = selected === ALL_MINE ? ({ scope: "own-private" } as const) : { accountId: selected.id };
   const listed = await transactions.listTransactions(caller, { ...target, ...kept, limit });
+  const recurringIds = new Set(listed.ok ? (await recurring.templateOfBookings(caller, listed.transactions.map((b) => b.id))).keys() : []);
   const accountNames =
     selected === ALL_MINE ? Object.fromEntries(visibleAccounts.filter((a) => a.visibility === "private").map((a) => [a.id, a.name])) : undefined;
 
@@ -103,7 +105,7 @@ async function Bookings({ searchParams }: Props) {
       {listed.ok ? (
         <>
           <p className="text-sm text-base-content/70">{t("count", { count: listed.total.count, sum: formatEuro(listed.total.sumCents) })}</p>
-          <TransactionList transactions={listed.transactions} accountNames={accountNames} categoryNames={catalog.names} back={back} />
+          <TransactionList transactions={listed.transactions} accountNames={accountNames} categoryNames={catalog.names} back={back} recurringIds={recurringIds} />
           {more && (
             <Link href={moreHref} className="btn btn-sm self-center">
               {t("loadMore")}

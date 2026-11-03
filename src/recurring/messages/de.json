@@ -2,7 +2,10 @@
   "page": {
     "title": "Regelmäßige Buchungen",
     "intro": "Gehalt, Miete, Abos: Die App bucht sie selbst am Fälligkeitstag.",
-    "add": "Neue Buchung"
+    "newTitle": "Neue regelmäßige Buchung",
+    "editTitle": "Regelmäßige Buchung bearbeiten",
+    "back": "Zurück",
+    "addTemplate": "Neue regelmäßige Buchung"
   },
   "list": {
     "empty": "Noch keine regelmäßigen Buchungen. Hake im Buchungsformular „Regelmäßig wiederholen“ an.",
@@ -16,7 +19,8 @@
     "delete": "Löschen",
     "confirmEnd": "Wirklich beenden? Danach wird nichts mehr gebucht.",
     "confirmDelete": "Wirklich löschen? Bereits angelegte Buchungen bleiben.",
-    "failed": "Das hat nicht geklappt. Bitte versuch es noch einmal."
+    "failed": "Das hat nicht geklappt. Bitte versuch es noch einmal.",
+    "edit": "Bearbeiten"
   },
   "status": {
     "active": "Aktiv",
@@ -26,6 +30,43 @@
   },
   "validation": {
     "intervalInvalid": "Bitte wähle einen Rhythmus.",
-    "endDateInvalid": "Bitte gib ein gültiges Datum ein."
+    "endDateInvalid": "Bitte gib ein gültiges Datum ein.",
+    "accountRequired": "Bitte wähle ein Konto.",
+    "amountInvalid": "Bitte gib einen Betrag ungleich 0 ein, z. B. -12,99.",
+    "categoryNotForKind": "Diese Kategorie passt nicht zur Art.",
+    "endBeforeNext": "Das Ende liegt vor der nächsten Buchung.",
+    "nextDueInPast": "Die nächste Buchung darf nicht in der Vergangenheit liegen.",
+    "dateInvalid": "Bitte gib ein gültiges Datum ein.",
+    "ibanInvalid": "Diese IBAN ist ungültig.",
+    "textTooLong": "Dieser Text ist zu lang."
+  },
+  "form": {
+    "amount": "Betrag (€)",
+    "nextDueDate": "Nächste Buchung",
+    "kind": "Art",
+    "category": "Kategorie",
+    "noCategory": "Keine Kategorie",
+    "interval": "Rhythmus",
+    "intervals": {
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "halfYearly": "Halbjährlich",
+      "yearly": "Jährlich"
+    },
+    "counterparty": "Gegenpartei",
+    "reference": "Verwendungszweck",
+    "account": "Konto",
+    "endDate": "Endet am (optional)",
+    "countsFor": "Zählt für Monat",
+    "countsForAuto": "Automatisch",
+    "countsForBookingMonth": "Buchungsmonat",
+    "countsForNextMonth": "Folgemonat",
+    "more": "Mehr",
+    "iban": "IBAN der Gegenpartei",
+    "save": "Speichern",
+    "create": "Anlegen",
+    "saveFailed": "Speichern hat nicht geklappt. Bitte versuch es noch einmal.",
+    "notFound": "Diese regelmäßige Buchung oder das Konto gibt es nicht (mehr).",
+    "futureOnly": "Änderungen gelten für künftige Buchungen. Bereits gebuchte bleiben, wie sie sind."
   }
 }

@@ -164,7 +164,9 @@
     "noAccounts": "Lege zuerst ein Konto an.",
     "backToStatistics": "Zurück zur Statistik",
     "backToOverview": "Zurück zur Übersicht",
-    "addBooking": "Buchung hinzufügen"
+    "addBooking": "Buchung hinzufügen",
+    "fromTemplate": "Diese Buchung kommt aus einer regelmäßigen Buchung.",
+    "editTemplate": "Regelmäßige Buchung bearbeiten"
   },
   "imports": {
     "title": "CSV importieren",

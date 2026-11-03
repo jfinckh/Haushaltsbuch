@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isValidIban, normalizeIban } from "@/shared/iban";
+import { parseGermanAmount } from "@/shared/money";
 
 // Input checks of the recurring part, shared by the booking form and the routes. Messages are
 // translation keys (recurring.validation.*). Browser-safe.
@@ -28,3 +30,55 @@ export type RepeatValues = z.infer<typeof repeatSchema>;
 export const templateActionSchema = z.object({ action: z.enum(["pause", "resume", "end"]) });
 
 export type TemplateAction = z.infer<typeof templateActionSchema>["action"];
+
+const KINDS = ["expense", "income", "transfer", "saving"] as const;
+
+/** Optional text: trimmed, empty means none. */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, "recurring.validation.textTooLong")
+    .nullish()
+    .transform((value) => value || null);
+
+/**
+ * A template from the template form (create and edit). The amount comes in German format; the next
+ * date sets the day of the month. "Not before today" needs today and is checked by the service.
+ */
+export const templateInputSchema = z
+  .object({
+    accountId: z.string().min(1, "recurring.validation.accountRequired"),
+    amount: z
+      .string()
+      .transform((value) => parseGermanAmount(value))
+      .refine((cents): cents is number => cents !== null && cents !== 0, "recurring.validation.amountInvalid"),
+    kind: z.enum(KINDS),
+    category: z
+      .string()
+      .nullish()
+      .transform((value) => value || null),
+    counterparty: optionalText(200),
+    counterpartyIban: z
+      .string()
+      .nullish()
+      .transform((value) => normalizeIban(value ?? ""))
+      .refine((iban) => iban === "" || isValidIban(iban), "recurring.validation.ibanInvalid")
+      .transform((iban) => iban || null),
+    reference: optionalText(500),
+    countsNextMonth: z.boolean().nullish().transform((value) => value ?? null),
+    intervalMonths: repeatSchema.shape.intervalMonths,
+    nextDueDate: z.string().refine(isIsoDate, "recurring.validation.dateInvalid"),
+    endDate: repeatSchema.shape.endDate.optional().transform((value) => value ?? null),
+  })
+  .superRefine((values, ctx) => {
+    if (values.category !== null && values.kind !== "expense" && values.kind !== "income") {
+      ctx.addIssue({ code: "custom", path: ["category"], message: "recurring.validation.categoryNotForKind" });
+    }
+    if (values.endDate !== null && values.endDate < values.nextDueDate) {
+      ctx.addIssue({ code: "custom", path: ["endDate"], message: "recurring.validation.endBeforeNext" });
+    }
+  })
+  .transform(({ amount, ...rest }) => ({ ...rest, amountCents: amount as number }));
+
+export type TemplateValues = z.infer<typeof templateInputSchema>;

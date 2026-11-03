@@ -2,7 +2,10 @@
   "page": {
     "title": "Regular bookings",
     "intro": "Salary, rent, subscriptions: the app books them itself on the due date.",
-    "add": "New booking"
+    "newTitle": "New regular booking",
+    "editTitle": "Edit regular booking",
+    "back": "Back",
+    "addTemplate": "New regular booking"
   },
   "list": {
     "empty": "No regular bookings yet. Tick “Repeat regularly” in the booking form.",
@@ -16,7 +19,8 @@
     "delete": "Delete",
     "confirmEnd": "End it? Nothing will be booked after that.",
     "confirmDelete": "Delete it? Bookings already made stay.",
-    "failed": "That did not work. Please try again."
+    "failed": "That did not work. Please try again.",
+    "edit": "Edit"
   },
   "status": {
     "active": "Active",
@@ -26,6 +30,43 @@
   },
   "validation": {
     "intervalInvalid": "Please choose an interval.",
-    "endDateInvalid": "Please enter a valid date."
+    "endDateInvalid": "Please enter a valid date.",
+    "accountRequired": "Please choose an account.",
+    "amountInvalid": "Please enter an amount other than 0, e.g. -12,99.",
+    "categoryNotForKind": "This category does not fit the type.",
+    "endBeforeNext": "The end is before the next booking.",
+    "nextDueInPast": "The next booking must not be in the past.",
+    "dateInvalid": "Please enter a valid date.",
+    "ibanInvalid": "This IBAN is invalid.",
+    "textTooLong": "This text is too long."
+  },
+  "form": {
+    "amount": "Amount (€)",
+    "nextDueDate": "Next booking",
+    "kind": "Type",
+    "category": "Category",
+    "noCategory": "No category",
+    "interval": "Interval",
+    "intervals": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "halfYearly": "Every six months",
+      "yearly": "Yearly"
+    },
+    "counterparty": "Counterparty",
+    "reference": "Reference",
+    "account": "Account",
+    "endDate": "Ends on (optional)",
+    "countsFor": "Counts for month",
+    "countsForAuto": "Automatic",
+    "countsForBookingMonth": "Booking month",
+    "countsForNextMonth": "Next month",
+    "more": "More",
+    "iban": "Counterparty IBAN",
+    "save": "Save",
+    "create": "Create",
+    "saveFailed": "Saving did not work. Please try again.",
+    "notFound": "This regular booking or its account does not exist (any more).",
+    "futureOnly": "Changes apply to future bookings. Bookings already made stay as they are."
   }
 }

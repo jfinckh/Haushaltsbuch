@@ -1,14 +1,15 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, eq, inArray, sql } from "drizzle-orm";
+import { accountIsVisible } from "@/db-contract/server";
 import { rows, withSession, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore } from "@/transactions/server";
-import type { CreateWithBookingResult, Recurring, TemplateStatus, TemplateView } from "./contract";
+import type { CreateWithBookingResult, Recurring, TemplateResult, TemplateStatus, TemplateView } from "./contract";
 import { recurringOccurrence, recurringTemplate } from "./schema";
-import { repeatSchema, templateActionSchema, type IntervalMonths } from "./validation";
+import { repeatSchema, templateActionSchema, templateInputSchema, type IntervalMonths, type TemplateValues } from "./validation";
 
 export type RecurringOptions = {
   db: RlsDatabase;
   /** Creates the first booking and encrypts the template's texts exactly like a booking's. */
-  transactions: Pick<BookingStore, "createBooking" | "encodeTexts" | "decodeTexts">;
+  transactions: Pick<BookingStore, "createBooking" | "encodeTexts" | "decodeTexts" | "checkCategory" | "findBookings">;
   /** Today (YYYY-MM-DD) for resume and end. Default: today in Germany. */
   today?: () => string;
 };
@@ -34,6 +35,13 @@ async function dueAfter(tx: RlsTransaction, day: number, interval: number, ancho
 /** The later of two YYYY-MM-DD dates. */
 const later = (a: string, b: string) => (a > b ? a : b);
 
+/** Whether `date` is the series date of `day` in its month (the day, or the month's last day). */
+function fitsDay(day: number, date: string): boolean {
+  const [year, month, dayOfDate] = date.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return Math.min(day, lastDay) === dayOfDate;
+}
+
 const dayAfter = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
 
 /**
@@ -55,6 +63,7 @@ export function createRecurring({ db, transactions, today = todayInGermany }: Re
       kind: row.kind,
       category: row.category,
       ...transactions.decodeTexts(row),
+      countsNextMonth: row.countsNextMonth,
       intervalMonths: row.intervalMonths as IntervalMonths,
       dayOfMonth: row.dayOfMonth,
       nextDueDate: row.nextDueDate,
@@ -64,7 +73,107 @@ export function createRecurring({ db, transactions, today = todayInGermany }: Re
     };
   }
 
+  type Checked = { ok: true; values: TemplateValues } | { ok: false; reason: "invalid-input" | "not-found" };
+
+  /**
+   * Checks template form input for the caller: valid, next date not before today, a visible account
+   * and a category it offers. With the `existing` template, its archived category stays allowed, and
+   * a paused template may keep its (past) next date: resume moves it forward anyway.
+   */
+  async function checkInput(tx: RlsTransaction, input: unknown, existing?: TemplateRow): Promise<Checked> {
+    const parsed = templateInputSchema.safeParse(input);
+    if (!parsed.success) return { ok: false, reason: "invalid-input" };
+    const values = parsed.data;
+    const keepsPausedDate = existing?.paused === true && values.nextDueDate === existing.nextDueDate;
+    if (values.nextDueDate < today() && !keepsPausedDate) return { ok: false, reason: "invalid-input" };
+    const unchanged = existing;
+    if (!(await accountIsVisible(tx, values.accountId))) return { ok: false, reason: "not-found" };
+    if (values.category !== null) {
+      const same = unchanged?.accountId === values.accountId && unchanged.kind === values.kind && unchanged.category === values.category;
+      const kind = values.kind as "expense" | "income";
+      if (!(await transactions.checkCategory(tx, values.accountId, kind, values.category, { allowArchived: same }))) {
+        return { ok: false, reason: "invalid-input" };
+      }
+    }
+    return { ok: true, values };
+  }
+
+  /**
+   * The stored columns for checked form values. With the `existing` template, its day stays when the
+   * next date still fits it (day 31 edited on 30 November stays day 31), and so does who set the
+   * category when type and category are unchanged.
+   */
+  function columnsOf(values: TemplateValues, existing?: TemplateRow) {
+    const { accountId, amountCents, kind, category, counterparty, counterpartyIban, reference, countsNextMonth, intervalMonths, nextDueDate, endDate } = values;
+    return {
+      accountId,
+      amountCents,
+      kind,
+      category,
+      ...transactions.encodeTexts({ counterparty, counterpartyIban, reference }),
+      countsNextMonth,
+      classifiedBy: !category
+        ? ("auto" as const)
+        : existing && existing.category === category && existing.kind === kind
+          ? existing.classifiedBy
+          : ("manual" as const),
+      intervalMonths,
+      dayOfMonth: existing && fitsDay(existing.dayOfMonth, nextDueDate) ? existing.dayOfMonth : Number(nextDueDate.slice(8, 10)),
+      nextDueDate,
+      endDate,
+    };
+  }
+
   return {
+    async createTemplate(caller, input): Promise<TemplateResult> {
+      return withSession(db, caller, async (tx, userId): Promise<TemplateResult> => {
+        const checked = await checkInput(tx, input);
+        if (!checked.ok) return checked;
+        const [row] = await tx
+          .insert(recurringTemplate)
+          .values({ id: crypto.randomUUID(), ...columnsOf(checked.values), createdByUserId: userId })
+          .returning();
+        return { ok: true, template: toView(row, userId) };
+      });
+    },
+
+    async getTemplate(caller, id, { archivedAccountIds = new Set<string>() } = {}) {
+      return withSession(db, caller, async (tx, userId) => {
+        const [row] = await tx.select().from(recurringTemplate).where(eq(recurringTemplate.id, id));
+        return row ? toView(row, userId, archivedAccountIds) : null;
+      });
+    },
+
+    async updateTemplate(caller, id, input): Promise<TemplateResult> {
+      return withSession(db, caller, async (tx, userId): Promise<TemplateResult> => {
+        const [row] = await tx.select().from(recurringTemplate).where(eq(recurringTemplate.id, id));
+        if (!row) return { ok: false, reason: "not-found" };
+        const checked = await checkInput(tx, input, row);
+        if (!checked.ok) return checked;
+        const [updated] = await tx
+          .update(recurringTemplate)
+          .set({ ...columnsOf(checked.values, row), updatedAt: new Date() })
+          .where(eq(recurringTemplate.id, id))
+          .returning();
+        return { ok: true, template: toView(updated, userId) };
+      });
+    },
+
+    async templateOfBookings(caller, bookingIds) {
+      if (bookingIds.length === 0) return new Map();
+      return withSession(db, caller, async (tx, userId) => {
+        // Only bookings the caller may see: a template moved from a private account to a shared one
+        // must not reveal the owner's private bookings.
+        const visible = (await transactions.findBookings(tx, userId, { ids: [...bookingIds] })).map((booking) => booking.id);
+        if (visible.length === 0) return new Map<string, string>();
+        const found = await tx
+          .select({ transactionId: recurringOccurrence.transactionId, templateId: recurringOccurrence.templateId })
+          .from(recurringOccurrence)
+          .where(inArray(recurringOccurrence.transactionId, visible));
+        return new Map(found.map((row) => [row.transactionId as string, row.templateId]));
+      });
+    },
+
     async createWithBooking(caller, input): Promise<CreateWithBookingResult> {
       if (!input || typeof input !== "object") return { ok: false, reason: "invalid-input" };
       const { repeat, ...bookingInput } = input as Record<string, unknown>;

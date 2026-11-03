@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -5,6 +6,7 @@ import { accounts } from "@/app/_lib/accounts";
 import { safeBack } from "@/app/_lib/back-link";
 import { categories } from "@/app/_lib/categories";
 import { requireCaller } from "@/app/_lib/caller";
+import { recurring } from "@/app/_lib/recurring";
 import { transactions } from "@/app/_lib/transactions";
 import { householdMembers, transfers } from "@/app/_lib/transfers";
 import { DeleteTransactionButton, TransactionForm } from "@/transactions";
@@ -33,11 +35,13 @@ async function EditTransaction({ params, searchParams }: Params) {
   // A booking of another member's private account does not exist for this caller.
   const transaction = await transactions.getTransaction(caller, (await params).id);
   if (!transaction) notFound();
-  const [visible, transferStatus, catalog] = await Promise.all([
+  const [visible, transferStatus, catalog, templates] = await Promise.all([
     accounts.listAccounts(caller),
     householdMembers(caller).then((members) => transfers.statusOf(caller, transaction.id, members)),
     categories.catalog(caller),
+    recurring.templateOfBookings(caller, [transaction.id]),
   ]);
+  const templateId = templates.get(transaction.id);
   // Active accounts, plus the booking's own account even if it is archived.
   const bookable = visible
     .filter((a) => !a.archived || a.id === transaction.accountId)
@@ -49,6 +53,14 @@ async function EditTransaction({ params, searchParams }: Params) {
   return (
     <>
       <PageHeader title={t("editTitle")} back={{ href: back ?? accountHref, label: t("back") }} />
+      {templateId && (
+        <p className="text-sm text-base-content/70">
+          {t("fromTemplate")}{" "}
+          <Link href={`/recurring/${templateId}`} className="link">
+            {t("editTemplate")}
+          </Link>
+        </p>
+      )}
       <TransactionForm accounts={bookable} transaction={transaction} categories={catalog} offerRule returnTo={back ?? undefined} />
       {transferStatus && (
         <>

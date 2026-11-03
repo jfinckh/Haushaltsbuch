@@ -20,6 +20,8 @@ export type TemplateView = {
   /** Formatted in groups of four, or null. */
   counterpartyIban: string | null;
   reference: string | null;
+  /** A person's choice of month for the bookings: true = next month, false = booking month, null = automatic. */
+  countsNextMonth: boolean | null;
   intervalMonths: IntervalMonths;
   dayOfMonth: number;
   nextDueDate: string;
@@ -49,6 +51,21 @@ export interface Recurring {
    * end (today is the last day).
    */
   act(caller: Caller, id: string, input: unknown): Promise<TemplateResult>;
+
+  /**
+   * Adds a template without a first booking (template form). The next date must not lie before
+   * today and sets the day of the month.
+   */
+  createTemplate(caller: Caller, input: unknown): Promise<TemplateResult>;
+
+  /** One visible template, or null. */
+  getTemplate(caller: Caller, id: string, options?: { archivedAccountIds?: ReadonlySet<string> }): Promise<TemplateView | null>;
+
+  /** Changes a visible template for future bookings (template form); bookings already made stay. */
+  updateTemplate(caller: Caller, id: string, input: unknown): Promise<TemplateResult>;
+
+  /** For visible bookings among `bookingIds` that a template made: booking id → template id. */
+  templateOfBookings(caller: Caller, bookingIds: readonly string[]): Promise<Map<string, string>>;
 
   /** Deletes a visible template; its bookings stay. False if there is none the caller may see. */
   deleteTemplate(caller: Caller, id: string): Promise<boolean>;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { callApi } from "@/shared/api-client";
@@ -16,6 +17,8 @@ type Props = {
   categoryNames?: Record<string, string>;
   /** Endpoint for templates. Default: /api/recurring */
   action?: string;
+  /** Base path of the edit pages. Default: /recurring */
+  recurringHref?: string;
 };
 
 const BADGE: Record<TemplateStatus, string> = {
@@ -26,7 +29,7 @@ const BADGE: Record<TemplateStatus, string> = {
 };
 
 /** The regular bookings with their rhythm, next date and buttons to pause, resume, end or delete. */
-export function RecurringList({ templates, accounts, categoryNames, action = "/api/recurring" }: Props) {
+export function RecurringList({ templates, accounts, categoryNames, action = "/api/recurring", recurringHref = "/recurring" }: Props) {
   const t = useTranslations("recurring");
   const tKinds = useTranslations("transactions.kinds");
   const categoryName = useCategoryName(categoryNames);
@@ -64,14 +67,14 @@ export function RecurringList({ templates, accounts, categoryNames, action = "/a
               </p>
             )}
           </div>
-          <TemplateActions template={template} action={action} />
+          <TemplateActions template={template} action={action} editHref={`${recurringHref}/${template.id}`} />
         </li>
       ))}
     </ul>
   );
 }
 
-function TemplateActions({ template, action }: { template: TemplateView; action: string }) {
+function TemplateActions({ template, action, editHref }: { template: TemplateView; action: string; editHref: string }) {
   const t = useTranslations("recurring.list");
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -91,6 +94,12 @@ function TemplateActions({ template, action }: { template: TemplateView; action:
   return (
     <div className="flex shrink-0 flex-col items-end gap-1">
       <div className="flex flex-wrap justify-end gap-1">
+        {/* An ended template is deleted, not edited: its end date lies before its next date. */}
+        {template.status !== "ended" && (
+          <Link href={editHref} className={button}>
+            {t("edit")}
+          </Link>
+        )}
         {template.status === "active" && (
           <button type="button" className={button} disabled={pending} onClick={() => send({ method: "PATCH", json: { action: "pause" } })}>
             {t("pause")}

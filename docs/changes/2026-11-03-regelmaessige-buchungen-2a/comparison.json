@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "base": "bdba4257eae89a087703adedd31e21dde805cf25",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/recurring/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/validation.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/create-recurring.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/create-recurring.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/components/template-form.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/components/recurring-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/recurring/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/recurring/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/recurring/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/recurring/new/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/recurring/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/components/transaction-list.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/transactions/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/transactions/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/accounts/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/transactions/[id]/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/de.json",
+      "status": "convergence",
+      "viaAmendment": "A1"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/messages/en.json",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->db-contract",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->recurring",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "export",
+      "id": "recurring:client:TemplateForm",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "recurring",
+      "to": "db-contract",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "edge-new:recurring->db-contract",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:recurring:client:TemplateForm",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

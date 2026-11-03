@@ -14,6 +14,8 @@ type Props = {
   categoryNames?: Record<string, string>;
   /** Address of the list, passed to the detail page as `?back=` so it can lead back here. */
   back?: string;
+  /** Bookings a regular booking made; they get a badge (ids from the app). */
+  recurringIds?: ReadonlySet<string>;
 };
 
 function byDate(transactions: TransactionView[]): [string, TransactionView[]][] {
@@ -31,7 +33,21 @@ function amountClass(transaction: TransactionView): string {
  * One booking. In a narrow container: name, a line below, amount. From a wide container (@xl) on:
  * columns for name, category, account (when given) and amount.
  */
-function Row({ transaction, href, accountName, categoryNames, back }: { transaction: TransactionView; href: string; accountName?: string; categoryNames?: Record<string, string>; back?: string }) {
+function Row({
+  transaction,
+  href,
+  accountName,
+  categoryNames,
+  back,
+  recurring,
+}: {
+  transaction: TransactionView;
+  href: string;
+  accountName?: string;
+  categoryNames?: Record<string, string>;
+  back?: string;
+  recurring: boolean;
+}) {
   const t = useTranslations("transactions");
   const categoryName = useCategoryName(categoryNames);
   const categorized = transaction.kind === "transfer" || transaction.kind === "saving" || transaction.category !== null;
@@ -47,6 +63,7 @@ function Row({ transaction, href, accountName, categoryNames, back }: { transact
       })}
     </span>
   );
+  const recurringBadge = recurring && <span className="badge badge-soft badge-sm whitespace-nowrap">{t("list.recurring")}</span>;
   const columns = accountName === undefined ? "@xl:grid-cols-[minmax(0,1fr)_12rem_7.5rem]" : "@xl:grid-cols-[minmax(0,1fr)_12rem_10rem_7.5rem]";
   return (
     <li>
@@ -61,12 +78,14 @@ function Row({ transaction, href, accountName, categoryNames, back }: { transact
             {accountName && <span>· {accountName}</span>}
             {badge}
             {monthBadge}
+            {recurringBadge}
           </p>
         </div>
         <p className="hidden min-w-0 items-center gap-1.5 text-sm text-base-content/70 @xl:flex">
           <span className="truncate">{label}</span>
           {badge}
           {monthBadge}
+          {recurringBadge}
         </p>
         {accountName !== undefined && <p className="hidden truncate text-sm text-base-content/60 @xl:block">{accountName}</p>}
         <span className={`text-right font-medium whitespace-nowrap ${amountClass(transaction)}`}>{formatEuro(transaction.amountCents)}</span>
@@ -79,7 +98,7 @@ function Row({ transaction, href, accountName, categoryNames, back }: { transact
  * Bookings grouped by date, newest first; uncategorized expenses and income are marked, and so are
  * bookings that count for another month than their date.
  */
-export function TransactionList({ transactions, href = "/transactions", accountNames, categoryNames, back }: Props) {
+export function TransactionList({ transactions, href = "/transactions", accountNames, categoryNames, back, recurringIds }: Props) {
   const t = useTranslations("transactions.list");
   const format = useFormatter();
   if (transactions.length === 0) return <p className="text-sm text-base-content/60">{t("empty")}</p>;
@@ -99,6 +118,7 @@ export function TransactionList({ transactions, href = "/transactions", accountN
                 accountName={accountNames ? (accountNames[transaction.accountId] ?? "") : undefined}
                 categoryNames={categoryNames}
                 back={back}
+                recurring={recurringIds?.has(transaction.id) ?? false}
               />
             ))}
           </ul>
