@@ -317,6 +317,15 @@ export function createImports({ db, crypto: fieldCrypto, transactions, setOpenin
       );
     },
 
+    async importedBookingIds(tx, bookingIds) {
+      if (bookingIds.length === 0) return new Set();
+      const found = await tx
+        .select({ transactionId: importRow.transactionId })
+        .from(importRow)
+        .where(inArray(importRow.transactionId, [...bookingIds]));
+      return new Set(found.map((row) => row.transactionId));
+    },
+
     async undoImport(caller: Caller, id: string): Promise<boolean> {
       return withSession(db, caller, async (tx) => {
         const [batch] = await tx

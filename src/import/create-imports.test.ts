@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Caller } from "@/shared/rls";
+import { withSession, type Caller } from "@/shared/rls";
 import type { Imports, UploadInput } from "./contract";
 import { createImports } from "./create-imports";
 import { createTestDatabase } from "./test-utils";
@@ -431,5 +431,29 @@ describe("merging bookings entered by hand", () => {
     expect(await imports.undoImport(erika, done.import.id)).toBe(true);
     expect(await setup.transactions.getTransaction(erika, booking.id)).toEqual(booking);
     expect(await imports.preview(dora, upload("home-shared"))).toEqual({ ok: false, reason: "not-found" });
+  });
+});
+
+describe("importedBookingIds", () => {
+  it("names the bookings an import created, not those entered by hand", async () => {
+    const result = await confirm(max, upload("max-private"));
+    const hand = await setup.transactions.createTransaction(max, {
+      accountId: "max-private",
+      date: "2026-10-20",
+      amount: "-3,50",
+      kind: "expense",
+      category: null,
+      counterparty: "Bäcker",
+    });
+    if (!hand.ok) throw new Error("hand booking failed");
+    const importedId = result.bookingIds[0];
+    const found = await withSession(setup.db, max, (tx) => imports.importedBookingIds(tx, [importedId, hand.transaction.id]));
+    expect(found).toEqual(new Set([importedId]));
+    expect(await withSession(setup.db, max, (tx) => imports.importedBookingIds(tx, []))).toEqual(new Set());
+  });
+
+  it("shows nothing of another member's private account", async () => {
+    const result = await confirm(max, upload("max-private"));
+    expect(await withSession(setup.db, erika, (tx) => imports.importedBookingIds(tx, result.bookingIds))).toEqual(new Set());
   });
 });

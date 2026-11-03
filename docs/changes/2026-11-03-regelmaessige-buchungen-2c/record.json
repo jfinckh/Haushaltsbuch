@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-03",
+  "slug": "regelmaessige-buchungen-2c",
+  "description": "Regelmäßige Buchungen 2c – Vorschläge nur aus Handbuchungen",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-11-03-regelmaessige-buchungen-2c-nur-handbuchungen.md",
+    "sha256": "ee7281e2e576c79e58dfa60232b8732be03516ba08a19e117678aad2c3919a37"
+  },
+  "status": "final",
+  "base": "aa2857ee1dd842e26bb736d705c64d5514a4d58b",
+  "report": "Finalized regelmaessige-buchungen-2c (aa2857e..working-tree)\nFiles: 7 converge, 0 diverge, 0 absent. Elements: 2 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: no items.\nRecord updated: record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-11-03-regelmaessige-buchungen-2c/map.html\n",
+  "shownAt": "2026-11-03T11:05:02Z"
+}

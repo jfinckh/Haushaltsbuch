@@ -1,4 +1,4 @@
-import type { Caller } from "@/shared/rls";
+import type { Caller, RlsTransaction } from "@/shared/rls";
 import type { TransactionValues } from "@/transactions/server";
 import type { Bank, ParseErrorReason } from "./parsing/types";
 
@@ -125,4 +125,10 @@ export interface Imports {
    * False if there is none the caller may see.
    */
   undoImport(caller: Caller, id: string): Promise<boolean>;
+
+  /**
+   * For other parts, inside the caller's open transaction (withSession): which of `bookingIds` an
+   * import created or merged into. Only rows of accounts the caller may see. Never opens or commits.
+   */
+  importedBookingIds(tx: RlsTransaction, bookingIds: readonly string[]): Promise<Set<string>>;
 }

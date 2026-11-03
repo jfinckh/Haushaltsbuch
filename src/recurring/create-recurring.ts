@@ -12,6 +12,11 @@ export type RecurringOptions = {
   db: RlsDatabase;
   /** Creates the first booking and encrypts the template's texts exactly like a booking's. */
   transactions: Pick<BookingStore, "createBooking" | "encodeTexts" | "decodeTexts" | "checkCategory" | "findBookings">;
+  /**
+   * Which bookings an import created or merged into (import's lookup, wired by the app), inside the
+   * caller's transaction. Suggestions come only from bookings entered by hand. Default: none.
+   */
+  importedBookingIds?: (tx: RlsTransaction, bookingIds: readonly string[]) => Promise<ReadonlySet<string>>;
   /** Blind index for hidden suggestions; keys come from the environment. */
   crypto: Pick<FieldCrypto, "blindIndex">;
   /** Today (YYYY-MM-DD) for resume and end. Default: today in Germany. */
@@ -54,7 +59,13 @@ const dayAfter = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) + 86
  */
 const SUGGESTION_CONTEXT = "recurring-suggestion.counterparty";
 
-export function createRecurring({ db, transactions, crypto: fieldCrypto, today = todayInGermany }: RecurringOptions): Recurring {
+export function createRecurring({
+  db,
+  transactions,
+  crypto: fieldCrypto,
+  importedBookingIds = async () => new Set<string>(),
+  today = todayInGermany,
+}: RecurringOptions): Recurring {
   /** The stored fingerprint of a hidden suggestion's account and counterparty. */
   const dismissalKey = (accountId: string, counterparty: string) => `${accountId}:${fieldCrypto.blindIndex(normalizeCounterparty(counterparty), SUGGESTION_CONTEXT)}`;
 
@@ -186,7 +197,10 @@ export function createRecurring({ db, transactions, crypto: fieldCrypto, today =
     async listSuggestions(caller) {
       const now = today();
       return withSession(db, caller, async (tx, userId) => {
-        const bookings = await transactions.findBookings(tx, userId, { from: suggestionWindowStart(now), to: now });
+        const visible = await transactions.findBookings(tx, userId, { from: suggestionWindowStart(now), to: now });
+        // A bank statement covers imported bookings, so only bookings entered by hand are suggested.
+        const imported = await importedBookingIds(tx, visible.map((booking) => booking.id));
+        const bookings = visible.filter((booking) => !imported.has(booking.id));
         const templates = await tx.select().from(recurringTemplate);
         const covered = new Set(
           templates.flatMap((row) => {

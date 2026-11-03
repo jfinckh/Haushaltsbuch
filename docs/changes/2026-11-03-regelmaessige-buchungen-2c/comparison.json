@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "base": "aa2857ee1dd842e26bb736d705c64d5514a4d58b",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/import/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/import/create-imports.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/create-recurring.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/create-recurring.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->import",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->recurring",
+      "status": "convergence",
+      "note": "Expected, built."
+    }
+  ],
+  "edges": [],
+  "signoff": []
+}

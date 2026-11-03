@@ -421,3 +421,44 @@ describe("suggestions", () => {
     expect(await recurring.dismissSuggestion(max, { accountId: "shared", counterparty: "" })).toBe(false);
   });
 });
+
+describe("suggestions only from bookings entered by hand", () => {
+  const imported = new Set<string>();
+  let withImports: Recurring;
+
+  async function series(counterparty: string, markImported: (index: number) => boolean = () => false) {
+    const dates = ["2026-08-15", "2026-09-15", "2026-10-15"];
+    for (const [index, date] of dates.entries()) {
+      const result = await setup.transactions.createTransaction(max, { accountId: "shared", date, amount: "-13,99", kind: "expense", category: null, counterparty });
+      if (!result.ok) throw new Error(result.reason);
+      if (markImported(index)) imported.add(result.transaction.id);
+    }
+  }
+
+  beforeEach(() => {
+    imported.clear();
+    withImports = createRecurring({
+      db: setup.db,
+      transactions: setup.transactions,
+      crypto: setup.crypto,
+      today: () => TODAY,
+      importedBookingIds: async (_tx, ids) => new Set(ids.filter((id) => imported.has(id))),
+    });
+  });
+
+  it("no suggestion from imported bookings", async () => {
+    await series("Telekom", () => true);
+    expect(await withImports.listSuggestions(max)).toEqual([]);
+  });
+
+  it("hand bookings next to imported ones still count", async () => {
+    await series("Telekom", () => true);
+    await series("Netflix");
+    expect((await withImports.listSuggestions(max)).map((s) => s.counterparty)).toEqual(["Netflix"]);
+  });
+
+  it("a merged booking breaks the hand series", async () => {
+    await series("Netflix", (index) => index === 1);
+    expect(await withImports.listSuggestions(max)).toEqual([]);
+  });
+});
