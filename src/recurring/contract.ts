@@ -1,7 +1,10 @@
 import type { Result } from "@/shared/result";
 import type { Caller } from "@/shared/rls";
 import type { TransactionView } from "@/transactions/server";
+import type { RecurringSuggestion } from "./suggestions";
 import type { IntervalMonths } from "./validation";
+
+export type { RecurringSuggestion } from "./suggestions";
 
 // The contract of the recurring part for pages and routes. Every call is about the caller's own
 // view: a template exists for whoever may see its account.
@@ -66,6 +69,15 @@ export interface Recurring {
 
   /** For visible bookings among `bookingIds` that a template made: booking id → template id. */
   templateOfBookings(caller: Caller, bookingIds: readonly string[]): Promise<Map<string, string>>;
+
+  /**
+   * Bookings of the last 25 months that repeat on a fixed rhythm and could become templates: not
+   * those with a template, not those a template made, not those the caller hid.
+   */
+  listSuggestions(caller: Caller): Promise<RecurringSuggestion[]>;
+
+  /** `{ accountId, counterparty }`: hides that suggestion for the caller. False for invalid input or an invisible account. */
+  dismissSuggestion(caller: Caller, input: unknown): Promise<boolean>;
 
   /** Deletes a visible template; its bookings stay. False if there is none the caller may see. */
   deleteTemplate(caller: Caller, id: string): Promise<boolean>;

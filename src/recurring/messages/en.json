@@ -68,5 +68,14 @@
     "saveFailed": "Saving did not work. Please try again.",
     "notFound": "This regular booking or its account does not exist (any more).",
     "futureOnly": "Changes apply to future bookings. Bookings already made stay as they are."
+  },
+  "suggestions": {
+    "title": "Suggestions",
+    "intro": "These bookings repeat. Make them regular bookings?",
+    "seen": "{count} bookings, last on {date}",
+    "adopt": "Make it regular",
+    "dismiss": "Hide",
+    "cancel": "Cancel",
+    "failed": "That did not work. Please try again."
   }
 }

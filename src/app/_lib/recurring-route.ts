@@ -44,3 +44,17 @@ export function recurringRoute({ recurring, getCaller }: Deps) {
     },
   };
 }
+
+/**
+ * Handler for /api/recurring/suggestions/dismiss. Body: `{ accountId, counterparty }`. Invalid input
+ * and an account the caller may not see get the same 404.
+ */
+export function dismissSuggestionRoute({ recurring, getCaller }: { recurring: Pick<Recurring, "dismissSuggestion">; getCaller: GetCaller }) {
+  return {
+    async POST(request: Request) {
+      return asCaller(getCaller, async (caller) =>
+        (await recurring.dismissSuggestion(caller, await readJson(request))) ? json({ dismissed: true }) : notFound(),
+      );
+    },
+  };
+}

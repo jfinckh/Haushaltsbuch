@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, check, date, index, integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, date, index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 // Tables of the recurring part. Account, booking and user ids are plain text in this file, so the
 // part stays independent of accounts and transactions; the foreign keys, the grants, row-level
@@ -75,4 +75,20 @@ export const recurringOccurrence = pgTable(
   (table) => [primaryKey({ columns: [table.templateId, table.dueDate] }), index("recurring_occurrence_transaction_idx").on(table.transactionId)],
 );
 
-export const recurringTables = { recurringTemplate, recurringOccurrence };
+/**
+ * A suggestion a person hid ("Ausblenden"). Only a blind index of the normalized counterparty is
+ * kept, never the name. Each person sees only their own rows (drizzle/0030_recurring_suggestions.sql).
+ */
+export const recurringSuggestionDismissal = pgTable(
+  "recurring_suggestion_dismissal",
+  {
+    id: text("id").primaryKey(),
+    ownerUserId: text("owner_user_id").notNull(),
+    accountId: text("account_id").notNull(),
+    counterpartyIndex: text("counterparty_index").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("recurring_suggestion_dismissal_owner_idx").on(table.ownerUserId, table.accountId, table.counterpartyIndex)],
+);
+
+export const recurringTables = { recurringTemplate, recurringOccurrence, recurringSuggestionDismissal };

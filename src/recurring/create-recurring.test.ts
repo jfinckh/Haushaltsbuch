@@ -46,7 +46,7 @@ beforeEach(async () => {
   await setup.householdOf("home", "max", "erika");
   await setup.addAccount("shared", "max", "home");
   await setup.addAccount("max-private", "max");
-  recurring = createRecurring({ db: setup.db, transactions: setup.transactions, today: () => TODAY });
+  recurring = createRecurring({ db: setup.db, transactions: setup.transactions, crypto: setup.crypto, today: () => TODAY });
   [max, erika] = await Promise.all([setup.as("max"), setup.as("erika")]);
 });
 
@@ -357,5 +357,67 @@ describe("editing keeps what the user did not change", () => {
     await setup.db.execute(sql`UPDATE recurring_template SET account_id = 'shared' WHERE id = ${templateId}`);
     expect(await recurring.templateOfBookings(erika, [transaction.id])).toEqual(new Map());
     expect(await recurring.templateOfBookings(max, [transaction.id])).toEqual(new Map([[transaction.id, templateId]]));
+  });
+});
+
+describe("suggestions", () => {
+  async function monthly(caller: Caller, accountId: string, counterparty = "Netflix", category = "groceries.supermarket") {
+    for (const date of ["2026-08-15", "2026-09-15", "2026-10-15"]) {
+      const result = await setup.transactions.createTransaction(caller, { accountId, date, amount: "-13,99", kind: "expense", category, counterparty });
+      if (!result.ok) throw new Error(result.reason);
+    }
+  }
+
+  it("lists a monthly subscription", async () => {
+    await monthly(max, "shared");
+    expect(await recurring.listSuggestions(max)).toMatchObject([
+      { accountId: "shared", counterparty: "Netflix", amountCents: -1399, intervalMonths: 1, count: 3, nextDueDate: "2026-11-15" },
+    ]);
+  });
+
+  it("no suggestion once a template exists", async () => {
+    await monthly(max, "shared");
+    const created = await recurring.createTemplate(max, {
+      accountId: "shared",
+      amount: "-13,99",
+      kind: "expense",
+      category: null,
+      counterparty: "NETFLIX",
+      intervalMonths: 1,
+      nextDueDate: "2026-11-15",
+      endDate: null,
+    });
+    expect(created.ok).toBe(true);
+    expect(await recurring.listSuggestions(max)).toEqual([]);
+  });
+
+  it("no suggestion from template bookings", async () => {
+    await setup.addTemplate({ id: "abo", accountId: "shared", amountCents: -1399, dayOfMonth: 15, nextDueDate: "2026-08-15", ...setup.transactions.encodeTexts({ counterparty: "Netflix", counterpartyIban: null, reference: null }) });
+    await createRecurringRunner({ db: setup.db }).runDue("2026-10-15");
+    // The template now has another name, so only the booked occurrences keep the group out.
+    await setup.db.execute(sql`UPDATE recurring_template SET counterparty_encrypted = NULL`);
+    expect(await count("transaction")).toBe(3);
+    expect(await recurring.listSuggestions(max)).toEqual([]);
+  });
+
+  it("hiding is per person", async () => {
+    await monthly(max, "shared");
+    expect(await recurring.dismissSuggestion(max, { accountId: "shared", counterparty: " NETFLIX " })).toBe(true);
+    expect(await recurring.listSuggestions(max)).toEqual([]);
+    expect(await recurring.listSuggestions(erika)).toHaveLength(1);
+    const [row] = await setup.query<{ counterparty_index: string }>(sql`SELECT counterparty_index FROM recurring_suggestion_dismissal`);
+    expect(row.counterparty_index).not.toContain("etflix");
+  });
+
+  it("erika never sees suggestions from max's private account", async () => {
+    await monthly(max, "max-private");
+    expect(await recurring.listSuggestions(erika)).toEqual([]);
+    expect(await recurring.listSuggestions(max)).toHaveLength(1);
+  });
+
+  it("dismiss on max's private account as erika", async () => {
+    expect(await recurring.dismissSuggestion(erika, { accountId: "max-private", counterparty: "Netflix" })).toBe(false);
+    expect(await count("recurring_suggestion_dismissal")).toBe(0);
+    expect(await recurring.dismissSuggestion(max, { accountId: "shared", counterparty: "" })).toBe(false);
   });
 });

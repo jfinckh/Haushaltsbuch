@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "base": "c0c30f64af1e6cfb5949ad48bf3b600c511694a5",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/recurring/suggestions.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/suggestions.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0030_recurring_suggestions.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0030_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/validation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/contract.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/create-recurring.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/create-recurring.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/components/recurring-suggestions.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/messages/de.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/messages/en.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring-route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/recurring/suggestions/dismiss/route.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/api/recurring/route.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/[locale]/recurring/page.tsx",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/components/template-form.tsx",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->transactions",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->shared",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->db-contract",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "edge",
+      "id": "app->recurring",
+      "status": "convergence",
+      "note": "Expected, built."
+    },
+    {
+      "kind": "resource",
+      "id": "recurringSuggestionDismissal",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "recurring:client:RecurringSuggestions",
+      "status": "convergence"
+    }
+  ],
+  "edges": [],
+  "signoff": [
+    {
+      "itemKey": "table-new:recurringSuggestionDismissal",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:recurring:client:RecurringSuggestions",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

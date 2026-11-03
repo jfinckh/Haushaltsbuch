@@ -68,5 +68,14 @@
     "saveFailed": "Speichern hat nicht geklappt. Bitte versuch es noch einmal.",
     "notFound": "Diese regelmäßige Buchung oder das Konto gibt es nicht (mehr).",
     "futureOnly": "Änderungen gelten für künftige Buchungen. Bereits gebuchte bleiben, wie sie sind."
+  },
+  "suggestions": {
+    "title": "Vorschläge",
+    "intro": "Diese Buchungen wiederholen sich. Als regelmäßige Buchung anlegen?",
+    "seen": "{count} Buchungen, zuletzt am {date}",
+    "adopt": "Als Vorlage übernehmen",
+    "dismiss": "Ausblenden",
+    "cancel": "Abbrechen",
+    "failed": "Das hat nicht geklappt. Bitte versuch es noch einmal."
   }
 }

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "table-new:recurringSuggestionDismissal",
+      "itemHash": "sha256:e2d95c601f7dbc3d6da2657f19ad28980a2957b98deb68ff4b6895d970efd480",
+      "decision": "approve",
+      "at": "2026-11-03T09:28:07Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:client:RecurringSuggestions",
+      "itemHash": "sha256:05b9e225348f09c717b874bc90c4e1023ca0cb04184f5be56075778bba00dd84",
+      "decision": "approve",
+      "at": "2026-11-03T09:28:07Z",
+      "source": "hook"
+    }
+  ]
+}

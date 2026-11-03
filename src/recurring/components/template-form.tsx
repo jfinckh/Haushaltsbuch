@@ -38,6 +38,8 @@ type Props = {
   action?: string;
   /** Where to go after saving. Default: /recurring */
   returnTo?: string;
+  /** Called after saving instead of going to `returnTo` (e.g. to close an inline form). */
+  onSaved?: () => void;
   /** Today (YYYY-MM-DD), the earliest next date. Default: today in Germany, like the hourly run. */
   today?: string;
 };
@@ -53,7 +55,7 @@ const choiceOf = (value: boolean | null | undefined): MonthChoice => (value === 
 type Errors = Record<string, string>;
 
 /** Creates or edits a regular booking. The type follows the amount's sign until it is chosen by hand. */
-export function TemplateForm({ accounts, categories, template, initial, action = "/api/recurring", returnTo = "/recurring", today = todayInGermany() }: Props) {
+export function TemplateForm({ accounts, categories, template, initial, action = "/api/recurring", returnTo = "/recurring", onSaved, today = todayInGermany() }: Props) {
   const t = useTranslations("recurring.form");
   const tKinds = useTranslations("transactions.kinds");
   const tk = useTranslateKey();
@@ -122,6 +124,7 @@ export function TemplateForm({ accounts, categories, template, initial, action =
     const result = await callApi(template ? `${action}/${template.id}` : action, { method: template ? "PATCH" : "POST", json: body });
     setPending(false);
     if (!result.ok) return setErrors({ form: result.status === 404 ? "recurring.form.notFound" : "recurring.form.saveFailed" });
+    if (onSaved) return onSaved();
     router.push(returnTo);
     router.refresh();
   }

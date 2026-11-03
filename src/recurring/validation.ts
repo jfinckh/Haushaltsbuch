@@ -82,3 +82,9 @@ export const templateInputSchema = z
   .transform(({ amount, ...rest }) => ({ ...rest, amountCents: amount as number }));
 
 export type TemplateValues = z.infer<typeof templateInputSchema>;
+
+/** Hiding a suggestion: its account and counterparty (stored only as a blind index). */
+export const dismissSuggestionSchema = z.object({
+  accountId: z.string().min(1),
+  counterparty: z.string().trim().min(1).max(200),
+});

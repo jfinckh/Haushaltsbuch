@@ -1,7 +1,7 @@
 import { asc, eq, sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { withSession } from "@/shared/rls";
-import { recurringTemplate } from "./schema";
+import { recurringSuggestionDismissal, recurringTemplate } from "./schema";
 import { createTestDatabase } from "./test-utils";
 
 // The database itself shows each member only the templates of accounts they may see: a template on a
@@ -84,5 +84,27 @@ describe("recurring templates and row-level security", () => {
       const error = await read.then(() => null, (e: { cause?: { message?: string } }) => e);
       expect(error?.cause?.message, table).toMatch(/permission denied/);
     }
+  });
+});
+
+describe("hidden suggestions and row-level security", () => {
+  const hide = (ownerUserId: string, accountId: string) => ({ id: crypto.randomUUID(), ownerUserId, accountId, counterpartyIndex: "idx" });
+
+  it("erika does not see max's hidden suggestions", async () => {
+    await setup.db.insert(recurringSuggestionDismissal).values(hide("max", "shared"));
+    const seen = await withSession(setup.db, await setup.as("erika"), (tx) => tx.select().from(recurringSuggestionDismissal));
+    expect(seen).toEqual([]);
+    const own = await withSession(setup.db, await setup.as("max"), (tx) => tx.select().from(recurringSuggestionDismissal));
+    expect(own).toHaveLength(1);
+  });
+
+  it("erika cannot insert one for max", async () => {
+    const insert = withSession(setup.db, await setup.as("erika"), (tx) => tx.insert(recurringSuggestionDismissal).values(hide("max", "shared")));
+    await expect(insert).rejects.toThrow();
+  });
+
+  it("erika cannot insert one on max's private account", async () => {
+    const insert = withSession(setup.db, await setup.as("erika"), (tx) => tx.insert(recurringSuggestionDismissal).values(hide("erika", "max-private")));
+    await expect(insert).rejects.toThrow();
   });
 });

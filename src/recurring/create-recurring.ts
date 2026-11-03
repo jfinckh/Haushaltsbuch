@@ -1,15 +1,19 @@
 import { asc, eq, inArray, sql } from "drizzle-orm";
 import { accountIsVisible } from "@/db-contract/server";
+import type { FieldCrypto } from "@/shared/field-crypto";
 import { rows, withSession, type RlsDatabase, type RlsTransaction } from "@/shared/rls";
 import type { BookingStore } from "@/transactions/server";
 import type { CreateWithBookingResult, Recurring, TemplateResult, TemplateStatus, TemplateView } from "./contract";
-import { recurringOccurrence, recurringTemplate } from "./schema";
-import { repeatSchema, templateActionSchema, templateInputSchema, type IntervalMonths, type TemplateValues } from "./validation";
+import { recurringOccurrence, recurringSuggestionDismissal, recurringTemplate } from "./schema";
+import { findSuggestions, normalizeCounterparty, suggestionWindowStart } from "./suggestions";
+import { dismissSuggestionSchema, repeatSchema, templateActionSchema, templateInputSchema, type IntervalMonths, type TemplateValues } from "./validation";
 
 export type RecurringOptions = {
   db: RlsDatabase;
   /** Creates the first booking and encrypts the template's texts exactly like a booking's. */
   transactions: Pick<BookingStore, "createBooking" | "encodeTexts" | "decodeTexts" | "checkCategory" | "findBookings">;
+  /** Blind index for hidden suggestions; keys come from the environment. */
+  crypto: Pick<FieldCrypto, "blindIndex">;
   /** Today (YYYY-MM-DD) for resume and end. Default: today in Germany. */
   today?: () => string;
 };
@@ -48,7 +52,12 @@ const dayAfter = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) + 86
  * The recurring part for pages and routes. Every call runs in the caller's session; row-level
  * security shows a template to whoever may see its account (drizzle/0029_recurring_functions.sql).
  */
-export function createRecurring({ db, transactions, today = todayInGermany }: RecurringOptions): Recurring {
+const SUGGESTION_CONTEXT = "recurring-suggestion.counterparty";
+
+export function createRecurring({ db, transactions, crypto: fieldCrypto, today = todayInGermany }: RecurringOptions): Recurring {
+  /** The stored fingerprint of a hidden suggestion's account and counterparty. */
+  const dismissalKey = (accountId: string, counterparty: string) => `${accountId}:${fieldCrypto.blindIndex(normalizeCounterparty(counterparty), SUGGESTION_CONTEXT)}`;
+
   function statusOf(row: TemplateRow, archived: ReadonlySet<string>): TemplateStatus {
     if (archived.has(row.accountId)) return "archived";
     if (row.endDate !== null && row.endDate < row.nextDueDate) return "ended";
@@ -171,6 +180,46 @@ export function createRecurring({ db, transactions, today = todayInGermany }: Re
           .from(recurringOccurrence)
           .where(inArray(recurringOccurrence.transactionId, visible));
         return new Map(found.map((row) => [row.transactionId as string, row.templateId]));
+      });
+    },
+
+    async listSuggestions(caller) {
+      const now = today();
+      return withSession(db, caller, async (tx, userId) => {
+        const bookings = await transactions.findBookings(tx, userId, { from: suggestionWindowStart(now), to: now });
+        const templates = await tx.select().from(recurringTemplate);
+        const covered = new Set(
+          templates.flatMap((row) => {
+            const { counterparty } = transactions.decodeTexts(row);
+            return counterparty ? [`${row.accountId}:${normalizeCounterparty(counterparty)}`] : [];
+          }),
+        );
+        const dismissed = new Set((await tx.select().from(recurringSuggestionDismissal)).map((row) => `${row.accountId}:${row.counterpartyIndex}`));
+        const occurrences = await tx.select({ transactionId: recurringOccurrence.transactionId }).from(recurringOccurrence);
+        return findSuggestions(bookings, {
+          today: now,
+          skip: (accountId, counterparty) => covered.has(`${accountId}:${counterparty}`) || dismissed.has(dismissalKey(accountId, counterparty)),
+          templateBookingIds: new Set(occurrences.flatMap((row) => (row.transactionId ? [row.transactionId] : []))),
+        });
+      });
+    },
+
+    async dismissSuggestion(caller, input) {
+      const parsed = dismissSuggestionSchema.safeParse(input);
+      if (!parsed.success) return false;
+      const { accountId, counterparty } = parsed.data;
+      return withSession(db, caller, async (tx, userId) => {
+        if (!(await accountIsVisible(tx, accountId))) return false;
+        await tx
+          .insert(recurringSuggestionDismissal)
+          .values({
+            id: crypto.randomUUID(),
+            ownerUserId: userId,
+            accountId,
+            counterpartyIndex: fieldCrypto.blindIndex(normalizeCounterparty(counterparty), SUGGESTION_CONTEXT),
+          })
+          .onConflictDoNothing();
+        return true;
       });
     },
 

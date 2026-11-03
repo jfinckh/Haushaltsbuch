@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
-import { recurringRoute } from "@/app/_lib/recurring-route";
+import { dismissSuggestionRoute, recurringRoute } from "@/app/_lib/recurring-route";
 import { transactionsRoute } from "@/app/_lib/transactions-route";
 import { createAccounts, type Accounts } from "@/accounts/server";
 import { createHouseholds } from "@/households/server";
@@ -74,7 +74,7 @@ beforeEach(async () => {
   const crypto = createFieldCrypto({ keys: `1:${randomBytes(32).toString("base64")}`, indexKey: randomBytes(32).toString("base64") });
   accounts = createAccounts({ db, crypto });
   transactions = createTransactions({ db, crypto });
-  recurring = createRecurring({ db, transactions, today: () => "2026-11-03" });
+  recurring = createRecurring({ db, transactions, crypto, today: () => "2026-11-03" });
   const households = createHouseholds({ db, householdHoldsData: accounts.householdHasSharedAccounts });
   await households.createHousehold(await caller("max"), { name: "Mustermann" });
   await households.joinInvitersHousehold(await caller("erika"), { inviterId: "max", invitedAt: new Date() });
@@ -191,5 +191,24 @@ describe("POST /api/recurring and PATCH with fields", () => {
 
   it("needs a session to create", async () => {
     expect((await templateAs(null).POST(request("POST", template(shared)))).status).toBe(401);
+  });
+});
+
+describe("POST /api/recurring/suggestions/dismiss", () => {
+  const dismissAs = (userId: string | null) => dismissSuggestionRoute({ recurring, getCaller: sessionOf(userId) });
+
+  it("hides a suggestion on a shared account", async () => {
+    const response = await dismissAs("erika").POST(request("POST", { accountId: shared, counterparty: "Netflix" }));
+    expect(response.status).toBe(200);
+    expect(await count("recurring_suggestion_dismissal")).toBe(1);
+  });
+
+  it("answers 404 on max's private account as erika", async () => {
+    expect((await dismissAs("erika").POST(request("POST", { accountId: maxPrivate, counterparty: "Netflix" }))).status).toBe(404);
+    expect(await count("recurring_suggestion_dismissal")).toBe(0);
+  });
+
+  it("needs a session", async () => {
+    expect((await dismissAs(null).POST(request("POST", { accountId: shared, counterparty: "Netflix" }))).status).toBe(401);
   });
 });

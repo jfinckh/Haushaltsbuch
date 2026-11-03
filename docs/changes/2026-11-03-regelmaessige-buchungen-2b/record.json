@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-03",
+  "slug": "regelmaessige-buchungen-2b",
+  "description": "Regelmäßige Buchungen 2b – Erkennen",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-11-03-regelmaessige-buchungen-2b-erkennen.md",
+    "sha256": "fb4275ddcffe8fa985bb9e2b605690d641fb7496ce4d650f330ee506637b7c87"
+  },
+  "status": "final",
+  "base": "c0c30f64af1e6cfb5949ad48bf3b600c511694a5",
+  "report": "Finalized regelmaessige-buchungen-2b (c0c30f6..working-tree)\nFiles: 22 converge, 0 diverge, 0 absent. Elements: 6 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 2 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-11-03-regelmaessige-buchungen-2b/map.html\n",
+  "shownAt": "2026-11-03T10:23:57Z"
+}
