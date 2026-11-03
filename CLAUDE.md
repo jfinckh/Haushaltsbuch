@@ -41,6 +41,8 @@ src/rules/          rules, auto-categorization, learning     → shared, transac
 src/budgets/        budgets per account and category         → shared, transactions, db-contract (monthly spending via transactions' expenseTotals; account access)
 src/insights/       dashboard and statistics figures, balances, account choice incl. "Alle meine Konten"
                                                              → shared, transactions (bookings service injected via createInsights; no SQL of its own)
+src/recurring/      regular bookings (templates), the hourly run that books them
+                                                             → shared (books in its own SECURITY DEFINER function recurring_book_due as role recurring_runner, which has no table rights; the app starts the schedule in src/instrumentation.ts)
 ```
 
 `auth` and `shared` must stay free of domain logic; they may be extracted into packages later.

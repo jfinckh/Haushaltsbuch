@@ -81,7 +81,8 @@ Kennzahlen, nach Phase sortiert (alle anderen aus dem Entwurf kommen in die Stat
 | Kategorisierung | Regeln („REWE → Lebensmittel“), aus Korrekturen lernen | Jetzt |
 | Budgets | Monatslimit pro Kategorie, Warnung ab 80 % | Jetzt |
 | Statistiken | Monatsvergleich, Trends, Sparquote, Jahresübersicht | Jetzt |
-| Fixkosten | Wiederkehrende Zahlungen erkennen, Jahreskosten auf Monate umlegen | Später |
+| Fixkosten | Regelmäßige Buchungen (Vorlagen, automatisch gebucht), wiederkehrende Zahlungen erkennen | Jetzt |
+| Fixkosten | Jahreskosten auf Monate umlegen | Später |
 | Sparziele | Ziel, Zielbetrag, Datum, Fortschritt, monatliche Rate | Später |
 | Prognose | Kontostand Monatsende, kommende Rechnungen | Später |
 | Monatsabschluss | Was lief besser oder schlechter als im Vormonat | Später |
@@ -143,6 +144,18 @@ So funktioniert der Abgleich:
 - **Als Regel merken:** Beim Markieren kann man anhaken „Künftig immer so“, z. B. „Absender Erika Mustermann auf dem Gemeinschaftskonto = Umbuchung“. Taucht später doch die Gegenbuchung auf, wird sie automatisch angehängt.
 - **Korrigieren in der App:** In der Buchungsdetailansicht lassen sich Verknüpfungen lösen, eine andere Gegenbuchung wählen (Liste passender Kandidaten) oder die Art ändern (Umbuchung, Ausgabe, Einnahme, Sparen).
 - **Von Hand gewinnt immer:** Jede manuelle Entscheidung wird als manuell gespeichert. Spätere Importe und der automatische Abgleich überschreiben sie nie und verknüpfen eine gelöste Buchung nicht erneut mit derselben Gegenbuchung.
+
+## Regelmäßige Buchungen
+
+Für alle, die ihren Kontoauszug nicht hochladen wollen oder können: Gehalt, Miete, Versicherungen und Abos legt man einmal als **Vorlage** an (Häkchen „Regelmäßig wiederholen“ im Buchungsformular). Die App bucht sie danach selbst. Design: `docs/superpowers/specs/2026-11-03-regelmaessige-buchungen-design.md`.
+
+- **Rhythmus:** alle 1, 3, 6 oder 12 Monate, an einem Tag im Monat. Gibt es den Tag nicht (31. im April), gilt der letzte Tag des Monats.
+- **Automatisch gebucht:** Der Server prüft jede Stunde, welche Vorlagen fällig sind (Zeit in Deutschland), und legt die Buchungen an. War er aus, holt der nächste Lauf alle verpassten Termine nach. Jeder Termin wird höchstens einmal gebucht, auch eine gelöschte Buchung kommt nicht wieder.
+- **Bucht immer**, auch auf Konten, die importiert werden. Kommt der Kontoauszug, führt der Import die Buchung mit der Bankzeile zusammen (gleicher Betrag, ± 3 Tage, siehe „Keine doppelten Buchungen“). Weicht der Betrag ab, entstehen zwei Buchungen; eine löscht man von Hand.
+- **Umbuchung und Sparen** bucht die Vorlage nur auf ihrem eigenen Konto; die Gegenseite kommt per Import oder eigener Vorlage, der Abgleich verknüpft beide.
+- **Pausieren, beenden, archiviertes Konto:** Pausierte Vorlagen und Termine nach dem Enddatum werden nicht gebucht. Nach einer Pause oder einem archivierten Konto geht es ab dem nächsten Termin weiter, ohne Nachholen.
+- **Privatsphäre:** Eine Vorlage ist sichtbar wie ihr Konto; auf einem privaten Konto sieht sie nur der Besitzer. Gegenpartei und Verwendungszweck sind verschlüsselt wie in Buchungen.
+- **Erkennen:** Die App schlägt Vorlagen aus wiederkehrenden Buchungen vor (Seite „Regelmäßige Buchungen“); sie legt nie selbst eine an.
 
 ## CSV-Import
 
@@ -216,6 +229,7 @@ src/transfers/      Umbuchungsabgleich, manuelles Verknüpfen → transactions
 src/import/         ING- und Trade-Republic-Parser, Duplikate → transactions, transfers, accounts
 src/budgets/        Budgets pro Konto                       → transactions
 src/insights/       Dashboard-Zahlen, Gesamtansicht         → transactions, budgets, accounts
+src/recurring/      Regelmäßige Buchungen, stündlicher Lauf  → shared
 ```
 
 - **`src/app/` bleibt dünn:** Seiten und API-Routen rufen nur die Einstiegspunkte der Parts auf.

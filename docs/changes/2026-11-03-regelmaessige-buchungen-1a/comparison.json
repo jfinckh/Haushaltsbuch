@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "base": "ca540915ed0b82a91b21d0bd7b14109b62dd04cf",
+  "head": "working-tree",
+  "elements": [
+    {
+      "kind": "file",
+      "id": "src/recurring/index.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/server.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/schema.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/run-due.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/test-utils.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/due-dates.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/run-due.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/recurring/rls.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0028_recurring.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/0029_recurring_functions.sql",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0028_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/0029_snapshot.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle/meta/_journal.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "drizzle.config.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring-schedule.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/app/_lib/recurring-schedule.test.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "src/instrumentation.ts",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "architecture.json",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/konzept.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "CLAUDE.md",
+      "status": "convergence"
+    },
+    {
+      "kind": "file",
+      "id": "docs/superpowers/specs/2026-11-03-regelmaessige-buchungen-design.md",
+      "status": "convergence",
+      "viaAmendment": "A2"
+    },
+    {
+      "kind": "unit",
+      "id": "recurring",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "recurring->shared",
+      "status": "convergence"
+    },
+    {
+      "kind": "edge",
+      "id": "app->recurring",
+      "status": "convergence"
+    },
+    {
+      "kind": "resource",
+      "id": "recurringTemplate",
+      "status": "convergence"
+    },
+    {
+      "kind": "resource",
+      "id": "recurringOccurrence",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "recurring:server:createRecurringRunner",
+      "status": "convergence"
+    },
+    {
+      "kind": "export",
+      "id": "recurring:server:RecurringRunner",
+      "status": "convergence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "recurring",
+      "state": "new"
+    },
+    {
+      "from": "recurring",
+      "to": "shared",
+      "state": "new"
+    }
+  ],
+  "signoff": [
+    {
+      "itemKey": "unit-new:recurring",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:recurringTemplate",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "table-new:recurringOccurrence",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "permission-change:database role recurring_runner",
+      "approval": "approved",
+      "implemented": "not-verifiable"
+    },
+    {
+      "itemKey": "export-add:recurring:server:createRecurringRunner",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "export-add:recurring:server:RecurringRunner",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:recurring->shared",
+      "approval": "approved",
+      "implemented": "yes"
+    },
+    {
+      "itemKey": "edge-new:app->recurring",
+      "approval": "approved",
+      "implemented": "yes"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
   "root": "src",
   "libraries": ["shared"],
   "modules": {
-    "app": ["accounts", "auth", "budgets", "db", "households", "import", "insights", "rules", "shared", "transactions", "transfers"],
+    "app": ["accounts", "auth", "budgets", "db", "households", "import", "insights", "recurring", "rules", "shared", "transactions", "transfers"],
     "shared": [],
     "db": [],
     "auth": [],
@@ -15,7 +15,8 @@
     "rules": ["db-contract", "shared", "transactions"],
     "budgets": ["db-contract", "shared", "transactions"],
     "insights": ["shared", "transactions"],
-    "db-contract": ["shared"]
+    "db-contract": ["shared"],
+    "recurring": ["shared"]
   },
   "features": {}
 }

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "unit-new:recurring",
+      "itemHash": "sha256:d67cae31c48b83c6c3553be98ccb0e47a9d9cbef1a2597079b97c542547a0a5a",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:recurringTemplate",
+      "itemHash": "sha256:b96e7922859aa4aaaad42472ef448e78e7483cefe79bf7ec02bd26d16c123eb4",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "table-new:recurringOccurrence",
+      "itemHash": "sha256:e53dfe7518bd0d152f3938abc5f292e393807bc0157075259d3b28df18e8b4e4",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "permission-change:database role recurring_runner",
+      "itemHash": "sha256:93e118e41d19d2d87a0914b72edd606871000366667630aad33960fde751d2b3",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:server:createRecurringRunner",
+      "itemHash": "sha256:ddc33fcde38b43d5643475c3838aab987fd0c8e3a214e69896dc8169de55cbb5",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:server:RecurringRunner",
+      "itemHash": "sha256:edda7d9e0552514065b60f98fb579fcfcab8aece377316bebac16338886dd275",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:recurring->shared",
+      "itemHash": "sha256:5e987a53be4cf25a1b255d4ded5f45e605bbb5b21336e422cf21286f7cd5f336",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "edge-new:app->recurring",
+      "itemHash": "sha256:ab3e5f38582f260408ecce914c13250c91766aabfde88176cdb3515902a2adf7",
+      "decision": "approve",
+      "at": "2026-11-03T07:04:25Z",
+      "source": "hook"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-03",
+  "slug": "regelmaessige-buchungen-1a",
+  "description": "Regelmäßige Buchungen 1a – Grundlage und Zeitplan",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-11-03-regelmaessige-buchungen-1a-grundlage.md",
+    "sha256": "43f43a5d038de251e3bbb1463c6194dfe9eea26e6b8568af701315f9a01033e4"
+  },
+  "status": "final",
+  "base": "ca540915ed0b82a91b21d0bd7b14109b62dd04cf",
+  "report": "Finalized regelmaessige-buchungen-1a (ca54091..working-tree)\nFiles: 22 converge, 0 diverge, 0 absent. Elements: 7 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 8 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-11-03-regelmaessige-buchungen-1a/map.html\n",
+  "shownAt": "2026-11-03T07:31:59Z"
+}
