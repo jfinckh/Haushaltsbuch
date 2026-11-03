@@ -1,6 +1,6 @@
 import type { FieldCrypto } from "@/shared/field-crypto";
-import { formatIban } from "@/shared/iban";
-import type { TransactionView } from "./contract";
+import { formatIban, normalizeIban } from "@/shared/iban";
+import type { BookingTexts, EncodedBookingTexts, TransactionView } from "./contract";
 import { countingMonthOf } from "./counting-month";
 import type { transaction } from "./schema";
 import type { TransactionValues } from "./validation";
@@ -29,11 +29,26 @@ export interface BookingCodec {
   toValues(row: TransactionRow): TransactionValues;
   /** The stored columns for a booking's values, encrypted. */
   toColumns(values: TransactionValues): TransactionColumns;
+  /** Texts encrypted like a booking's. */
+  encodeTexts(texts: BookingTexts): EncodedBookingTexts;
+  /** Texts decrypted; the IBAN formatted. */
+  decodeTexts(columns: EncodedBookingTexts): BookingTexts;
 }
 
 export function createBookingCodec(fieldCrypto: FieldCrypto): BookingCodec {
   const decrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.decrypt(value, context));
   const encrypt = (value: string | null, context: string) => (value === null ? null : fieldCrypto.encrypt(value, context));
+
+  function encodeTexts({ counterparty, counterpartyIban, reference }: BookingTexts): EncodedBookingTexts {
+    // Stored IBANs are compact and upper case (validation's ibanSchema), so the blind index matches.
+    const iban = counterpartyIban && (normalizeIban(counterpartyIban) || null);
+    return {
+      counterpartyEncrypted: encrypt(counterparty, CONTEXT.counterparty),
+      counterpartyIbanEncrypted: encrypt(iban, CONTEXT.counterpartyIban),
+      counterpartyIbanIndex: iban && fieldCrypto.blindIndex(iban, CONTEXT.counterpartyIban),
+      referenceEncrypted: encrypt(reference, CONTEXT.reference),
+    };
+  }
 
   return {
     toView(row, userId) {
@@ -70,12 +85,17 @@ export function createBookingCodec(fieldCrypto: FieldCrypto): BookingCodec {
     },
 
     toColumns({ counterparty, counterpartyIban, reference, ...plain }) {
+      return { ...plain, ...encodeTexts({ counterparty, counterpartyIban, reference }) };
+    },
+
+    encodeTexts,
+
+    decodeTexts(columns) {
+      const iban = decrypt(columns.counterpartyIbanEncrypted, CONTEXT.counterpartyIban);
       return {
-        ...plain,
-        counterpartyEncrypted: encrypt(counterparty, CONTEXT.counterparty),
-        counterpartyIbanEncrypted: encrypt(counterpartyIban, CONTEXT.counterpartyIban),
-        counterpartyIbanIndex: counterpartyIban && fieldCrypto.blindIndex(counterpartyIban, CONTEXT.counterpartyIban),
-        referenceEncrypted: encrypt(reference, CONTEXT.reference),
+        counterparty: decrypt(columns.counterpartyEncrypted, CONTEXT.counterparty),
+        counterpartyIban: iban && formatIban(iban),
+        reference: decrypt(columns.referenceEncrypted, CONTEXT.reference),
       };
     },
   };

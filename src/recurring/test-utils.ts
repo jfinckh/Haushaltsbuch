@@ -1,9 +1,12 @@
+import { randomBytes } from "node:crypto";
 import { PGlite } from "@electric-sql/pglite";
 import { sql, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
+import { createFieldCrypto } from "@/shared/field-crypto";
 import type { Caller } from "@/shared/rls";
 import { createTestSession } from "@/shared/test-sessions";
+import { createTransactions } from "@/transactions/server";
 import { recurringTemplate } from "./schema";
 
 export type TestTemplate = Partial<typeof recurringTemplate.$inferInsert> & { id: string; accountId: string };
@@ -16,6 +19,11 @@ export type TestTemplate = Partial<typeof recurringTemplate.$inferInsert> & { id
 export async function createTestDatabase() {
   const db = drizzle({ client: new PGlite() });
   await migrate(db, { migrationsFolder: new URL("../../drizzle", import.meta.url).pathname });
+  const crypto = createFieldCrypto({
+    keys: `1:${randomBytes(32).toString("base64")}`,
+    indexKey: randomBytes(32).toString("base64"),
+  });
+  const transactions = createTransactions({ db, crypto });
 
   const callers = new Map<string, Promise<Caller>>();
   /** Signs the user in (once) and returns their session. */
@@ -67,5 +75,5 @@ export async function createTestDatabase() {
     return ((await db.execute(statement)) as unknown as { rows: T[] }).rows;
   }
 
-  return { db, as, householdOf, addAccount, setArchived, addTemplate, query };
+  return { db, crypto, transactions, as, householdOf, addAccount, setArchived, addTemplate, query };
 }

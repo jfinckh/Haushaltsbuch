@@ -35,7 +35,7 @@ async function NewTransaction({ searchParams }: Props) {
   return (
     <>
       <PageHeader title={t("addTitle")} back={{ href: back ?? (accountId ? `/accounts/${accountId}` : "/"), label: t("back") }} />
-      {bookable.length === 0 ? <p className="opacity-70">{t("noAccounts")}</p> : <TransactionForm accounts={bookable} accountId={accountId} categories={catalog} returnTo={back ?? undefined} />}
+      {bookable.length === 0 ? <p className="opacity-70">{t("noAccounts")}</p> : <TransactionForm accounts={bookable} accountId={accountId} categories={catalog} returnTo={back ?? undefined} offerRepeat />}
     </>
   );
 }

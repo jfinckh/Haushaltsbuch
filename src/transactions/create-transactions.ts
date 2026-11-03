@@ -18,9 +18,10 @@ export type TransactionsOptions = {
 /** The transactions part. Every call is about the caller's own view; their user id comes from the database. */
 export function createTransactions({ db, crypto, today = localToday }: TransactionsOptions): Transactions {
   const codec = createBookingCodec(crypto);
+  const store = createBookingStore({ codec, today });
   return {
-    ...createBookingService({ db, codec, today }),
-    ...createBookingStore({ codec, today }),
+    ...createBookingService({ db, codec, today, store }),
+    ...store,
     ...createBookingFigures({ db, today }),
   };
 }

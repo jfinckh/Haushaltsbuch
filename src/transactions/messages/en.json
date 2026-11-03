@@ -79,7 +79,17 @@
     "countsForNextMonth": "Next month",
     "countsForSalary": "Counts for {month} automatically (salary from the {day}th on).",
     "countsForSameMonth": "Counts for {month} (booking month).",
-    "countsForChosen": "Counts for {month} (chosen by you)."
+    "countsForChosen": "Counts for {month} (chosen by you).",
+    "repeat": "Repeat regularly",
+    "repeatInterval": "Interval",
+    "repeatMonthly": "Monthly",
+    "repeatQuarterly": "Quarterly",
+    "repeatHalfYearly": "Every six months",
+    "repeatYearly": "Yearly",
+    "repeatEnd": "Ends on (optional)",
+    "repeatHint": "{months, plural, =1 {The app then books it every month on day {day}.} =3 {The app then books it every three months on day {day}.} =6 {The app then books it every six months on day {day}.} other {The app then books it every year on {yearDay}.}} In a shorter month, on its last day.",
+    "repeatEndBeforeStart": "The end is before the booking date.",
+    "repeatManage": "Manage under “Regular bookings”"
   },
   "actions": {
     "delete": "Delete booking",

@@ -57,6 +57,17 @@ export type FindBookingsCriteria = {
   uncategorized?: boolean;
 };
 
+/** A booking's texts in plain form (the IBAN in any spacing; decoded: formatted in groups of four). */
+export type BookingTexts = { counterparty: string | null; counterpartyIban: string | null; reference: string | null };
+
+/** A booking's texts as stored: ciphertext under the booking's contexts, plus the IBAN's blind index. */
+export type EncodedBookingTexts = {
+  counterpartyEncrypted: string | null;
+  counterpartyIbanEncrypted: string | null;
+  counterpartyIbanIndex: string | null;
+  referenceEncrypted: string | null;
+};
+
 /** What an import gives a booking entered by hand when it merges a bank row into it. */
 export type ImportedDetails = Pick<TransactionValues, "bookingDate" | "counterparty" | "counterpartyIban" | "reference">;
 
@@ -124,6 +135,18 @@ export interface BookingService {
  * Row-level security applies: only bookings of visible accounts.
  */
 export interface BookingStore {
+  /**
+   * Adds one booking from form input, with the same checks as BookingService.createTransaction
+   * (visible account, allowed category). For parts that save more together with the booking.
+   */
+  createBooking(tx: RlsTransaction, userId: string, input: unknown): Promise<SaveTransactionResult>;
+
+  /** Encrypts texts exactly like a booking's (same contexts, normalized IBAN and its blind index). */
+  encodeTexts(texts: BookingTexts): EncodedBookingTexts;
+
+  /** Decrypts texts stored by encodeTexts or a booking; the IBAN comes back formatted. */
+  decodeTexts(columns: EncodedBookingTexts): BookingTexts;
+
   /**
    * Adds bookings (the import writes bookings and its fingerprints together). Each booking is
    * checked; invalid values throw. Created by `userId` (the session's user).

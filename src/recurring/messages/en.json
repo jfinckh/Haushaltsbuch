@@ -1,0 +1,31 @@
+{
+  "page": {
+    "title": "Regular bookings",
+    "intro": "Salary, rent, subscriptions: the app books them itself on the due date.",
+    "add": "New booking"
+  },
+  "list": {
+    "empty": "No regular bookings yet. Tick “Repeat regularly” in the booking form.",
+    "next": "Next booking on {date}",
+    "endsOn": "ends on {date}",
+    "everyMonths": "{months, plural, =1 {Monthly} =3 {Quarterly} =6 {Every six months} =12 {Yearly} other {Every # months}} on day {day}",
+    "unknownAccount": "Account",
+    "pause": "Pause",
+    "resume": "Resume",
+    "end": "End",
+    "delete": "Delete",
+    "confirmEnd": "End it? Nothing will be booked after that.",
+    "confirmDelete": "Delete it? Bookings already made stay.",
+    "failed": "That did not work. Please try again."
+  },
+  "status": {
+    "active": "Active",
+    "paused": "Paused",
+    "ended": "Ended",
+    "archived": "Account archived"
+  },
+  "validation": {
+    "intervalInvalid": "Please choose an interval.",
+    "endDateInvalid": "Please enter a valid date."
+  }
+}

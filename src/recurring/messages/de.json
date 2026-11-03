@@ -1,0 +1,31 @@
+{
+  "page": {
+    "title": "Regelmäßige Buchungen",
+    "intro": "Gehalt, Miete, Abos: Die App bucht sie selbst am Fälligkeitstag.",
+    "add": "Neue Buchung"
+  },
+  "list": {
+    "empty": "Noch keine regelmäßigen Buchungen. Hake im Buchungsformular „Regelmäßig wiederholen“ an.",
+    "next": "Nächste Buchung am {date}",
+    "endsOn": "endet am {date}",
+    "everyMonths": "{months, plural, =1 {Monatlich} =3 {Vierteljährlich} =6 {Halbjährlich} =12 {Jährlich} other {Alle # Monate}} am {day}.",
+    "unknownAccount": "Konto",
+    "pause": "Pausieren",
+    "resume": "Fortsetzen",
+    "end": "Beenden",
+    "delete": "Löschen",
+    "confirmEnd": "Wirklich beenden? Danach wird nichts mehr gebucht.",
+    "confirmDelete": "Wirklich löschen? Bereits angelegte Buchungen bleiben.",
+    "failed": "Das hat nicht geklappt. Bitte versuch es noch einmal."
+  },
+  "status": {
+    "active": "Aktiv",
+    "paused": "Pausiert",
+    "ended": "Beendet",
+    "archived": "Konto archiviert"
+  },
+  "validation": {
+    "intervalInvalid": "Bitte wähle einen Rhythmus.",
+    "endDateInvalid": "Bitte gib ein gültiges Datum ein."
+  }
+}

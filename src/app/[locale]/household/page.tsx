@@ -52,6 +52,7 @@ async function Household() {
   const links = [
     ["/imports", t("home.importCsv")],
     ["/rules", t("home.rules")],
+    ["/recurring", t("home.recurring")],
     ["/categories", t("home.categories")],
   ] as const;
 

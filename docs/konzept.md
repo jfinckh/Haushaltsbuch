@@ -155,6 +155,7 @@ Für alle, die ihren Kontoauszug nicht hochladen wollen oder können: Gehalt, Mi
 - **Umbuchung und Sparen** bucht die Vorlage nur auf ihrem eigenen Konto; die Gegenseite kommt per Import oder eigener Vorlage, der Abgleich verknüpft beide.
 - **Pausieren, beenden, archiviertes Konto:** Pausierte Vorlagen und Termine nach dem Enddatum werden nicht gebucht. Nach einer Pause oder einem archivierten Konto geht es ab dem nächsten Termin weiter, ohne Nachholen.
 - **Privatsphäre:** Eine Vorlage ist sichtbar wie ihr Konto; auf einem privaten Konto sieht sie nur der Besitzer. Gegenpartei und Verwendungszweck sind verschlüsselt wie in Buchungen.
+- **Verwalten:** Seite „Regelmäßige Buchungen“ (Menü „Regelmäßig“) mit Pausieren, Fortsetzen, Beenden und Löschen. Löschen lässt angelegte Buchungen stehen. Betrag, Texte oder Rhythmus ändern kommt mit dem Erkennen; bis dahin löscht man die Vorlage und legt sie neu an.
 - **Erkennen:** Die App schlägt Vorlagen aus wiederkehrenden Buchungen vor (Seite „Regelmäßige Buchungen“); sie legt nie selbst eine an.
 
 ## CSV-Import

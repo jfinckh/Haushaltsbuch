@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-03",
+  "slug": "regelmaessige-buchungen-1b",
+  "description": "Regelmäßige Buchungen 1b – Checkbox und Seite",
+  "plan": {
+    "path": "docs/superpowers/plans/2026-11-03-regelmaessige-buchungen-1b-formular-seite.md",
+    "sha256": "4af46b82a0c22d9bb358da557505bad01f74b38c3cf9f58e059300e01f967234"
+  },
+  "status": "final",
+  "base": "8ffdeadab3ba93f4e486d38c0554a24bc60480d9",
+  "report": "Finalized regelmaessige-buchungen-1b (8ffdead..working-tree)\nFiles: 36 converge, 0 diverge, 0 absent. Elements: 8 converge, 0 diverge, 0 absent.\nNo divergences, absences or violations.\nSign-off: 6 approved.\nRecord updated: plan.md, record.json, snapshot.json, comparison.json, map.html\nMap: docs/changes/2026-11-03-regelmaessige-buchungen-1b/map.html\n",
+  "shownAt": "2026-11-03T08:34:51Z"
+}

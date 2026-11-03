@@ -9,7 +9,7 @@ import { LocaleSwitcher } from "@/shared/locale-switcher";
 import { AddBookingButton } from "./add-booking-button";
 import { AppVersion } from "./app-version";
 
-type NavKey = "overview" | "transactions" | "statistics" | "imports" | "rules" | "categories" | "household";
+type NavKey = "overview" | "transactions" | "statistics" | "imports" | "rules" | "recurring" | "categories" | "household";
 
 type NavItem = {
   key: NavKey;
@@ -53,6 +53,12 @@ const NAV: NavItem[] = [
     href: "/rules",
     mobile: false,
     icon: <path {...stroke} d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />,
+  },
+  {
+    key: "recurring",
+    href: "/recurring",
+    mobile: false,
+    icon: <path {...stroke} d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4.5v4h-4M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 19.5v-4h4" />,
   },
   {
     key: "categories",

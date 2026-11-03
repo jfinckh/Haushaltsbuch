@@ -4,6 +4,7 @@ import { budgetsMessages } from "@/budgets";
 import { householdsMessages } from "@/households";
 import { importMessages } from "@/import";
 import type { Locale } from "@/shared/i18n";
+import { recurringMessages } from "@/recurring";
 import { rulesMessages } from "@/rules";
 import { messages as sharedMessages } from "@/shared/messages";
 import { transactionsMessages } from "@/transactions";
@@ -25,6 +26,7 @@ function forLocale<L extends Locale>(locale: L) {
     transfers: transfersMessages[locale],
     rules: rulesMessages[locale],
     budgets: budgetsMessages[locale],
+    recurring: recurringMessages[locale],
   };
 }
 

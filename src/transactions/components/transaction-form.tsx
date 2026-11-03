@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { callApi } from "@/shared/api-client";
@@ -34,7 +35,22 @@ type Props = {
   offerRule?: boolean;
   /** Where to go after saving instead of the booking's account page (a checked address from the app). */
   returnTo?: string;
+  /**
+   * Offer "Regelmäßig wiederholen" for a new booking: the POST then carries
+   * `repeat: { intervalMonths, endDate }`, and the app creates a template with it.
+   */
+  offerRepeat?: boolean;
+  /** The page that manages regular bookings, linked under the repeat settings. Default: /recurring */
+  recurringHref?: string;
 };
+
+/** The intervals offered for repeating, in months, with their label keys. */
+const REPEAT_INTERVALS = [
+  [1, "repeatMonthly"],
+  [3, "repeatQuarterly"],
+  [6, "repeatHalfYearly"],
+  [12, "repeatYearly"],
+] as const;
 
 type RuleField = "counterparty" | "reference";
 
@@ -65,6 +81,8 @@ export function TransactionForm({
   accountsHref = "/accounts",
   offerRule = false,
   returnTo,
+  offerRepeat = false,
+  recurringHref = "/recurring",
 }: Props) {
   const t = useTranslations("transactions.form");
   const tKinds = useTranslations("transactions.kinds");
@@ -82,6 +100,10 @@ export function TransactionForm({
   const [pending, setPending] = useState(false);
   const ruleFields = (["counterparty", "reference"] as const).filter((field) => transaction?.[field]);
   const [learn, setLearn] = useState(false);
+  const canRepeat = offerRepeat && !editing;
+  const [repeat, setRepeat] = useState(false);
+  const [repeatInterval, setRepeatInterval] = useState<number>(1);
+  const [repeatEnd, setRepeatEnd] = useState("");
   const [ruleField, setRuleField] = useState<RuleField>(ruleFields[0] ?? "counterparty");
   const [rulePattern, setRulePattern] = useState(transaction?.[ruleFields[0] ?? "counterparty"] ?? "");
   const classificationChanged = Boolean(transaction) && (kind !== transaction?.kind || category !== (transaction?.category ?? ""));
@@ -138,11 +160,14 @@ export function TransactionForm({
       return setErrors({ rule: "transactions.form.rulePatternNotInText" });
     }
 
+    const repeating = canRepeat && repeat ? { intervalMonths: repeatInterval, endDate: repeatEnd || null } : undefined;
+    if (repeating?.endDate && repeating.endDate < body.date) return setErrors({ repeat: "transactions.form.repeatEndBeforeStart" });
+
     setPending(true);
     setErrors({});
     const result = await callApi<{ rule?: { created: boolean } }>(transaction ? `${action}/${transaction.id}` : action, {
       method: transaction ? "PATCH" : "POST",
-      json: rule ? { ...body, rule } : body,
+      json: rule ? { ...body, rule } : repeating ? { ...body, repeat: repeating } : body,
     });
     setPending(false);
     if (!result.ok) {
@@ -355,6 +380,60 @@ export function TransactionForm({
           </fieldset>
         </div>
       </details>
+
+      {canRepeat && (
+        <div className="bg-base-200 rounded-box flex flex-col gap-2 p-3">
+          <label className="label cursor-pointer justify-start gap-2 whitespace-normal">
+            <input type="checkbox" className="checkbox checkbox-sm" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} />
+            <span className="text-base-content font-medium">{t("repeat")}</span>
+          </label>
+          {repeat && (
+            <>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <fieldset className="fieldset">
+                  <label className="fieldset-legend" htmlFor="transaction-repeat-interval">{t("repeatInterval")}</label>
+                  <select
+                    id="transaction-repeat-interval"
+                    className="select w-full"
+                    value={repeatInterval}
+                    onChange={(e) => setRepeatInterval(Number(e.target.value))}
+                  >
+                    {REPEAT_INTERVALS.map(([months, label]) => (
+                      <option key={months} value={months}>
+                        {t(label)}
+                      </option>
+                    ))}
+                  </select>
+                </fieldset>
+                <fieldset className="fieldset">
+                  <label className="fieldset-legend" htmlFor="transaction-repeat-end">{t("repeatEnd")}</label>
+                  <input
+                    id="transaction-repeat-end"
+                    type="date"
+                    className="input w-full"
+                    value={repeatEnd}
+                    min={isIsoDate(date) ? date : undefined}
+                    onChange={(e) => setRepeatEnd(e.target.value)}
+                  />
+                </fieldset>
+              </div>
+              {isIsoDate(date) && (
+                <p className="text-base-content/70 text-xs">
+                  {t("repeatHint", {
+                    months: repeatInterval,
+                    day: Number(date.slice(8, 10)),
+                    yearDay: format.dateTime(new Date(`${date}T00:00:00Z`), { timeZone: "UTC", day: "numeric", month: "long" }),
+                  })}{" "}
+                  <Link href={recurringHref} className="link">
+                    {t("repeatManage")}
+                  </Link>
+                </p>
+              )}
+            </>
+          )}
+          {error("repeat")}
+        </div>
+      )}
 
       {errors.form && (
         <p role="alert" className="text-error">

@@ -1,4 +1,5 @@
 import { and, asc, eq, gte, inArray, isNotNull, isNull, lte, ne, sql, type SQL } from "drizzle-orm";
+import { accountIsVisible } from "@/db-contract/server";
 import { categoryAllowed, findVisible, visible } from "./access";
 import type { BookingCodec } from "./booking-codec";
 import { inCountingMonths } from "./counting-month-sql";
@@ -7,7 +8,7 @@ import type { BookingStore, Classification } from "./contract";
 import type { TransactionKind } from "./kinds";
 import { monthOf } from "./months";
 import { transaction } from "./schema";
-import { transactionValuesSchema } from "./validation";
+import { createTransactionSchema, transactionValuesSchema } from "./validation";
 
 export type BookingStoreDeps = {
   codec: BookingCodec;
@@ -17,9 +18,32 @@ export type BookingStoreDeps = {
 
 /** Booking methods for other parts inside their database transaction (documented on BookingStore). */
 export function createBookingStore({ codec, today }: BookingStoreDeps): BookingStore {
-  const { toView, toValues, toColumns } = codec;
+  const { toView, toValues, toColumns, encodeTexts, decodeTexts } = codec;
 
   return {
+    async createBooking(tx, userId, input) {
+      const parsed = createTransactionSchema.safeParse(input);
+      if (!parsed.success) return { ok: false, reason: "invalid-input" };
+      if (!(await accountIsVisible(tx, parsed.data.accountId))) return { ok: false, reason: "not-found" };
+      const { accountId, kind, category: key } = parsed.data;
+      if (key !== null && !(await categoryAllowed(tx, accountId, kind, key))) return { ok: false, reason: "invalid-input" };
+      const [row] = await tx
+        .insert(transaction)
+        .values({
+          ...toColumns(parsed.data),
+          id: crypto.randomUUID(),
+          createdByUserId: userId,
+          // A quick entry without category may still be sorted by a rule.
+          classifiedBy: parsed.data.category ? "manual" : "auto",
+        })
+        .returning();
+      return { ok: true, transaction: toView(row, userId) };
+    },
+
+    encodeTexts,
+
+    decodeTexts,
+
     async insertBookings(tx, userId, values) {
       if (values.length === 0) return [];
       const rows = values.map((value) => ({

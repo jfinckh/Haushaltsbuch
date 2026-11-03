@@ -5,20 +5,22 @@ import { categoryAllowed, findVisible, notOnSavingsAccount, ownPrivate, targetFi
 import type { BookingCodec } from "./booking-codec";
 import { inCountingMonths } from "./counting-month-sql";
 import { isCategoryFor } from "./categories";
-import type { BookingService, LatestTransactionsResult, ListTransactionsResult, SaveTransactionResult } from "./contract";
+import type { BookingService, BookingStore, LatestTransactionsResult, ListTransactionsResult, SaveTransactionResult } from "./contract";
 import { monthOf } from "./months";
 import { transaction } from "./schema";
-import { createTransactionSchema, listQuerySchema, transactionValuesSchema, updateTransactionSchema } from "./validation";
+import { listQuerySchema, transactionValuesSchema, updateTransactionSchema } from "./validation";
 
 export type BookingServiceDeps = {
   db: RlsDatabase;
   codec: BookingCodec;
   /** Today's date (YYYY-MM-DD) for the default month. */
   today: () => string;
+  /** Creates bookings; the same checks for pages and other parts. */
+  store: Pick<BookingStore, "createBooking">;
 };
 
 /** Bookings for pages and routes (documented on BookingService). */
-export function createBookingService({ db, codec, today }: BookingServiceDeps): BookingService {
+export function createBookingService({ db, codec, today, store }: BookingServiceDeps): BookingService {
   const { toView, toValues, toColumns } = codec;
 
   return {
@@ -84,24 +86,7 @@ export function createBookingService({ db, codec, today }: BookingServiceDeps): 
     },
 
     async createTransaction(caller, input): Promise<SaveTransactionResult> {
-      const parsed = createTransactionSchema.safeParse(input);
-      if (!parsed.success) return { ok: false, reason: "invalid-input" };
-      return withSession(db, caller, async (tx, userId): Promise<SaveTransactionResult> => {
-        if (!(await accountIsVisible(tx, parsed.data.accountId))) return { ok: false, reason: "not-found" };
-        const { accountId, kind, category: key } = parsed.data;
-        if (key !== null && !(await categoryAllowed(tx, accountId, kind, key))) return { ok: false, reason: "invalid-input" };
-        const [row] = await tx
-          .insert(transaction)
-          .values({
-            ...toColumns(parsed.data),
-            id: crypto.randomUUID(),
-            createdByUserId: userId,
-            // A quick entry without category may still be sorted by a rule.
-            classifiedBy: parsed.data.category ? "manual" : "auto",
-          })
-          .returning();
-        return { ok: true, transaction: toView(row, userId) };
-      });
+      return withSession(db, caller, (tx, userId) => store.createBooking(tx, userId, input));
     },
 
     async updateTransaction(caller, id, input): Promise<SaveTransactionResult> {

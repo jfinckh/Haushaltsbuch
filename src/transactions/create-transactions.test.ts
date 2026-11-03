@@ -1251,3 +1251,40 @@ describe("counting month: end-of-month salary counts for the next month", () => 
     expect(await totals(erika, "max-private", "2026-11")).toEqual({ month: "2026-11", totals: {} });
   });
 });
+
+describe("booking methods for other parts", () => {
+  it("createBooking inside a caller's transaction saves the booking", async () => {
+    const result = await withSession(setup.db, max, (tx, userId) => transactions.createBooking(tx, userId, input()));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(await transactions.getTransaction(max, result.transaction.id)).toMatchObject({ amountCents: -350, classifiedBy: "manual" });
+  });
+
+  it("createBooking rejects another member's private account", async () => {
+    const result = await withSession(setup.db, erika, (tx, userId) => transactions.createBooking(tx, userId, input()));
+    expect(result).toEqual({ ok: false, reason: "not-found" });
+  });
+
+  it("createBooking rejects invalid input", async () => {
+    const result = await withSession(setup.db, max, (tx, userId) => transactions.createBooking(tx, userId, input({ amount: "abc" })));
+    expect(result).toEqual({ ok: false, reason: "invalid-input" });
+  });
+
+  it("encodeTexts and decodeTexts round-trip", () => {
+    const texts = { counterparty: "Vermieter", counterpartyIban: "DE89 3704 0044 0532 0130 00", reference: "Miete" };
+    const encoded = transactions.encodeTexts(texts);
+    expect(encoded.counterpartyEncrypted).not.toContain("Vermieter");
+    expect(transactions.decodeTexts(encoded)).toEqual(texts);
+    expect(transactions.decodeTexts(transactions.encodeTexts({ counterparty: null, counterpartyIban: null, reference: null }))).toEqual({
+      counterparty: null,
+      counterpartyIban: null,
+      reference: null,
+    });
+  });
+
+  it("encodeTexts gives the same IBAN index as a booking", async () => {
+    const booking = await create(max, { counterpartyIban: "DE89 3704 0044 0532 0130 00" });
+    const encoded = transactions.encodeTexts({ counterparty: null, counterpartyIban: "de89370400440532013000", reference: null });
+    expect(encoded.counterpartyIbanIndex).toBe((await storedRow(booking.id)).counterpartyIbanIndex);
+  });
+});

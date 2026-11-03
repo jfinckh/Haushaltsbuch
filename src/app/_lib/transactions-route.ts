@@ -1,4 +1,5 @@
 import "server-only";
+import type { Recurring } from "@/recurring/server";
 import type { Rules } from "@/rules/server";
 import type { BookingService } from "@/transactions/server";
 import type { Transfers } from "@/transfers/server";
@@ -10,6 +11,8 @@ type Deps = {
   transfers?: Pick<Transfers, "setKind">;
   /** Creates a rule from the booking when the form asks for it ("Künftig immer so"). */
   rules?: Pick<Rules, "createFromBooking">;
+  /** Creates booking and template together when a new booking carries `repeat` ("Regelmäßig wiederholen"). */
+  recurring?: Pick<Recurring, "createWithBooking">;
   /** The signed-in caller, or null. */
   getCaller: GetCaller;
 };
@@ -20,7 +23,7 @@ type IdContext = { params: Promise<{ id: string }> };
  * Handlers for /api/transactions. Only bookings of accounts the caller may see exist for them: an
  * account or booking of another member's private account gets the same 404 as an unknown id.
  */
-export function transactionsRoute({ transactions, getCaller }: Deps) {
+export function transactionsRoute({ transactions, recurring, getCaller }: Deps) {
   return {
     /**
      * Query: accountId or scope=own-private (exactly one), month / year / from+to, kind, category (or
@@ -35,9 +38,16 @@ export function transactionsRoute({ transactions, getCaller }: Deps) {
       });
     },
 
+    /** Body: the booking; with `repeat: { intervalMonths, endDate }` also its template (201 with `templateId`). */
     async POST(request: Request) {
       return asCaller(getCaller, async (caller) => {
-        const result = await transactions.createTransaction(caller, await readJson(request));
+        const body = await readJson(request);
+        if (recurring && body && typeof body === "object" && "repeat" in body) {
+          const result = await recurring.createWithBooking(caller, body);
+          if (result.ok) return json({ transaction: result.transaction, templateId: result.templateId }, 201);
+          return result.reason === "not-found" ? notFound() : invalidInput();
+        }
+        const result = await transactions.createTransaction(caller, body);
         if (result.ok) return json({ transaction: result.transaction }, 201);
         return result.reason === "not-found" ? notFound() : invalidInput();
       });

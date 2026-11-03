@@ -16,7 +16,7 @@
     "budgets": ["db-contract", "shared", "transactions"],
     "insights": ["shared", "transactions"],
     "db-contract": ["shared"],
-    "recurring": ["shared"]
+    "recurring": ["shared", "transactions"]
   },
   "features": {}
 }

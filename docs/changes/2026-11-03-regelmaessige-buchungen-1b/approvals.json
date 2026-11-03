@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "approvals": [
+    {
+      "itemKey": "edge-new:recurring->transactions",
+      "itemHash": "sha256:396f4712cbffd7b2b9696f77fd8224bdf037b896c5de1e7b94665d39b19192ec",
+      "decision": "approve",
+      "at": "2026-11-03T07:48:10Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:server:createRecurring",
+      "itemHash": "sha256:2c80e84c7e0fb5d5f1e7ef0267cce24f62dce6e9471602e58a35a53bd7f2f720",
+      "decision": "approve",
+      "at": "2026-11-03T07:48:10Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:server:Recurring",
+      "itemHash": "sha256:c4ea5d8f64d01ed530e5d9ca7736bed1deb93e346edd5aa029d0fb38c25612de",
+      "decision": "approve",
+      "at": "2026-11-03T07:48:10Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:server:TemplateView",
+      "itemHash": "sha256:ecb89c75835acecd015a78727db55347cc4803929a7f11a2b5143c44e9fd9980",
+      "decision": "approve",
+      "at": "2026-11-03T07:48:10Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:client:RecurringList",
+      "itemHash": "sha256:741998ccab39b1fec247355cce7c2b1940676bb9fa9da9e057c4239239aec8b9",
+      "decision": "approve",
+      "at": "2026-11-03T07:48:10Z",
+      "source": "hook"
+    },
+    {
+      "itemKey": "export-add:recurring:client:recurringMessages",
+      "itemHash": "sha256:63f22f240ae8a61731986e0e27d294dd94bcdc381e6cf7d48914b183d42d3ed2",
+      "decision": "approve",
+      "at": "2026-11-03T07:48:10Z",
+      "source": "hook"
+    }
+  ]
+}
